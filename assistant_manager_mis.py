@@ -8,7 +8,7 @@ from streamlit_authenticator import Authenticate
 
 # --- 1. DATA ENGINE: THE CORE LOGIC ---
 def load_excel_data():
-    file_path = r"Z:\data\RAW DATA.xlsx" 
+    file_path = "RAW DATA.xlsx" 
     try:
         df = pd.read_excel(file_path, engine='openpyxl')
         df.columns = [str(c).strip() for c in df.columns]
