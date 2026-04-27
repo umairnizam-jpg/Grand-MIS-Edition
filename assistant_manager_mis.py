@@ -84,7 +84,6 @@ def main():
 
         # --- ADVANCED UI CHAT BAR (Icons on Right) ---
         st.markdown("---")
-        # Layout: Text Input (Left) | Mic & File (Right)
         input_col, mic_col, clip_col = st.columns([5, 0.4, 0.4])
 
         with input_col:
@@ -130,4 +129,105 @@ def main():
 
             # Date Extraction
             all_months = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
-            found_months = [m.capitalize() for m
+            found_months = [m.capitalize() for m in all_months if m in query_lower or m[:3] in query_lower]
+            found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
+            found_fy = re.findall(r'fy\s?\d{4}', query_lower)
+
+            filtered_df = df_live.copy()
+            if found_months: filtered_df = filtered_df[filtered_df['Months'].isin(found_months)]
+            if found_years: filtered_df = filtered_df[filtered_df['Year'].isin(found_years)]
+            if found_fy:
+                tag = found_fy[0].upper().replace("FY", "FY ") if " " not in found_fy[0] else found_fy[0].upper()
+                filtered_df = filtered_df[filtered_df['Fiscal_Year_Label'] == tag]
+
+            if not filtered_df.empty:
+                # Calculations
+                metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
+                results = filtered_df[metrics].sum()
+                
+                # Achievement Formula
+                rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
+                ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
+
+                # Comparative Analysis (YoY)
+                variance_report = ""
+                if "compare" in query_lower or "vs" in query_lower:
+                    if found_years:
+                        prev_y = found_years[0] - 1
+                        prev_df = df_live[(df_live['Year'] == prev_y) & (df_live['Months'].isin(found_months))]
+                        if not prev_df.empty:
+                            p_rev = prev_df['Actual Revenue'].sum()
+                            diff = results['Actual Revenue'] - p_rev
+                            perc = (diff / p_rev * 100) if p_rev > 0 else 0
+                            variance_report = f"\n\n**YoY Comparison:**\n* Variance: **Rs. {diff:,.0f}** ({perc:.1f}% {'Increase' if diff >= 0 else 'Decrease'})\n"
+                            if abs(perc) > 20:
+                                variance_report += f"* 💡 **Insight:** Significant {'growth' if diff >= 0 else 'drop'} detected compared to last year."
+
+                report = (
+                    f"### 📊 BI Analysis Result\n"
+                    f"**Financial Performance:**\n"
+                    f"* Actual Revenue: **Rs. {results['Actual Revenue']:,.0f}**\n"
+                    f"* Target Revenue: Rs. {results['Target revenue']:,.0f}\n"
+                    f"* Achievement: **{rev_ach:.1f}%**\n\n"
+                    f"**Footfall Analysis:**\n"
+                    f"* Actual Footfall: **{results['Actual Footfall']:,.0f}**\n"
+                    f"* Target Footfall: {results['Target Footfall']:,.0f}\n"
+                    f"* Achievement: **{ff_ach:.1f}%**"
+                    f"{variance_report}"
+                )
+                
+                if attached_file:
+                    report += f"\n\n📎 **Attachment:** File `{attached_file.name}` recognized."
+
+                st.session_state.messages.append({"content": report, "is_user": False})
+                
+                # --- VISUALS (8 Professional Charts) ---
+                st.divider()
+                
+                # 1 & 2: Achievement Gauges
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#00CC96"}})).update_layout(height=300, template="plotly_dark"), use_container_width=True)
+                with c2:
+                    st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#636EFA"}})).update_layout(height=300, template="plotly_dark"), use_container_width=True)
+
+                # 3 & 4: Comparisons and Trends
+                c3, c4 = st.columns(2)
+                with c3:
+                    fig3 = px.bar(filtered_df, x='Months', y=['Actual Revenue', 'Target revenue'], barmode='group', title="Revenue: Actual vs Target", color_discrete_sequence=['#00CC96', '#EF553B'])
+                    st.plotly_chart(fig3, use_container_width=True)
+                with c4:
+                    fig4 = px.line(filtered_df, x='Months', y='Actual Footfall', markers=True, title="Footfall Trend Line", line_shape="spline")
+                    st.plotly_chart(fig4, use_container_width=True)
+
+                # 5 & 6: Distribution and Volume
+                c5, c6 = st.columns(2)
+                with c5:
+                    fig5 = px.pie(filtered_df, values='Actual Revenue', names='Months', hole=0.4, title="Monthly Revenue Share")
+                    st.plotly_chart(fig5, use_container_width=True)
+                with c6:
+                    fig6 = px.area(filtered_df, x='Months', y='Actual Revenue', title="Revenue Volume Area Chart", color_discrete_sequence=['#AB63FA'])
+                    st.plotly_chart(fig6, use_container_width=True)
+
+                # 7 & 8: Relationship and Target Progress
+                c7, c8 = st.columns(2)
+                with c7:
+                    fig7 = px.scatter(filtered_df, x='Actual Footfall', y='Actual Revenue', size='Actual Revenue', color='Months', title="Correlation: Footfall vs Revenue")
+                    st.plotly_chart(fig7, use_container_width=True)
+                with c8:
+                    fig8 = go.Figure(go.Funnel(y=["Target", "Actual"], x=[results['Target revenue'], results['Actual Revenue']], textinfo="value+percent initial"))
+                    fig8.update_layout(title="Revenue Target Funnel", template="plotly_dark")
+                    st.plotly_chart(fig8, use_container_width=True)
+
+                # Original Data Table
+                st.table(filtered_df[metrics].sum().to_frame().T.style.format('{:,.0f}'))
+                
+            else:
+                st.session_state.messages.append({"content": "No records found for this period within the 2017-2026 scope.", "is_user": False})
+                st.rerun()
+
+    else:
+        st.info("System Developed by **Umair Nizam**. Please log in to proceed.")
+
+if __name__ == "__main__":
+    main()
