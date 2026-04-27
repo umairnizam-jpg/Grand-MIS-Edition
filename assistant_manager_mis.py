@@ -38,7 +38,6 @@ def load_excel_data():
         df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
         
         df['Date_Obj'] = pd.to_datetime(df['Year'].astype(str) + '-' + df['Month_Num'].astype(str) + '-01')
-        # Updated Scope: July 2017 to March 2026
         mask = (df['Date_Obj'] >= '2017-07-01') & (df['Date_Obj'] <= '2026-03-01')
         
         return df.loc[mask].sort_values('Date_Obj')
@@ -101,50 +100,54 @@ def main():
             query_lower = user_query.lower()
 
             if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam", "introduce"]):
+                # Fixed Line 107
                 intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**."
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            # --- DYNAMIC COMPARISON LOGIC ---
-            month_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
-            found_months = [m.capitalize() for m in month_list if m in query_lower or m[:3] in query_lower]
-            found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
+            # Fixed regex in Line 123
+            month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
+            matches = re.findall(rf'{month_pattern}\s*(20\d{{2}})', query_lower)
             
             variance_report = ""
             temp_df = df_live.copy()
             comp_viz_data = None
 
-            # Case: Comparison between two years for specific months
-            if len(found_years) >= 2 and found_months:
-                y1, y2 = found_years[0], found_years[1]
-                v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
-                v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
+            if len(matches) >= 2:
+                found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
+                found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
                 
-                if not v1.empty and not v2.empty:
-                    rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
-                    ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
-                    r_diff, f_diff = rev2 - rev1, ff2 - ff1
-                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
-                    f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
+                if len(found_years) >= 2 and found_months:
+                    y1, y2 = found_years[0], found_years[1]
+                    v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
+                    v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
                     
-                    months_str = ", ".join(found_months)
-                    variance_report = (
-                        f"\n\n**Comparison for {months_str}:**\n"
-                        f"* **Period 1 ({y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
-                        f"* **Period 2 ({y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
-                        f"--- \n"
-                        f"**Growth/Variance:**\n"
-                        f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
-                        f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
-                    )
-                    temp_df = pd.concat([v1, v2])
-                    comp_viz_data = {
-                        "labels": [f"{y1} ({months_str[:15]}...)" if len(months_str)>15 else f"{y1} ({months_str})", 
-                                   f"{y2} ({months_str[:15]}...)" if len(months_str)>15 else f"{y2} ({months_str})"],
-                        "revenue": [rev1, rev2],
-                        "footfall": [ff1, ff2]
-                    }
+                    if not v1.empty and not v2.empty:
+                        rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
+                        ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
+                        r_diff, f_diff = rev2 - rev1, ff2 - ff1
+                        r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
+                        f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
+                        
+                        months_str = ", ".join(list(dict.fromkeys(found_months)))
+                        variance_report = (
+                            f"\n\n**Comparison for {months_str}:**\n"
+                            f"* **Period 1 ({y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
+                            f"* **Period 2 ({y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
+                            f"--- \n"
+                            f"**Growth/Variance:**\n"
+                            f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
+                            f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
+                        )
+                        temp_df = pd.concat([v1, v2])
+                        comp_viz_data = {
+                            "labels": [f"{y1}", f"{y2}"],
+                            "revenue": [rev1, rev2],
+                            "footfall": [ff1, ff2]
+                        }
             else:
+                found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
+                found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
 
@@ -158,7 +161,6 @@ def main():
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
-        # Visual Section
         if st.session_state.last_filtered_df is not None:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
@@ -183,9 +185,11 @@ def main():
                 "7. Footfall vs Revenue (Correlation)", "8. Revenue Target Funnel"
             ])
 
+            # Fixed Line 187: Changed 'Target footfall' to 'Target Footfall'
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
-            ff_ach = (results['Actual Footfall'] / results['Target footfall'] * 100) if results['Target Footfall'] > 0 else 0
+            ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
 
+            # Fixed Line 189 & 195
             if chart_option.startswith("1"):
                 st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
             elif chart_option.startswith("2"):
