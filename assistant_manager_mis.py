@@ -7,25 +7,29 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
-# --- GLOBAL SEARCH SETUP ---
+# --- GLOBAL SEARCH SETUP (ChatGPT Integration) ---
 try:
-    import google.generativeai as genai
+    from openai import OpenAI
     AI_AVAILABLE = True
 except (ImportError, ModuleNotFoundError):
     AI_AVAILABLE = False
 
 def get_ai_response(query):
     if not AI_AVAILABLE:
-        return "Please install google-generativeai library."
+        return "Please install openai library."
     try:
-        # API Key configuration
-        genai.configure(api_key="AIzaSyBB4unoIgBEJMLdwOlPoIUFtx2Tp4cl7uk") 
+        # OpenAI Client Setup
+        client = OpenAI(api_key="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") 
         
-        # FIXED: Model name changed to 'gemini-1.5-flash-latest' to resolve 404 error
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        
-        response = model.generate_content(f"Act as a BI Expert. Answer this: {query}")
-        return response.text
+        # ChatGPT Response Generation
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo", # Ya "gpt-4" agar aapke paas access hai
+            messages=[
+                {"role": "system", "content": "Act as a BI Expert for Joyland."},
+                {"role": "user", "content": query}
+            ]
+        )
+        return response.choices[0].message.content
     except Exception as e:
         return f"Global Search currently unavailable. Error: {str(e)}"
 
@@ -153,7 +157,7 @@ def main():
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
             
             if temp_df.empty and not any(greet in query_lower for greet in ["hi", "hello"]):
-                with st.spinner("Searching Globally..."):
+                with st.spinner("Searching Globally (ChatGPT)..."):
                     ai_answer = get_ai_response(user_query)
                     st.session_state.messages.append({"content": f"🌐 **Global Search Result:**\n\n{ai_answer}", "is_user": False})
                     st.rerun()
