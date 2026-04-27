@@ -7,6 +7,32 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
+# --- NEW: OPENAI INTEGRATION FOR GLOBAL SEARCH ---
+try:
+    from openai import OpenAI
+    AI_AVAILABLE = True
+except (ImportError, ModuleNotFoundError):
+    AI_AVAILABLE = False
+
+def get_ai_response(query):
+    """Function to handle Global Search using ChatGPT"""
+    if not AI_AVAILABLE:
+        return "Please install 'openai' library to use Global Search."
+    try:
+        # Apni OpenAI API Key yahan enter karein
+        client = OpenAI(api_key="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") 
+        
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo", 
+            messages=[
+                {"role": "system", "content": "You are a Business Intelligence expert for Joyland MIS."},
+                {"role": "user", "content": query}
+            ]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Global Search currently unavailable. Error: {str(e)}"
+
 # --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
 def load_excel_data():
     file_options = ["RAW DATA.xlsx", r"Z:\data\RAW DATA.xlsx"]
@@ -100,19 +126,18 @@ def main():
             query_lower = user_query.lower()
 
             if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam", "introduce"]):
-                # Fixed Line 107
                 intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**."
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            # Fixed regex in Line 123
             month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
             matches = re.findall(rf'{month_pattern}\s*(20\d{{2}})', query_lower)
             
             variance_report = ""
-            temp_df = df_live.copy()
+            temp_df = pd.DataFrame() # Initialized empty to check for Global Search
             comp_viz_data = None
 
+            # --- Logic for Data Filtering ---
             if len(matches) >= 2:
                 found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
                 found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
@@ -148,8 +173,22 @@ def main():
             else:
                 found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
                 found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
-                if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
-                if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
+                
+                data_filter_df = df_live.copy()
+                if found_months: data_filter_df = data_filter_df[data_filter_df['Months'].isin(found_months)]
+                if found_years: data_filter_df = data_filter_df[data_filter_df['Year'].isin(found_years)]
+                
+                if not (found_months or found_years):
+                    temp_df = pd.DataFrame() # No match found
+                else:
+                    temp_df = data_filter_df
+
+            # --- NEW: GLOBAL SEARCH TRIGGER ---
+            if temp_df.empty and not any(greet in query_lower for greet in ["hi", "hello"]):
+                with st.spinner("Searching Globally using ChatGPT..."):
+                    ai_answer = get_ai_response(user_query)
+                    st.session_state.messages.append({"content": f"🌐 **Global Search Result:**\n\n{ai_answer}", "is_user": False})
+                    st.rerun()
 
             st.session_state.last_filtered_df = temp_df
             st.session_state.last_variance = variance_report
@@ -161,7 +200,7 @@ def main():
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
-        if st.session_state.last_filtered_df is not None:
+        if st.session_state.last_filtered_df is not None and not st.session_state.last_filtered_df.empty:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
             results = df_plot[metrics].sum()
@@ -185,11 +224,9 @@ def main():
                 "7. Footfall vs Revenue (Correlation)", "8. Revenue Target Funnel"
             ])
 
-            # Fixed Line 187: Changed 'Target footfall' to 'Target Footfall'
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
             ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
 
-            # Fixed Line 189 & 195
             if chart_option.startswith("1"):
                 st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
             elif chart_option.startswith("2"):
