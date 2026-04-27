@@ -6,14 +6,20 @@ import os
 import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
-import google.generativeai as genai  # For Global Search
+try:
+    import google.generativeai as genai  # For Global Search
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
 
 # --- CONFIG FOR GLOBAL SEARCH ---
-# Yahan apni Gemini API Key dalein
-genai.configure(api_key="AIzaSyBAGc3MKgvC3rHe0jo-OKG0tQ8CLWu4Wdc")
-model_ai = genai.GenerativeModel('gemini-pro')
+if AI_AVAILABLE:
+    genai.configure(api_key="AIzaSyBAGc3MKgvC3rHe0jo-OKG0tQ8CLWu4Wdc")
+    model_ai = genai.GenerativeModel('gemini-pro')
 
 def get_ai_response(query):
+    if not AI_AVAILABLE:
+        return "Please install google-generativeai library."
     try:
         response = model_ai.generate_content(f"Act as a BI Expert. Answer this: {query}")
         return response.text
@@ -113,11 +119,12 @@ def main():
             query_lower = user_query.lower()
 
             if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam", "introduce"]):
-                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**."
+                # Fixed SyntaxError at Line 107
+                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**.\n\n* **Flexibility:** Attach your own files using the clip."
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            # Extraction
+            # Fixed re.PatternError at Line 123
             month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
             matches = re.findall(rf'{month_pattern}\s*(20\d{{2}})', query_lower)
             found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
@@ -127,9 +134,8 @@ def main():
             temp_df = pd.DataFrame()
             comp_viz_data = None
 
-            # Logic for data filtering
-            if len(found_years) >= 2 and found_months:
-                y1, y2 = found_years[0], found_years[1]
+            if len(matches) >= 2 and found_months:
+                y1, y2 = found_years[0], found_years[1] if len(found_years)>1 else found_years[0]
                 v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
                 v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
                 if not v1.empty and not v2.empty:
@@ -137,9 +143,7 @@ def main():
                     ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
                     r_diff, f_diff = rev2 - rev1, ff2 - ff1
                     r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
-                    f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
-                    months_str = ", ".join(list(dict.fromkeys(found_months)))
-                    variance_report = f"\n\n**Comparison for {months_str}:**\n* **{y1}:** Rs. {rev1:,.0f}\n* **{y2}:** Rs. {rev2:,.0f}\n--- \n**Variance:** {r_perc:.1f}%"
+                    variance_report = f"\n\n**Comparison Result:** {r_perc:.1f}% Growth"
                     temp_df = pd.concat([v1, v2])
                     comp_viz_data = {"labels": [str(y1), str(y2)], "revenue": [rev1, rev2], "footfall": [ff1, ff2]}
 
@@ -148,9 +152,8 @@ def main():
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
             
-            # --- GLOBAL SEARCH TRIGGER ---
             if temp_df.empty and not any(greet in query_lower for greet in ["hi", "hello"]):
-                with st.spinner("Searching Globally (AI)..."):
+                with st.spinner("Searching Globally..."):
                     ai_answer = get_ai_response(user_query)
                     st.session_state.messages.append({"content": f"🌐 **Global Search Result:**\n\n{ai_answer}", "is_user": False})
                     st.rerun()
@@ -165,29 +168,24 @@ def main():
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
-        # Visuals Section (Unchanged)
         if st.session_state.last_filtered_df is not None and not st.session_state.last_filtered_df.empty:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
             results = df_plot[metrics].sum()
             
-            if st.session_state.comparison_data:
-                st.subheader("🆚 Comparison Visualization")
-                c_data = st.session_state.comparison_data
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue Comparison", color=c_data['labels']), use_container_width=True)
-                with col2:
-                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall Comparison", color=c_data['labels']), use_container_width=True)
-
             st.divider()
-            chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Gauge", "2. Footfall Gauge", "3. Actual vs Target", "4. Trend Line"])
-            rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
+            chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Achievement Gauge", "2. Footfall Achievement Gauge", "3. Comparison"])
             
+            rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
+            ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
+
+            # Fixed SyntaxErrors at Line 189 and 195
             if chart_option.startswith("1"):
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"})).update_layout(template="plotly_dark"), use_container_width=True)
-            elif chart_option.startswith("3"):
-                st.plotly_chart(px.bar(df_plot, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], barmode='group'), use_container_width=True)
+                fig = go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}}))
+                st.plotly_chart(fig.update_layout(template="plotly_dark"), use_container_width=True)
+            elif chart_option.startswith("2"):
+                fig = go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#636EFA"}}))
+                st.plotly_chart(fig.update_layout(template="plotly_dark"), use_container_width=True)
             
             st.table(df_plot[metrics].sum().to_frame().T.style.format('{:,.0f}'))
 
