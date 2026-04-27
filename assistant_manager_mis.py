@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
-# --- 1. DATA ENGINE ---
+# --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
 def load_excel_data():
     file_options = ["RAW DATA.xlsx", r"Z:\data\RAW DATA.xlsx"]
     file_path = None
@@ -15,117 +15,194 @@ def load_excel_data():
         if os.path.exists(path):
             file_path = path
             break
+    
     if not file_path:
         return pd.DataFrame()
+    
     try:
         df = pd.read_excel(file_path, engine='openpyxl')
         df.columns = [str(c).strip() for c in df.columns]
-        month_map = {'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12,
-                     'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6}
+        
+        month_map = {
+            'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12,
+            'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6
+        }
         df['Month_Num'] = df['Months'].map(month_map)
-        df['Fiscal_Year_Label'] = df.apply(lambda x: f"FY {x['Year'] if x['Month_Num'] <= 6 else x['Year'] + 1}", axis=1)
+        
+        df['Fiscal_Year_Label'] = df.apply(
+            lambda x: f"FY {x['Year'] if x['Month_Num'] <= 6 else x['Year'] + 1}", axis=1
+        )
+        
         fiscal_order = ['July', 'August', 'September', 'October', 'November', 'December', 
                         'January', 'February', 'March', 'April', 'May', 'June']
         df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
+        
         df['Date_Obj'] = pd.to_datetime(df['Year'].astype(str) + '-' + df['Month_Num'].astype(str) + '-01')
         mask = (df['Date_Obj'] >= '2017-07-01') & (df['Date_Obj'] <= '2026-06-01')
+        
         return df.loc[mask].sort_values('Date_Obj')
     except:
         return pd.DataFrame()
 
-# --- 2. MAIN APP ---
+# --- 2. MAIN APPLICATION ---
 def main():
     st.set_page_config(page_title="Joyland BI Grand Master", layout="wide", page_icon="📈")
     
-    # Session States
-    if "messages" not in st.session_state: st.session_state.messages = []
-    if "current_filter" not in st.session_state: st.session_state.current_filter = None
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
+    # --- CHARTS PERSISTENCE STATE ---
+    if "last_chart_data" not in st.session_state:
+        st.session_state.last_chart_data = None
 
     df_live = load_excel_data()
 
-    # Security
     credentials = {"usernames": {"admin": {"name": "Admin", "password": "MIS2024@secure"}}}
     auth = Authenticate(credentials, "joyland_mis", "auth_key", cookie_expiry_days=30)
     auth.login(location='main')
 
     if st.session_state.get("authentication_status"):
-        # Sidebar
         st.sidebar.title(f"Analyst: {st.session_state['name']}")
-        if st.sidebar.button("🗑️ Clear Chat"):
+        if st.sidebar.button("🗑️ Clear History"):
             st.session_state.messages = []
-            st.session_state.current_filter = None
+            st.session_state.last_chart_data = None # Reset charts
             st.rerun()
         auth.logout('Logout', 'sidebar')
         st.sidebar.divider()
         st.sidebar.markdown("### 👨‍💻 System Architect\n**Umair Nizam**")
+        st.sidebar.info("Scope: July 2017 – June 2026")
 
         st.title("🎢 Joyland Great Grand Master BI")
 
-        # Chat Display
-        chat_box = st.container()
-        with chat_box:
+        chat_container = st.container()
+        with chat_container:
             for msg in st.session_state.messages:
                 with st.chat_message("user" if msg["is_user"] else "assistant"):
                     st.markdown(msg["content"])
 
-        # --- INTEGRATED INPUT BAR (Icons on Right) ---
         st.markdown("---")
         input_col, mic_col, clip_col = st.columns([5, 0.4, 0.4])
-        with input_col: prompt = st.chat_input("Ask about Revenue or Footfall...")
-        with mic_col: voice_data = st.audio_input("🎤", key="mic", label_visibility="collapsed")
-        with clip_col: attached_file = st.file_uploader("📎", type=['xlsx','csv'], key="clip", label_visibility="collapsed")
 
-        # Combine Input Logic
-        user_query = prompt if prompt else ("Voice command" if voice_data else None)
+        with input_col:
+            prompt = st.chat_input("Ask about Revenue, Footfall, Comparisons...")
+        with mic_col:
+            voice_data = st.audio_input("🎤", key="v_mic", label_visibility="collapsed")
+        with clip_col:
+            attached_file = st.file_uploader("📎", type=['xlsx', 'csv'], key="f_clip", label_visibility="collapsed")
+
+        user_query = None
+        if prompt:
+            user_query = prompt
+        elif voice_data:
+            user_query = "Voice Command Received"
 
         if user_query:
             st.session_state.messages.append({"content": user_query, "is_user": True})
             query_lower = user_query.lower()
 
-            # 1. INTRO
-            if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam"]):
-                intro = "✨ **Greetings! I am the Joyland BI Assistant, developed by Umair Nizam.** How can I assist you?"
-                st.session_state.messages.append({"content": intro, "is_user": False})
+            # --- A. INTRO LOGIC ---
+            if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam", "introduce"]):
+                intro_msg = (
+                    "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\n"
+                    "I am a highly intelligent Business Intelligence & Data Analyst assistant, "
+                    "proudly **developed by Umair Nizam**. My architecture is optimized to track, "
+                    "analyze, and visualize performance data for **Joyland Fortress**.\n\n"
+                    "**My Expert Scope:**\n"
+                    "* 📅 **Timeframe:** Data from July 2017 to June 2026.\n"
+                    "* 💹 **Analytics:** Revenue & Footfall achievements and YoY comparisons.\n"
+                    "* 📎 **Flexibility:** Attach your own files using the clip icon for instant analysis."
+                )
+                st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            # 2. FILTERING
-            if not df_live.empty:
-                months_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
-                found_months = [m.capitalize() for m in months_list if m in query_lower or m[:3] in query_lower]
-                found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
-                
-                f_df = df_live.copy()
-                if found_months: f_df = f_df[f_df['Months'].isin(found_months)]
-                if found_years: f_df = f_df[f_df['Year'].isin(found_years)]
-                
-                if not f_df.empty:
-                    st.session_state.current_filter = f_df # Store for visual persistence
-                    res = f_df[["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]].sum()
-                    rev_ach = (res[0]/res[1]*100) if res[1]>0 else 0
-                    ff_ach = (res[2]/res[3]*100) if res[3]>0 else 0
-                    
-                    msg = f"### 📊 Result\n* **Revenue Ach:** {rev_ach:.1f}%\n* **Footfall Ach:** {ff_ach:.1f}%"
-                    st.session_state.messages.append({"content": msg, "is_user": False})
-                    st.rerun()
+            # --- B. CORE ANALYTICS ---
+            if df_live.empty:
+                st.session_state.messages.append({"content": "❌ **Data Error:** Master file `RAW DATA.xlsx` not found.", "is_user": False})
+                st.rerun()
 
-        # --- PERSISTENT VISUALS (Ye Section Charts ko hamesha dikhaye ga) ---
-        if st.session_state.current_filter is not None:
-            f_df = st.session_state.current_filter
-            res = f_df[["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]].sum()
-            rev_ach = (res[0]/res[1]*100) if res[1]>0 else 0
-            ff_ach = (res[2]/res[3]*100) if res[3]>0 else 0
+            all_months = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
+            found_months = [m.capitalize() for m in all_months if m in query_lower or m[:3] in query_lower]
+            found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
+            found_fy = re.findall(r'fy\s?\d{4}', query_lower)
 
+            filtered_df = df_live.copy()
+            if found_months: filtered_df = filtered_df[filtered_df['Months'].isin(found_months)]
+            if found_years: filtered_df = filtered_df[filtered_df['Year'].isin(found_years)]
+            if found_fy:
+                tag = found_fy[0].upper().replace("FY", "FY ") if " " not in found_fy[0] else found_fy[0].upper()
+                filtered_df = filtered_df[filtered_df['Fiscal_Year_Label'] == tag]
+
+            if not filtered_df.empty:
+                metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
+                results = filtered_df[metrics].sum()
+                rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
+                ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
+
+                variance_report = ""
+                if "compare" in query_lower or "vs" in query_lower:
+                    if found_years:
+                        prev_y = found_years[0] - 1
+                        prev_df = df_live[(df_live['Year'] == prev_y) & (df_live['Months'].isin(found_months))]
+                        if not prev_df.empty:
+                            p_rev = prev_df['Actual Revenue'].sum()
+                            diff = results['Actual Revenue'] - p_rev
+                            perc = (diff / p_rev * 100) if p_rev > 0 else 0
+                            variance_report = f"\n\n**YoY Comparison:**\n* Variance: **Rs. {diff:,.0f}** ({perc:.1f}% {'Increase' if diff >= 0 else 'Decrease'})"
+
+                report = (
+                    f"### 📊 BI Analysis Result\n"
+                    f"**Financial Performance:**\n"
+                    f"* Actual Revenue: **Rs. {results['Actual Revenue']:,.0f}**\n"
+                    f"* Achievement: **{rev_ach:.1f}%**\n\n"
+                    f"**Footfall Analysis:**\n"
+                    f"* Actual Footfall: **{results['Actual Footfall']:,.0f}**\n"
+                    f"* Achievement: **{ff_ach:.1f}%**"
+                    f"{variance_report}"
+                )
+                
+                # Save results for visuals
+                st.session_state.last_chart_data = {
+                    "rev": rev_ach, 
+                    "ff": ff_ach, 
+                    "table_data": filtered_df[metrics].sum().to_frame().T
+                }
+                
+                st.session_state.messages.append({"content": report, "is_user": False})
+                st.rerun()
+            else:
+                st.session_state.messages.append({"content": "No records found.", "is_user": False})
+                st.rerun()
+
+        # --- PERSISTENT VISUALS RENDERER ---
+        if st.session_state.last_chart_data:
             st.divider()
-            t1, t2 = st.tabs(["📈 Trend Analysis", "🎯 Performance Gauges"])
+            t1, t2 = st.tabs(["🌎 Data Table", "🎯 Achievement Gauges"])
             with t1:
-                fig = px.line(f_df, x='Months', y=['Actual Revenue', 'Target revenue'], markers=True, template="plotly_dark")
-                st.plotly_chart(fig, use_container_width=True)
+                st.table(st.session_state.last_chart_data["table_data"].style.format('{:,.0f}'))
             with t2:
                 c1, c2 = st.columns(2)
-                c1.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text':"Revenue %"}, gauge={'bar':{'color':"white"}})).update_layout(height=300, template="plotly_dark"))
-                c2.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text':"Footfall %"}, gauge={'bar':{'color':"white"}})).update_layout(height=300, template="plotly_dark"))
+                # Revenue Gauge
+                fig1 = go.Figure(go.Indicator(
+                    mode="gauge+number", 
+                    value=st.session_state.last_chart_data["rev"],
+                    title={'text': "Revenue Achievement %"},
+                    gauge={'axis':{'range':[0,100]}, 'bar':{'color':"white"}}
+                ))
+                fig1.update_layout(height=280, template="plotly_dark", margin=dict(l=20,r=20,t=50,b=20))
+                c1.plotly_chart(fig1, use_container_width=True)
+                
+                # Footfall Gauge
+                fig2 = go.Figure(go.Indicator(
+                    mode="gauge+number", 
+                    value=st.session_state.last_chart_data["ff"],
+                    title={'text': "Footfall Achievement %"},
+                    gauge={'axis':{'range':[0,100]}, 'bar':{'color':"white"}}
+                ))
+                fig2.update_layout(height=280, template="plotly_dark", margin=dict(l=20,r=20,t=50,b=20))
+                c2.plotly_chart(fig2, use_container_width=True)
+
     else:
-        st.info("Umair Nizam's BI Portal: Please Login.")
+        st.info("System Developed by **Umair Nizam**. Please log in to proceed.")
 
 if __name__ == "__main__":
     main()
