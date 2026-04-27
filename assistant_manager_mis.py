@@ -101,25 +101,24 @@ def main():
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            # Date Range Extraction
-            found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
-            month_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
-            found_months = [m.capitalize() for m in month_list if m in query_lower or m[:3] in query_lower]
+            # Smart Date Extraction
+            month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
+            matches = re.findall(f'{month_pattern}\s*(20\d{{2}})', query_lower)
             
             variance_report = ""
             temp_df = df_live.copy()
 
-            # Logic for Fiscal Year/Range Comparison
-            if len(found_years) >= 2:
-                # Divide data into two periods based on years found
-                y1, y2 = found_years[0], found_years[-1]
-                v1 = df_live[df_live['Year'] == y1]
-                v2 = df_live[df_live['Year'] == y2]
+            # Fiscal Year Range Comparison Logic
+            if len(matches) >= 4:
+                # Period 1
+                p1_start = pd.to_datetime(f"{matches[0][1]}-{matches[0][0]}-01")
+                p1_end = pd.to_datetime(f"{matches[1][1]}-{matches[1][0]}-01")
+                # Period 2
+                p2_start = pd.to_datetime(f"{matches[2][1]}-{matches[2][0]}-01")
+                p2_end = pd.to_datetime(f"{matches[3][1]}-{matches[3][0]}-01")
                 
-                # If months are specified, filter further
-                if found_months:
-                    v1 = v1[v1['Months'].isin(found_months)]
-                    v2 = v2[v2['Months'].isin(found_months)]
+                v1 = df_live[(df_live['Date_Obj'] >= p1_start) & (df_live['Date_Obj'] <= p1_end)]
+                v2 = df_live[(df_live['Date_Obj'] >= p2_start) & (df_live['Date_Obj'] <= p2_end)]
                 
                 if not v1.empty and not v2.empty:
                     rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
@@ -129,16 +128,19 @@ def main():
                     f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
                     
                     variance_report = (
-                        f"\n\n**Period Comparison:**\n"
-                        f"* **{y1} Data:** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
-                        f"* **{y2} Data:** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
+                        f"\n\n**Period 1 ({p1_start.strftime('%b %Y')} - {p1_end.strftime('%b %Y')}):**\n"
+                        f"Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
+                        f"**Period 2 ({p2_start.strftime('%b %Y')} - {p2_end.strftime('%b %Y')}):**\n"
+                        f"Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
                         f"--- \n"
-                        f"**Variance:**\n"
+                        f"**Comparison Result:**\n"
                         f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
                         f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
                     )
                     temp_df = pd.concat([v1, v2])
             else:
+                found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
+                found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
 
@@ -147,13 +149,10 @@ def main():
             
             if not temp_df.empty:
                 res = temp_df[["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]].sum()
-                rev_a = (res['Actual Revenue'] / res['Target revenue'] * 100) if res['Target revenue'] > 0 else 0
-                ff_a = (res['Actual Footfall'] / res['Target Footfall'] * 100) if res['Target Footfall'] > 0 else 0
-                
                 report = (
                     f"### 📊 BI Analysis Result\n"
-                    f"* Total Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}** ({rev_a:.1f}% Ach)\n"
-                    f"* Total Actual Footfall: **{res['Actual Footfall']:,.0f}** ({ff_a:.1f}% Ach)"
+                    f"* Total Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}**\n"
+                    f"* Total Actual Footfall: **{res['Actual Footfall']:,.0f}**"
                     f"{variance_report}"
                 )
                 st.session_state.messages.append({"content": report, "is_user": False})
