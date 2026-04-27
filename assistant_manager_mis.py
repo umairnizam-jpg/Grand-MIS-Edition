@@ -67,7 +67,7 @@ def main():
         st.sidebar.markdown("### 👨‍💻 System Architect\n**Umair Nizam**")
         st.sidebar.info("Scope: July 2017 – June 2026")
 
-        st.title("🎢 Joyland Great Grand Master BI")
+        st.title("🎢 Joyland MIS Assistant")
 
         chat_container = st.container()
         with chat_container:
