@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
-# --- GLOBAL SEARCH SETUP (Fixed for ModuleNotFoundError) ---
+# --- GLOBAL SEARCH SETUP ---
 try:
     import google.generativeai as genai
     AI_AVAILABLE = True
@@ -18,10 +18,12 @@ def get_ai_response(query):
     if not AI_AVAILABLE:
         return "Please install google-generativeai library."
     try:
-        # APNI ASAL API KEY YAHAN PASTE KAREIN
+        # API Key configuration
         genai.configure(api_key="AIzaSyA-I9c1Bsvd6QIBL_6_YSiJFX_gSojAZA8") 
-        # Fixed for 404 Error: Using stable 1.5-flash model
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # FIXED: Model name changed to 'gemini-1.5-flash-latest' to resolve 404 error
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        
         response = model.generate_content(f"Act as a BI Expert. Answer this: {query}")
         return response.text
     except Exception as e:
@@ -175,7 +177,6 @@ def main():
             chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Achievement Gauge", "2. Footfall Achievement Gauge", "3. Comparison"])
             
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
-            # Fixed KeyError: Changed 'Target footfall' to 'Target Footfall'
             ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
 
             if chart_option.startswith("1"):
