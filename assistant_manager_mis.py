@@ -19,21 +19,7 @@ def get_ai_response(query):
         return "Please install google-generativeai library."
     try:
         # APNI ASAL API KEY YAHAN PASTE KAREIN
-        genai.configure(api_key="curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" \
-  -H 'Content-Type: application/json' \
-  -H 'X-goog-api-key: AIzaSyA-I9c1Bsvd6QIBL_6_YSiJFX_gSojAZA8' \
-  -X POST \
-  -d '{
-    "contents": [
-      {
-        "parts": [
-          {
-            "text": "Explain how AI works in a few words"
-          }
-        ]
-      }
-    ]
-  }'") 
+        genai.configure(api_key="AIzaSyA-I9c1Bsvd6QIBL_6_YSiJFX_gSojAZA8") 
         # Fixed for 404 Error: Using stable 1.5-flash model
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(f"Act as a BI Expert. Answer this: {query}")
