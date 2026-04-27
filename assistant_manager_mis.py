@@ -57,80 +57,86 @@ def main():
 
         st.title("🎢 Joyland Great Grand Master BI")
 
-        # --- CHAT DISPLAY ---
-        chat_box = st.container()
-        with chat_box:
+        # --- CHAT & VISUALS DISPLAY ---
+        display_container = st.container()
+        with display_container:
             for msg in st.session_state.messages:
                 with st.chat_message("user" if msg["is_user"] else "assistant"):
                     st.markdown(msg["content"])
             
-            # --- PROFESSIONAL 8 CHARTS RENDERER ---
             if st.session_state.chart_data is not None:
                 st.divider()
                 f_df = st.session_state.chart_data['df']
                 rev_ach = st.session_state.chart_data['rev_ach']
                 ff_ach = st.session_state.chart_data['ff_ach']
 
-                t1, t2 = st.tabs(["🎯 KPIs & Share", "📈 Trends & Correlation"])
+                t1, t2, t3 = st.tabs(["🎯 Achievements", "📈 Growth Trends", "📋 Raw Analysis"])
                 with t1:
                     c1, c2, c3, c4 = st.columns(4)
-                    c1.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Revenue %"}, gauge={'bar':{'color':"gold"}})).update_layout(height=220, template="plotly_dark"))
-                    c2.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "Footfall %"}, gauge={'bar':{'color':"cyan"}})).update_layout(height=220, template="plotly_dark"))
-                    c3.plotly_chart(px.pie(f_df, values='Actual Revenue', names='Months', title="Revenue Share").update_layout(height=220, showlegend=False))
-                    c4.plotly_chart(px.bar(f_df, x='Months', y='Actual Revenue', title="Monthly Revenue").update_layout(height=220))
-
+                    c1.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev %"})).update_layout(height=200, template="plotly_dark"))
+                    c2.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF %"})).update_layout(height=200, template="plotly_dark"))
+                    c3.plotly_chart(px.pie(f_df, values='Actual Revenue', names='Months', hole=.3, title="Rev Share").update_layout(height=250, showlegend=False))
+                    c4.plotly_chart(px.bar(f_df, x='Months', y='Actual Revenue', title="Monthly Rev").update_layout(height=250))
                 with t2:
-                    tc1, tc2, tc3, tc4 = st.columns(4)
-                    tc1.plotly_chart(px.line(f_df, x='Months', y=['Actual Revenue', 'Target revenue'], title="Rev vs Target").update_layout(height=220))
-                    tc2.plotly_chart(px.area(f_df, x='Months', y='Actual Footfall', title="Footfall Trend").update_layout(height=220))
-                    tc3.plotly_chart(px.scatter(f_df, x='Actual Footfall', y='Actual Revenue', title="FF vs Rev").update_layout(height=220))
-                    tc4.plotly_chart(px.bar(f_df, x='Months', y='Actual Footfall', title="Monthly FF").update_layout(height=220))
+                    tc1, tc2 = st.columns(2)
+                    tc1.plotly_chart(px.line(f_df, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], title="Revenue vs Target").update_layout(height=300))
+                    tc2.plotly_chart(px.area(f_df, x='Date_Obj', y='Actual Footfall', title="Footfall Volumne").update_layout(height=300))
+                with t3:
+                    st.dataframe(f_df.style.format(subset=['Actual Revenue', 'Target revenue'], formatter="{:,.0f}"))
 
-        # --- INPUT BAR (FIXED AT BOTTOM) ---
+        # --- INPUT BAR ---
         st.markdown("---")
         input_col, mic_col, clip_col = st.columns([5, 0.4, 0.4])
         with input_col: prompt = st.chat_input("Ask about Revenue, Footfall...")
-        with mic_col: voice_data = st.audio_input("🎤", key="mic", label_visibility="collapsed")
-        with clip_col: attached_file = st.file_uploader("📎", type=['xlsx','csv'], key="clip", label_visibility="collapsed")
+        with mic_col: voice_data = st.audio_input("🎤", key="v_mic", label_visibility="collapsed")
+        with clip_col: attached_file = st.file_uploader("📎", type=['xlsx','csv'], key="f_clip", label_visibility="collapsed")
 
-        # LOGIC
         user_query = prompt if prompt else ("Voice command" if voice_data else None)
 
         if user_query:
             st.session_state.messages.append({"content": user_query, "is_user": True})
-            q_low = user_query.lower()
+            query_lower = user_query.lower()
 
-            # 1. INTRO (Old Restored)
-            if any(x in q_low for x in ["hi", "hello", "intro", "salam", "who are you"]):
-                intro = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nDeveloped by **Umair Nizam**, I analyze Joyland Fortress data (2017-2026)."
-                st.session_state.messages.append({"content": intro, "is_user": False})
+            # RESTORE ORIGINAL INTRO (EXACTLY AS REQUESTED)
+            if any(greet in query_lower for greet in ["hi", "hello", "intro", "salam", "introduce"]):
+                intro_msg = (
+                    "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\n"
+                    "I am a highly intelligent Business Intelligence & Data Analyst assistant, "
+                    "proudly **developed by Umair Nizam**. My architecture is optimized to track, "
+                    "analyze, and visualize performance data for **Joyland Fortress**.\n\n"
+                    "**My Expert Scope:**\n"
+                    "* 📅 **Timeframe:** Data from July 2017 to June 2026.\n"
+                    "* 💹 **Analytics:** Revenue & Footfall achievements and YoY comparisons.\n"
+                    "* 📎 **Flexibility:** Attach your own files using the clip icon.\n\n"
+                    "How can I assist your data-driven decisions today?"
+                )
+                st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            # 2. FILTERING & ANALYSIS
+            # CORE LOGIC - FIXED KEYERROR & UNBOUND ERROR
             if not df_live.empty:
-                months = [m.capitalize() for m in ['july','august','september','october','november','december','january','february','march','april','may','june'] if m in q_low or m[:3] in q_low]
-                years = [int(y) for y in re.findall(r'\b(20\d{2})\b', q_low)]
+                months_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
+                found_months = [m.capitalize() for m in months_list if m in query_lower or m[:3] in query_lower]
+                found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
                 
-                filtered_df = df_live.copy() # Fixed UnboundLocalError by initializing here
-                if months: filtered_df = filtered_df[filtered_df['Months'].isin(months)]
-                if years: filtered_df = filtered_df[filtered_df['Year'].isin(years)]
+                f_df = df_live.copy()
+                if found_months: f_df = f_df[f_df['Months'].isin(found_months)]
+                if found_years: f_df = f_df[f_df['Year'].isin(found_years)]
 
-                if not filtered_df.empty:
-                    # Fix KeyError by using explicit column names
-                    act_rev = filtered_df["Actual Revenue"].sum()
-                    tar_rev = filtered_df["Target revenue"].sum()
-                    act_ff = filtered_df["Actual Footfall"].sum()
-                    tar_ff = filtered_df["Target Footfall"].sum()
+                if not f_df.empty:
+                    # Fix: Using Column Names instead of Index to prevent KeyError
+                    act_rev = f_df["Actual Revenue"].sum()
+                    tar_rev = f_df["Target revenue"].sum()
+                    act_ff = f_df["Actual Footfall"].sum()
+                    tar_ff = f_df["Target Footfall"].sum()
 
-                    rev_p = (act_rev / tar_rev * 100) if tar_rev > 0 else 0
-                    ff_p = (act_ff / tar_ff * 100) if tar_ff > 0 else 0
+                    rev_ach = (act_rev / tar_rev * 100) if tar_rev > 0 else 0
+                    ff_ach = (act_ff / tar_ff * 100) if tar_ff > 0 else 0
                     
-                    st.session_state.chart_data = {'df': filtered_df, 'rev_ach': rev_p, 'ff_ach': ff_p}
-                    st.session_state.messages.append({"content": f"📊 Results: Revenue Achieved **{rev_p:.1f}%**, Footfall Achieved **{ff_p:.1f}%**.", "is_user": False})
+                    st.session_state.chart_data = {'df': f_df, 'rev_ach': rev_ach, 'ff_ach': ff_ach}
+                    st.session_state.messages.append({"content": f"✅ Report generated. Actual Revenue: Rs. {act_rev:,.0f} ({rev_ach:.1f}%)", "is_user": False})
                     st.rerun()
-            else:
-                st.error("Data file missing!")
 
-    else: st.info("Joyland BI Grand Master: Developed by Umair Nizam. Please Login.")
+    else: st.info("System Developed by **Umair Nizam**. Please log in.")
 
 if __name__ == "__main__": main()
