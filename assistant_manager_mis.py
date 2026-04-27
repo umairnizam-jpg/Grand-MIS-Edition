@@ -18,12 +18,12 @@ def get_ai_response(query):
     if not AI_AVAILABLE:
         return "Please install openai library."
     try:
-        # OpenAI Client Setup
-        client = OpenAI(api_key="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") 
+        # PASTE YOUR OPENAI API KEY HERE
+        # Make sure it starts with 'sk-' and has no extra spaces
+        client = OpenAI(api_key="YOUR_OPENAI_API_KEY") 
         
-        # ChatGPT Response Generation
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo", # Ya "gpt-4" agar aapke paas access hai
+            model="gpt-3.5-turbo", 
             messages=[
                 {"role": "system", "content": "Act as a BI Expert for Joyland."},
                 {"role": "user", "content": query}
@@ -31,6 +31,7 @@ def get_ai_response(query):
         )
         return response.choices[0].message.content
     except Exception as e:
+        # Error 401: Incorrect API Key handle
         return f"Global Search currently unavailable. Error: {str(e)}"
 
 # --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
@@ -181,6 +182,7 @@ def main():
             chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Achievement Gauge", "2. Footfall Achievement Gauge", "3. Comparison"])
             
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
+            # FIXED: results['Target footfall'] changed to results['Target Footfall'] (Capital F)
             ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
 
             if chart_option.startswith("1"):
