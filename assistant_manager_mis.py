@@ -68,7 +68,7 @@ def main():
         st.sidebar.divider()
         st.sidebar.markdown("### 👨‍💻 Developed by\n**Umair Nizam**")
 
-        st.title("🎢 Joyland Great Grand Master BI")
+        st.title("🎢 Joyland MIS Assistant")
 
         # Chat Container
         chat_box = st.container()
