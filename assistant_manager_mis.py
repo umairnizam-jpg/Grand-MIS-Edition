@@ -84,6 +84,7 @@ def main():
 
         # --- ADVANCED UI CHAT BAR (Icons on Right) ---
         st.markdown("---")
+        # Layout: Text Input (Left) | Mic & File (Right)
         input_col, mic_col, clip_col = st.columns([5, 0.4, 0.4])
 
         with input_col:
@@ -181,36 +182,54 @@ def main():
 
                 st.session_state.messages.append({"content": report, "is_user": False})
                 
-                # --- VISUALS (Added 8 Professional Charts) ---
+                # --- VISUALS (8 Professional Charts) ---
                 st.divider()
                 
-                # 1 & 2: Gauges (From your original request)
+                # 1 & 2: Achievement Gauges
                 c1, c2 = st.columns(2)
-                c1.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#00CC96"}})).update_layout(height=300, template="plotly_dark"))
-                c2.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#636EFA"}})).update_layout(height=300, template="plotly_dark"))
+                with c1:
+                    st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#00CC96"}})).update_layout(height=300, template="plotly_dark"), use_container_width=True)
+                with c2:
+                    st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#636EFA"}})).update_layout(height=300, template="plotly_dark"), use_container_width=True)
 
-                # 3 & 4: Revenue and Footfall Trends
+                # 3 & 4: Comparisons and Trends
                 c3, c4 = st.columns(2)
                 with c3:
-                    # 3. Bar Chart: Revenue Actual vs Target
                     fig3 = px.bar(filtered_df, x='Months', y=['Actual Revenue', 'Target revenue'], barmode='group', title="Revenue: Actual vs Target", color_discrete_sequence=['#00CC96', '#EF553B'])
                     st.plotly_chart(fig3, use_container_width=True)
                 with c4:
-                    # 4. Line Chart: Monthly Footfall Trend
                     fig4 = px.line(filtered_df, x='Months', y='Actual Footfall', markers=True, title="Footfall Trend Line", line_shape="spline")
                     st.plotly_chart(fig4, use_container_width=True)
 
-                # 5 & 6: Proportions and Area
+                # 5 & 6: Distribution and Volume
                 c5, c6 = st.columns(2)
                 with c5:
-                    # 5. Donut Chart: Revenue Distribution by Month
                     fig5 = px.pie(filtered_df, values='Actual Revenue', names='Months', hole=0.4, title="Monthly Revenue Share")
                     st.plotly_chart(fig5, use_container_width=True)
                 with c6:
-                    # 6. Area Chart: Cumulative Revenue Flow
                     fig6 = px.area(filtered_df, x='Months', y='Actual Revenue', title="Revenue Volume Area Chart", color_discrete_sequence=['#AB63FA'])
                     st.plotly_chart(fig6, use_container_width=True)
 
-                # 7 & 8: Analytics Charts
+                # 7 & 8: Relationship and Target Progress
                 c7, c8 = st.columns(2)
-                with c
+                with c7:
+                    fig7 = px.scatter(filtered_df, x='Actual Footfall', y='Actual Revenue', size='Actual Revenue', color='Months', title="Correlation: Footfall vs Revenue")
+                    st.plotly_chart(fig7, use_container_width=True)
+                with c8:
+                    fig8 = go.Figure(go.Funnel(y=["Target", "Actual"], x=[results['Target revenue'], results['Actual Revenue']], textinfo="value+percent initial"))
+                    fig8.update_layout(title="Revenue Target Funnel", template="plotly_dark")
+                    st.plotly_chart(fig8, use_container_width=True)
+
+                # Original Data Table
+                st.table(filtered_df[metrics].sum().to_frame().T.style.format('{:,.0f}'))
+                
+                st.rerun()
+            else:
+                st.session_state.messages.append({"content": "No records found for this period within the 2017-2026 scope.", "is_user": False})
+                st.rerun()
+
+    else:
+        st.info("System Developed by **Umair Nizam**. Please log in to proceed.")
+
+if __name__ == "__main__":
+    main()
