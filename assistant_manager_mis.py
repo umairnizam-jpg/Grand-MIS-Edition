@@ -116,20 +116,43 @@ def main():
                 v1 = df_live[(df_live['Months'] == m1) & (df_live['Year'] == y1)]
                 v2 = df_live[(df_live['Months'] == m2) & (df_live['Year'] == y2)]
                 if not v1.empty and not v2.empty:
+                    # Revenue Variance
                     rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
-                    diff = rev2 - rev1
-                    perc = (diff / rev1 * 100) if rev1 > 0 else 0
-                    variance_report = f"\n\n**Period Comparison:**\n* Variance: **Rs. {diff:,.0f}** ({perc:.1f}%)\n"
+                    r_diff = rev2 - rev1
+                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
+                    
+                    # Footfall Variance
+                    ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
+                    f_diff = ff2 - ff1
+                    f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
+                    
+                    variance_report = (
+                        f"\n\n**Period Comparison:**\n"
+                        f"* Revenue Var: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
+                        f"* Footfall Var: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
+                    )
                     temp_df = pd.concat([v1, v2])
+
             elif len(found_years) >= 2 and found_months:
                 y1, y2 = found_years[0], found_years[1]
                 v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
                 v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
                 if not v1.empty and not v2.empty:
+                    # Revenue Variance
                     rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
-                    diff = rev2 - rev1
-                    perc = (diff / rev1 * 100) if rev1 > 0 else 0
-                    variance_report = f"\n\n**Comparison:**\n* Variance: **Rs. {diff:,.0f}** ({perc:.1f}%)\n"
+                    r_diff = rev2 - rev1
+                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
+                    
+                    # Footfall Variance
+                    ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
+                    f_diff = ff2 - ff1
+                    f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
+                    
+                    variance_report = (
+                        f"\n\n**Multi-Period Comparison:**\n"
+                        f"* Revenue Var: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
+                        f"* Footfall Var: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
+                    )
                     temp_df = pd.concat([v1, v2])
             else:
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
@@ -140,11 +163,19 @@ def main():
             
             if not temp_df.empty:
                 res = temp_df[["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]].sum()
-                report = f"### 📊 BI Analysis Result\n* Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}**\n* Footfall: **{res['Actual Footfall']:,.0f}**{variance_report}"
+                rev_a = (res['Actual Revenue'] / res['Target revenue'] * 100) if res['Target revenue'] > 0 else 0
+                ff_a = (res['Actual Footfall'] / res['Target Footfall'] * 100) if res['Target Footfall'] > 0 else 0
+                
+                report = (
+                    f"### 📊 BI Analysis Result\n"
+                    f"* Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}** ({rev_a:.1f}% Ach)\n"
+                    f"* Actual Footfall: **{res['Actual Footfall']:,.0f}** ({ff_a:.1f}% Ach)"
+                    f"{variance_report}"
+                )
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
-        # Visual Section (Persistent outside if user_query)
+        # Visual Section (Persistent)
         if st.session_state.last_filtered_df is not None:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
