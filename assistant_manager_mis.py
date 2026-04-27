@@ -19,7 +19,7 @@ def get_ai_response(query, api_key):
     if not AI_AVAILABLE:
         return "⚠️ 'google-generativeai' library is missing. Add it to requirements.txt."
     try:
-        if not api_key or api_key == "YOUR_GEMINI_API_KEY":
+        if not api_key or api_key == "AIzaSyDnxj1Lagn2uNp-ALn6y6GcXq3u78OxS3I":
             return "Global Search currently unavailable. Please check API Key."
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-flash')
