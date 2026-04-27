@@ -19,7 +19,7 @@ def get_ai_response(query):
         return "Please install google-generativeai library."
     try:
         # API Key configuration
-        genai.configure(api_key="AIzaSyA-I9c1Bsvd6QIBL_6_YSiJFX_gSojAZA8") 
+        genai.configure(api_key="AIzaSyBB4unoIgBEJMLdwOlPoIUFtx2Tp4cl7uk") 
         
         # FIXED: Model name changed to 'gemini-1.5-flash-latest' to resolve 404 error
         model = genai.GenerativeModel('gemini-1.5-flash-latest')
