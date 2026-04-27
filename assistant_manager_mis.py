@@ -20,7 +20,7 @@ def get_ai_response(query):
     try:
         # PASTE YOUR OPENAI API KEY HERE
         # Make sure it starts with 'sk-' and has no extra spaces
-        client = OpenAI(api_key="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") 
+        client = OpenAI(api_key="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") 
         
         response = client.chat.completions.create(
             model="gpt-3.5-turbo", 
