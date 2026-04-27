@@ -30,7 +30,7 @@ def load_excel_data():
         df['Month_Num'] = df['Months'].map(month_map)
         
         df['Fiscal_Year_Label'] = df.apply(
-            lambda x: f"FY {x['Year'] if x['Month_Num'] <= 6 else x['Year'] + 1}", axis=1
+            lambda x: f"FY {x['Year'] if x['Month_Num'] >= 7 else x['Year'] - 1}-{x['Year'] if x['Month_Num'] <= 6 else x['Year'] + 1}", axis=1
         )
         
         fiscal_order = ['July', 'August', 'September', 'October', 'November', 'December', 
@@ -38,7 +38,7 @@ def load_excel_data():
         df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
         
         df['Date_Obj'] = pd.to_datetime(df['Year'].astype(str) + '-' + df['Month_Num'].astype(str) + '-01')
-        mask = (df['Date_Obj'] >= '2017-07-01') & (df['Date_Obj'] <= '2026-06-01')
+        mask = (df['Date_Obj'] >= '2017-07-01') & (df['Date_Obj'] <= '2026-03-01')
         
         return df.loc[mask].sort_values('Date_Obj')
     except:
@@ -70,7 +70,7 @@ def main():
         auth.logout('Logout', 'sidebar')
         st.sidebar.divider()
         st.sidebar.markdown("### 👨‍💻 System Architect\n**Umair Nizam**")
-        st.sidebar.info("Scope: July 2017 – June 2026")
+        st.sidebar.info("Scope: July 2017 – March 2026")
 
         st.title("🎢 Joyland MIS Assistant")
 
@@ -97,25 +97,30 @@ def main():
             query_lower = user_query.lower()
 
             if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam", "introduce"]):
-                # --- FIXED LINE 107 (Syntax Error Fixed) ---
-                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**.\n\n* **Flexibility:** Attach your own files using the clip icon."
+                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**."
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            # Data Filter Logic
+            # Date Range Extraction
+            found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
             month_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
             found_months = [m.capitalize() for m in month_list if m in query_lower or m[:3] in query_lower]
-            found_years = sorted([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])
-            date_pairs = re.findall(r'(july|august|september|october|november|december|january|february|march|april|may|june)\s*(20\d{2})', query_lower)
             
             variance_report = ""
             temp_df = df_live.copy()
 
-            if len(date_pairs) >= 2:
-                m1, y1 = date_pairs[0][0].capitalize(), int(date_pairs[0][1])
-                m2, y2 = date_pairs[1][0].capitalize(), int(date_pairs[1][1])
-                v1 = df_live[(df_live['Months'] == m1) & (df_live['Year'] == y1)]
-                v2 = df_live[(df_live['Months'] == m2) & (df_live['Year'] == y2)]
+            # Logic for Fiscal Year/Range Comparison
+            if len(found_years) >= 2:
+                # Divide data into two periods based on years found
+                y1, y2 = found_years[0], found_years[-1]
+                v1 = df_live[df_live['Year'] == y1]
+                v2 = df_live[df_live['Year'] == y2]
+                
+                # If months are specified, filter further
+                if found_months:
+                    v1 = v1[v1['Months'].isin(found_months)]
+                    v2 = v2[v2['Months'].isin(found_months)]
+                
                 if not v1.empty and not v2.empty:
                     rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
                     ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
@@ -124,29 +129,9 @@ def main():
                     f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
                     
                     variance_report = (
-                        f"\n\n**Period 1 ({m1} {y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
-                        f"**Period 2 ({m2} {y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
-                        f"--- \n"
-                        f"**Variance:**\n"
-                        f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
-                        f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
-                    )
-                    temp_df = pd.concat([v1, v2])
-
-            elif len(found_years) >= 2 and found_months:
-                y1, y2 = found_years[0], found_years[1]
-                v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
-                v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
-                if not v1.empty and not v2.empty:
-                    rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
-                    ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
-                    r_diff, f_diff = rev2 - rev1, ff2 - ff1
-                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
-                    f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
-                    
-                    variance_report = (
-                        f"\n\n**Total {y1} ({', '.join(found_months)}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
-                        f"**Total {y2} ({', '.join(found_months)}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
+                        f"\n\n**Period Comparison:**\n"
+                        f"* **{y1} Data:** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
+                        f"* **{y2} Data:** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
                         f"--- \n"
                         f"**Variance:**\n"
                         f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
@@ -191,7 +176,6 @@ def main():
             ])
 
             if chart_option.startswith("1"):
-                # --- FIXED LINE 195 (Syntax Error Fixed) ---
                 st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
             elif chart_option.startswith("2"):
                 st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#636EFA"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
