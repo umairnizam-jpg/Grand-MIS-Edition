@@ -14,7 +14,7 @@ except ImportError:
 
 # --- CONFIG FOR GLOBAL SEARCH ---
 if AI_AVAILABLE:
-    genai.configure(api_key="AIzaSyBAGc3MKgvC3rHe0jo-OKG0tQ8CLWu4Wdc")
+    genai.configure(api_key="AIzaSyCwdoYS9TJhsdvXmHbMS4WCGWQCXQNyNGM")
     model_ai = genai.GenerativeModel('gemini-pro')
 
 def get_ai_response(query):
