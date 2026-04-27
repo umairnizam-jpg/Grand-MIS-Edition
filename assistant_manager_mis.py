@@ -119,14 +119,13 @@ def main():
             found_months = [m.capitalize() for m in month_list if m in query_lower or m[:3] in query_lower]
             found_years = sorted([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])
             
-            # Logic for specific comparisons (e.g., July 2023 vs Aug 2024)
-            date_pairs = re.findall(r'(july|august|september|october|november|december|january|february|march|april|may|june)\s?(\20\d{2})', query_lower)
+            # --- ERROR FIXED HERE (Line 123) ---
+            date_pairs = re.findall(r'(july|august|september|october|november|december|january|february|march|april|may|june)\s*(20\d{2})', query_lower)
             
             variance_report = ""
             filtered_df = df_live.copy()
 
             if len(date_pairs) >= 2:
-                # Comparison between two specific month-year points
                 m1, y1 = date_pairs[0][0].capitalize(), int(date_pairs[0][1])
                 m2, y2 = date_pairs[1][0].capitalize(), int(date_pairs[1][1])
                 
@@ -141,7 +140,6 @@ def main():
                     filtered_df = pd.concat([v1, v2])
             
             elif len(found_years) >= 2 and found_months:
-                # Comparison between sum of same months across different years
                 y1, y2 = found_years[0], found_years[1]
                 v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
                 v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
@@ -175,7 +173,6 @@ def main():
                 
                 st.session_state.messages.append({"content": report, "is_user": False})
 
-                # --- NEW CHART SELECTOR INTERFACE ---
                 st.divider()
                 chart_option = st.selectbox("🎯 Select Chart to Display", [
                     "1. Revenue Achievement Gauge",
@@ -189,32 +186,4 @@ def main():
                 ])
 
                 if chart_option.startswith("1"):
-                    st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#00CC96"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
-                elif chart_option.startswith("2"):
-                    st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#636EFA"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
-                elif chart_option.startswith("3"):
-                    st.plotly_chart(px.bar(filtered_df, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], barmode='group', title="Revenue Comparison"), use_container_width=True)
-                elif chart_option.startswith("4"):
-                    st.plotly_chart(px.line(filtered_df, x='Date_Obj', y='Actual Footfall', markers=True, title="Footfall Trend"), use_container_width=True)
-                elif chart_option.startswith("5"):
-                    st.plotly_chart(px.pie(filtered_df, values='Actual Revenue', names='Months', hole=0.4, title="Revenue Share"), use_container_width=True)
-                elif chart_option.startswith("6"):
-                    st.plotly_chart(px.area(filtered_df, x='Date_Obj', y='Actual Revenue', title="Revenue Volume"), use_container_width=True)
-                elif chart_option.startswith("7"):
-                    st.plotly_chart(px.scatter(filtered_df, x='Actual Footfall', y='Actual Revenue', size='Actual Revenue', color='Months', title="Correlation"), use_container_width=True)
-                elif chart_option.startswith("8"):
-                    fig = go.Figure(go.Funnel(y=["Target", "Actual"], x=[results['Target revenue'], results['Actual Revenue']], textinfo="value+percent initial"))
-                    fig.update_layout(title="Revenue Funnel", template="plotly_dark")
-                    st.plotly_chart(fig, use_container_width=True)
-
-                st.table(filtered_df[metrics].sum().to_frame().T.style.format('{:,.0f}'))
-                
-            else:
-                st.session_state.messages.append({"content": "No records found for this period.", "is_user": False})
-                st.rerun()
-
-    else:
-        st.info("System Developed by **Umair Nizam**. Please log in to proceed.")
-
-if __name__ == "__main__":
-    main()
+                    st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis':{'
