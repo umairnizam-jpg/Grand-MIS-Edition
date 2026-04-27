@@ -38,6 +38,7 @@ def load_excel_data():
         df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
         
         df['Date_Obj'] = pd.to_datetime(df['Year'].astype(str) + '-' + df['Month_Num'].astype(str) + '-01')
+        # Updated Scope: July 2017 to March 2026
         mask = (df['Date_Obj'] >= '2017-07-01') & (df['Date_Obj'] <= '2026-03-01')
         
         return df.loc[mask].sort_values('Date_Obj')
@@ -104,21 +105,20 @@ def main():
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
-            matches = re.findall(f'{month_pattern}\s*(20\d{{2}})', query_lower)
+            # --- DYNAMIC COMPARISON LOGIC ---
+            month_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
+            found_months = [m.capitalize() for m in month_list if m in query_lower or m[:3] in query_lower]
+            found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
             
             variance_report = ""
             temp_df = df_live.copy()
             comp_viz_data = None
 
-            if len(matches) >= 4:
-                p1_start = pd.to_datetime(f"{matches[0][1]}-{matches[0][0]}-01")
-                p1_end = pd.to_datetime(f"{matches[1][1]}-{matches[1][0]}-01")
-                p2_start = pd.to_datetime(f"{matches[2][1]}-{matches[2][0]}-01")
-                p2_end = pd.to_datetime(f"{matches[3][1]}-{matches[3][0]}-01")
-                
-                v1 = df_live[(df_live['Date_Obj'] >= p1_start) & (df_live['Date_Obj'] <= p1_end)]
-                v2 = df_live[(df_live['Date_Obj'] >= p2_start) & (df_live['Date_Obj'] <= p2_end)]
+            # Case: Comparison between two years for specific months
+            if len(found_years) >= 2 and found_months:
+                y1, y2 = found_years[0], found_years[1]
+                v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
+                v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
                 
                 if not v1.empty and not v2.empty:
                     rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
@@ -127,25 +127,24 @@ def main():
                     r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
                     f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
                     
+                    months_str = ", ".join(found_months)
                     variance_report = (
-                        f"\n\n**Period 1 ({p1_start.strftime('%b %Y')} - {p1_end.strftime('%b %Y')}):**\n"
-                        f"Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
-                        f"**Period 2 ({p2_start.strftime('%b %Y')} - {p2_end.strftime('%b %Y')}):**\n"
-                        f"Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
+                        f"\n\n**Comparison for {months_str}:**\n"
+                        f"* **Period 1 ({y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
+                        f"* **Period 2 ({y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
                         f"--- \n"
-                        f"**Comparison Result:**\n"
+                        f"**Growth/Variance:**\n"
                         f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
                         f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
                     )
                     temp_df = pd.concat([v1, v2])
                     comp_viz_data = {
-                        "labels": [f"P1 ({matches[0][1]})", f"P2 ({matches[2][1]})"],
+                        "labels": [f"{y1} ({months_str[:15]}...)" if len(months_str)>15 else f"{y1} ({months_str})", 
+                                   f"{y2} ({months_str[:15]}...)" if len(months_str)>15 else f"{y2} ({months_str})"],
                         "revenue": [rev1, rev2],
                         "footfall": [ff1, ff2]
                     }
             else:
-                found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
-                found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
 
@@ -159,21 +158,21 @@ def main():
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
+        # Visual Section
         if st.session_state.last_filtered_df is not None:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
             results = df_plot[metrics].sum()
             
-            # --- New Comparison Bar Chart ---
             if st.session_state.comparison_data:
-                st.subheader("🆚 Growth Comparison Visual")
+                st.subheader("🆚 Comparison Visualization")
                 c_data = st.session_state.comparison_data
                 col1, col2 = st.columns(2)
                 with col1:
-                    fig_rev = px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue Comparison", labels={'x':'Period', 'y':'Revenue'}, color=c_data['labels'], color_discrete_sequence=['#1f77b4', '#ff7f0e'])
+                    fig_rev = px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue Comparison", labels={'x':'Period', 'y':'Revenue'}, color=c_data['labels'], color_discrete_sequence=['#00CC96', '#636EFA'])
                     st.plotly_chart(fig_rev, use_container_width=True)
                 with col2:
-                    fig_ff = px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall Comparison", labels={'x':'Period', 'y':'Footfall'}, color=c_data['labels'], color_discrete_sequence=['#2ca02c', '#d62728'])
+                    fig_ff = px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall Comparison", labels={'x':'Period', 'y':'Footfall'}, color=c_data['labels'], color_discrete_sequence=['#EF553B', '#AB63FA'])
                     st.plotly_chart(fig_ff, use_container_width=True)
 
             st.divider()
@@ -185,7 +184,7 @@ def main():
             ])
 
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
-            ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
+            ff_ach = (results['Actual Footfall'] / results['Target footfall'] * 100) if results['Target Footfall'] > 0 else 0
 
             if chart_option.startswith("1"):
                 st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
