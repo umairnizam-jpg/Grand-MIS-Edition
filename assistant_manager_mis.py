@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
-# --- GLOBAL SEARCH SETUP (Minimal Change) ---
+# --- GLOBAL SEARCH SETUP (Minimal Change for Error 2) ---
 try:
     import google.generativeai as genai
     AI_AVAILABLE = True
@@ -19,11 +19,12 @@ def get_ai_response(query):
     try:
         # APNI ASAL API KEY YAHAN PASTE KAREIN
         genai.configure(api_key="AIzaSyBPs1uQ01wlgVUS9sB515LBXYOa1OjSm90") 
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Fix for Error 3: Using stable model name
+        model = genai.GenerativeModel('gemini-pro') 
         response = model.generate_content(query)
         return response.text
     except Exception as e:
-        return f"API Error: {str(e)}"
+        return f"AI Error: {str(e)}"
 
 # --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
 def load_excel_data():
@@ -154,7 +155,7 @@ def main():
                     )
                     temp_df = pd.concat([v1, v2])
                     comp_viz_data = {
-                        "labels": [f"{y1} ({months_str})", f"{y2} ({months_str})"],
+                        "labels": [f"{y1}", f"{y2}"],
                         "revenue": [rev1, rev2],
                         "footfall": [ff1, ff2]
                     }
@@ -162,7 +163,7 @@ def main():
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
 
-            # Global Search Trigger (If no local data found)
+            # Global Search Trigger
             if (not found_months and not found_years) or temp_df.empty:
                 with st.spinner("Searching Global..."):
                     ai_res = get_ai_response(user_query)
@@ -189,15 +190,15 @@ def main():
                 c_data = st.session_state.comparison_data
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue"), use_container_width=True)
+                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue Comparison"), use_container_width=True)
                 with col2:
-                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall"), use_container_width=True)
+                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall Comparison"), use_container_width=True)
 
             st.divider()
             chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Gauge", "2. Footfall Gauge", "3. Trend Line"])
 
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
-            # FIX: results['Target footfall'] changed to results['Target Footfall']
+            # Fix for Error 1: Changed 'Target footfall' to 'Target Footfall'
             ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
 
             if chart_option.startswith("1"):
