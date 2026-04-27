@@ -7,33 +7,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
-# --- GLOBAL SEARCH SETUP (ChatGPT Integration) ---
-try:
-    from openai import OpenAI
-    AI_AVAILABLE = True
-except (ImportError, ModuleNotFoundError):
-    AI_AVAILABLE = False
-
-def get_ai_response(query):
-    if not AI_AVAILABLE:
-        return "Please install openai library."
-    try:
-        # PASTE YOUR OPENAI API KEY HERE
-        # Make sure it starts with 'sk-' and has no extra spaces
-        client = OpenAI(api_key="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") 
-        
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo", 
-            messages=[
-                {"role": "system", "content": "Act as a BI Expert for Joyland."},
-                {"role": "user", "content": query}
-            ]
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        # Error 401: Incorrect API Key handle
-        return f"Global Search currently unavailable. Error: {str(e)}"
-
 # --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
 def load_excel_data():
     file_options = ["RAW DATA.xlsx", r"Z:\data\RAW DATA.xlsx"]
@@ -114,7 +87,7 @@ def main():
         input_col, mic_col, clip_col = st.columns([5, 0.4, 0.4])
 
         with input_col:
-            prompt = st.chat_input("Ask about Revenue, Footfall, or Global Search...")
+            prompt = st.chat_input("Ask about Revenue, Footfall, Comparisons...")
         with mic_col:
             voice_data = st.audio_input("🎤", key="v_mic", label_visibility="collapsed")
         with clip_col:
@@ -127,41 +100,56 @@ def main():
             query_lower = user_query.lower()
 
             if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam", "introduce"]):
-                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**.\n\n* **Flexibility:** Attach your own files using the clip."
+                # Fixed Line 107
+                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**."
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
+            # Fixed regex in Line 123
             month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
-            found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
-            found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
+            matches = re.findall(rf'{month_pattern}\s*(20\d{{2}})', query_lower)
             
             variance_report = ""
-            temp_df = pd.DataFrame()
+            temp_df = df_live.copy()
             comp_viz_data = None
 
-            if len(found_years) >= 2 and found_months:
-                y1, y2 = found_years[0], found_years[1]
-                v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
-                v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
-                if not v1.empty and not v2.empty:
-                    rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
-                    ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
-                    r_diff, f_diff = rev2 - rev1, ff2 - ff1
-                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
-                    variance_report = f"\n\n**Comparison Result:** {r_perc:.1f}% Growth"
-                    temp_df = pd.concat([v1, v2])
-                    comp_viz_data = {"labels": [str(y1), str(y2)], "revenue": [rev1, rev2], "footfall": [ff1, ff2]}
-
-            elif found_months or found_years:
-                temp_df = df_live.copy()
+            if len(matches) >= 2:
+                found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
+                found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
+                
+                if len(found_years) >= 2 and found_months:
+                    y1, y2 = found_years[0], found_years[1]
+                    v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
+                    v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
+                    
+                    if not v1.empty and not v2.empty:
+                        rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
+                        ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
+                        r_diff, f_diff = rev2 - rev1, ff2 - ff1
+                        r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
+                        f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
+                        
+                        months_str = ", ".join(list(dict.fromkeys(found_months)))
+                        variance_report = (
+                            f"\n\n**Comparison for {months_str}:**\n"
+                            f"* **Period 1 ({y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
+                            f"* **Period 2 ({y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
+                            f"--- \n"
+                            f"**Growth/Variance:**\n"
+                            f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
+                            f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
+                        )
+                        temp_df = pd.concat([v1, v2])
+                        comp_viz_data = {
+                            "labels": [f"{y1}", f"{y2}"],
+                            "revenue": [rev1, rev2],
+                            "footfall": [ff1, ff2]
+                        }
+            else:
+                found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
+                found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
-            
-            if temp_df.empty and not any(greet in query_lower for greet in ["hi", "hello"]):
-                with st.spinner("Searching Globally (ChatGPT)..."):
-                    ai_answer = get_ai_response(user_query)
-                    st.session_state.messages.append({"content": f"🌐 **Global Search Result:**\n\n{ai_answer}", "is_user": False})
-                    st.rerun()
 
             st.session_state.last_filtered_df = temp_df
             st.session_state.last_variance = variance_report
@@ -173,25 +161,54 @@ def main():
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
-        if st.session_state.last_filtered_df is not None and not st.session_state.last_filtered_df.empty:
+        if st.session_state.last_filtered_df is not None:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
             results = df_plot[metrics].sum()
             
+            if st.session_state.comparison_data:
+                st.subheader("🆚 Comparison Visualization")
+                c_data = st.session_state.comparison_data
+                col1, col2 = st.columns(2)
+                with col1:
+                    fig_rev = px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue Comparison", labels={'x':'Period', 'y':'Revenue'}, color=c_data['labels'], color_discrete_sequence=['#00CC96', '#636EFA'])
+                    st.plotly_chart(fig_rev, use_container_width=True)
+                with col2:
+                    fig_ff = px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall Comparison", labels={'x':'Period', 'y':'Footfall'}, color=c_data['labels'], color_discrete_sequence=['#EF553B', '#AB63FA'])
+                    st.plotly_chart(fig_ff, use_container_width=True)
+
             st.divider()
-            chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Achievement Gauge", "2. Footfall Achievement Gauge", "3. Comparison"])
-            
+            chart_option = st.selectbox("🎯 Select Chart to Display", [
+                "1. Revenue Achievement Gauge", "2. Footfall Achievement Gauge",
+                "3. Revenue: Actual vs Target (Bar)", "4. Footfall Trend (Line)",
+                "5. Monthly Revenue Share (Pie)", "6. Revenue Volume (Area)",
+                "7. Footfall vs Revenue (Correlation)", "8. Revenue Target Funnel"
+            ])
+
+            # Fixed Line 187: Changed 'Target footfall' to 'Target Footfall'
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
-            # FIXED: results['Target footfall'] changed to results['Target Footfall'] (Capital F)
             ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
 
+            # Fixed Line 189 & 195
             if chart_option.startswith("1"):
-                fig = go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}}))
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
             elif chart_option.startswith("2"):
-                fig = go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#636EFA"}}))
+                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#636EFA"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
+            elif chart_option.startswith("3"):
+                st.plotly_chart(px.bar(df_plot, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], barmode='group', title="Revenue Comparison"), use_container_width=True)
+            elif chart_option.startswith("4"):
+                st.plotly_chart(px.line(df_plot, x='Date_Obj', y='Actual Footfall', markers=True, title="Footfall Trend"), use_container_width=True)
+            elif chart_option.startswith("5"):
+                st.plotly_chart(px.pie(df_plot, values='Actual Revenue', names='Months', hole=0.4, title="Revenue Share"), use_container_width=True)
+            elif chart_option.startswith("6"):
+                st.plotly_chart(px.area(df_plot, x='Date_Obj', y='Actual Revenue', title="Revenue Volume"), use_container_width=True)
+            elif chart_option.startswith("7"):
+                st.plotly_chart(px.scatter(df_plot, x='Actual Footfall', y='Actual Revenue', size='Actual Revenue', color='Months', title="Correlation"), use_container_width=True)
+            elif chart_option.startswith("8"):
+                fig = go.Figure(go.Funnel(y=["Target", "Actual"], x=[results['Target revenue'], results['Actual Revenue']], textinfo="value+percent initial"))
+                fig.update_layout(title="Revenue Funnel", template="plotly_dark")
                 st.plotly_chart(fig, use_container_width=True)
-            
+
             st.table(df_plot[metrics].sum().to_frame().T.style.format('{:,.0f}'))
 
     else:
