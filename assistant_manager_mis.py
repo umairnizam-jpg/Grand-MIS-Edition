@@ -63,7 +63,7 @@ def main():
         st.sidebar.markdown("### 🛠️ System Architect\n**Umair Nizam**")
         st.sidebar.info("Scope: July 2017 – June 2026")
 
-        st.title("🎢 Joyland Fortress BI Assistant")
+        st.title("🎢 Joyland MIS Assistant")
         
         if "messages" not in st.session_state:
             st.session_state.messages = []
