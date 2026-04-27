@@ -84,20 +84,29 @@ def main():
                 with t3:
                     st.dataframe(f_df.style.format(subset=['Actual Revenue', 'Target revenue'], formatter="{:,.0f}"))
 
-        # --- INPUT BAR (BOTTOM) ---
+        # --- INPUT BAR (FIXED UI OPTIMIZATION) ---
         st.markdown("---")
-        input_col, mic_col, clip_col = st.columns([5, 0.4, 0.4])
-        with input_col: prompt = st.chat_input("Ask about Revenue, Footfall...")
-        with mic_col: voice_data = st.audio_input("🎤", key="v_mic", label_visibility="collapsed")
-        with clip_col: attached_file = st.file_uploader("📎", type=['xlsx','csv'], key="f_clip", label_visibility="collapsed")
+        # Column width optimized to make icons smaller and professional
+        input_col, mic_col, clip_col = st.columns([6, 0.3, 0.3]) 
+        
+        with input_col: 
+            prompt = st.chat_input("Ask about Revenue, Footfall...")
+        
+        with mic_col: 
+            # Compact voice button
+            voice_data = st.audio_input("🎤", key="v_mic", label_visibility="collapsed")
+            
+        with clip_col: 
+            # Professional file attachment with multiple formats
+            attached_file = st.file_uploader("📎", type=['xlsx','csv','docx','pdf','txt'], key="f_clip", label_visibility="collapsed")
 
-        user_query = prompt if prompt else ("Voice command" if voice_data else None)
+        user_query = prompt if prompt else ("Voice command received" if voice_data else None)
 
         if user_query:
             st.session_state.messages.append({"content": user_query, "is_user": True})
             query_lower = user_query.lower()
 
-            # --- RESTORE ORIGINAL INTRO (EXACTLY AS REQUESTED) ---
+            # --- RESTORE ORIGINAL INTRO (WORD FOR WORD) ---
             if any(greet in query_lower for greet in ["hi", "hello", "intro", "salam", "introduce"]):
                 intro_msg = (
                     "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\n"
@@ -113,9 +122,9 @@ def main():
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            # --- CORE LOGIC (FIXED ERRORS) ---
+            # --- CORE LOGIC (ERROR PROTECTED) ---
             if not df_live.empty:
-                filtered_df = df_live.copy() # FIX: Initialized here to solve UnboundLocalError
+                filtered_df = df_live.copy() # FIX: Initialized to avoid UnboundLocalError
                 
                 months_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
                 found_months = [m.capitalize() for m in months_list if m in query_lower or m[:3] in query_lower]
@@ -125,7 +134,7 @@ def main():
                 if found_years: filtered_df = filtered_df[filtered_df['Year'].isin(found_years)]
 
                 if not filtered_df.empty:
-                    # FIX: Using direct column access to prevent KeyError
+                    # Sum columns safely
                     act_rev = filtered_df["Actual Revenue"].sum()
                     tar_rev = filtered_df["Target revenue"].sum()
                     act_ff = filtered_df["Actual Footfall"].sum()
@@ -135,7 +144,7 @@ def main():
                     ff_ach = (act_ff / tar_ff * 100) if tar_ff > 0 else 0
                     
                     st.session_state.chart_data = {'df': filtered_df, 'rev_ach': rev_ach, 'ff_ach': ff_ach}
-                    st.session_state.messages.append({"content": f"✅ Report generated. Actual Revenue: Rs. {act_rev:,.0f} ({rev_ach:.1f}%)", "is_user": False})
+                    st.session_state.messages.append({"content": f"✅ Analysis updated for requested period.", "is_user": False})
                     st.rerun()
 
     else: st.info("System Developed by **Umair Nizam**. Please log in.")
