@@ -19,7 +19,7 @@ def get_ai_response(query):
         return "Please install openai library."
     try:
         # OpenAI Client Setup
-        client = OpenAI(api_key="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") 
+        client = OpenAI(api_key="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") 
         
         # ChatGPT Response Generation
         response = client.chat.completions.create(
