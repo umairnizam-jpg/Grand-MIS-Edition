@@ -110,48 +110,48 @@ def main():
             variance_report = ""
             temp_df = df_live.copy()
 
+            # CASE 1: Pair Comparison (e.g., July 2023 vs August 2024)
             if len(date_pairs) >= 2:
                 m1, y1 = date_pairs[0][0].capitalize(), int(date_pairs[0][1])
                 m2, y2 = date_pairs[1][0].capitalize(), int(date_pairs[1][1])
                 v1 = df_live[(df_live['Months'] == m1) & (df_live['Year'] == y1)]
                 v2 = df_live[(df_live['Months'] == m2) & (df_live['Year'] == y2)]
                 if not v1.empty and not v2.empty:
-                    # Revenue Variance
                     rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
-                    r_diff = rev2 - rev1
-                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
-                    
-                    # Footfall Variance
                     ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
-                    f_diff = ff2 - ff1
+                    r_diff, f_diff = rev2 - rev1, ff2 - ff1
+                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
                     f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
                     
                     variance_report = (
-                        f"\n\n**Period Comparison:**\n"
-                        f"* Revenue Var: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
-                        f"* Footfall Var: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
+                        f"\n\n**Period 1 ({m1} {y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
+                        f"**Period 2 ({m2} {y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
+                        f"--- \n"
+                        f"**Variance:**\n"
+                        f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
+                        f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
                     )
                     temp_df = pd.concat([v1, v2])
 
+            # CASE 2: Multi-Month/Year Comparison (e.g., July-Aug 2023 vs 2024)
             elif len(found_years) >= 2 and found_months:
                 y1, y2 = found_years[0], found_years[1]
                 v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
                 v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
                 if not v1.empty and not v2.empty:
-                    # Revenue Variance
                     rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
-                    r_diff = rev2 - rev1
-                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
-                    
-                    # Footfall Variance
                     ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
-                    f_diff = ff2 - ff1
+                    r_diff, f_diff = rev2 - rev1, ff2 - ff1
+                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
                     f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
                     
                     variance_report = (
-                        f"\n\n**Multi-Period Comparison:**\n"
-                        f"* Revenue Var: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
-                        f"* Footfall Var: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
+                        f"\n\n**Total {y1} ({', '.join(found_months)}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
+                        f"**Total {y2} ({', '.join(found_months)}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
+                        f"--- \n"
+                        f"**Variance:**\n"
+                        f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
+                        f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
                     )
                     temp_df = pd.concat([v1, v2])
             else:
@@ -168,8 +168,8 @@ def main():
                 
                 report = (
                     f"### 📊 BI Analysis Result\n"
-                    f"* Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}** ({rev_a:.1f}% Ach)\n"
-                    f"* Actual Footfall: **{res['Actual Footfall']:,.0f}** ({ff_a:.1f}% Ach)"
+                    f"* Total Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}** ({rev_a:.1f}% Ach)\n"
+                    f"* Total Actual Footfall: **{res['Actual Footfall']:,.0f}** ({ff_a:.1f}% Ach)"
                     f"{variance_report}"
                 )
                 st.session_state.messages.append({"content": report, "is_user": False})
@@ -192,28 +192,4 @@ def main():
             ])
 
             if chart_option.startswith("1"):
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#00CC96"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
-            elif chart_option.startswith("2"):
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis':{'range':[0,100]}, 'bar':{'color':"#636EFA"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
-            elif chart_option.startswith("3"):
-                st.plotly_chart(px.bar(df_plot, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], barmode='group', title="Revenue Comparison"), use_container_width=True)
-            elif chart_option.startswith("4"):
-                st.plotly_chart(px.line(df_plot, x='Date_Obj', y='Actual Footfall', markers=True, title="Footfall Trend"), use_container_width=True)
-            elif chart_option.startswith("5"):
-                st.plotly_chart(px.pie(df_plot, values='Actual Revenue', names='Months', hole=0.4, title="Revenue Share"), use_container_width=True)
-            elif chart_option.startswith("6"):
-                st.plotly_chart(px.area(df_plot, x='Date_Obj', y='Actual Revenue', title="Revenue Volume"), use_container_width=True)
-            elif chart_option.startswith("7"):
-                st.plotly_chart(px.scatter(df_plot, x='Actual Footfall', y='Actual Revenue', size='Actual Revenue', color='Months', title="Correlation"), use_container_width=True)
-            elif chart_option.startswith("8"):
-                fig = go.Figure(go.Funnel(y=["Target", "Actual"], x=[results['Target revenue'], results['Actual Revenue']], textinfo="value+percent initial"))
-                fig.update_layout(title="Revenue Funnel", template="plotly_dark")
-                st.plotly_chart(fig, use_container_width=True)
-
-            st.table(df_plot[metrics].sum().to_frame().T.style.format('{:,.0f}'))
-
-    else:
-        st.info("System Developed by **Umair Nizam**. Please log in to proceed.")
-
-if __name__ == "__main__":
-    main()
+                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis':{'
