@@ -7,24 +7,25 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
-# --- GLOBAL SEARCH SETUP (Minimal Change for Error 2) ---
+# --- GLOBAL SEARCH SETUP (Fixed for ModuleNotFoundError) ---
 try:
     import google.generativeai as genai
     AI_AVAILABLE = True
-except:
+except (ImportError, ModuleNotFoundError):
     AI_AVAILABLE = False
 
 def get_ai_response(query):
-    if not AI_AVAILABLE: return "Please install google-generativeai"
+    if not AI_AVAILABLE:
+        return "Please install google-generativeai library."
     try:
         # APNI ASAL API KEY YAHAN PASTE KAREIN
-        genai.configure(api_key="AIzaSyBPs1uQ01wlgVUS9sB515LBXYOa1OjSm90") 
-        # Fix for Error 3: Using stable model name
-        model = genai.GenerativeModel('gemini-pro') 
-        response = model.generate_content(query)
+        genai.configure(api_key="YOUR_GEMINI_API_KEY") 
+        # Fixed for 404 Error: Using stable 1.5-flash model
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(f"Act as a BI Expert. Answer this: {query}")
         return response.text
     except Exception as e:
-        return f"AI Error: {str(e)}"
+        return f"Global Search currently unavailable. Error: {str(e)}"
 
 # --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
 def load_excel_data():
@@ -106,7 +107,7 @@ def main():
         input_col, mic_col, clip_col = st.columns([5, 0.4, 0.4])
 
         with input_col:
-            prompt = st.chat_input("Ask about Revenue, Footfall, Comparisons...")
+            prompt = st.chat_input("Ask about Revenue, Footfall, or Global Search...")
         with mic_col:
             voice_data = st.audio_input("🎤", key="v_mic", label_visibility="collapsed")
         with clip_col:
@@ -119,55 +120,40 @@ def main():
             query_lower = user_query.lower()
 
             if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam", "introduce"]):
-                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**."
+                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**.\n\n* **Flexibility:** Attach your own files using the clip."
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            month_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
-            found_months = [m.capitalize() for m in month_list if m in query_lower or m[:3] in query_lower]
+            month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
             found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
+            found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
             
             variance_report = ""
-            temp_df = df_live.copy()
+            temp_df = pd.DataFrame()
             comp_viz_data = None
 
             if len(found_years) >= 2 and found_months:
                 y1, y2 = found_years[0], found_years[1]
                 v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
                 v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
-                
                 if not v1.empty and not v2.empty:
                     rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
                     ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
                     r_diff, f_diff = rev2 - rev1, ff2 - ff1
                     r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
-                    f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
-                    
-                    months_str = ", ".join(found_months)
-                    variance_report = (
-                        f"\n\n**Comparison for {months_str}:**\n"
-                        f"* **Period 1 ({y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
-                        f"* **Period 2 ({y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
-                        f"--- \n"
-                        f"**Growth/Variance:**\n"
-                        f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
-                        f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
-                    )
+                    variance_report = f"\n\n**Comparison Result:** {r_perc:.1f}% Growth"
                     temp_df = pd.concat([v1, v2])
-                    comp_viz_data = {
-                        "labels": [f"{y1}", f"{y2}"],
-                        "revenue": [rev1, rev2],
-                        "footfall": [ff1, ff2]
-                    }
-            else:
+                    comp_viz_data = {"labels": [str(y1), str(y2)], "revenue": [rev1, rev2], "footfall": [ff1, ff2]}
+
+            elif found_months or found_years:
+                temp_df = df_live.copy()
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
-
-            # Global Search Trigger
-            if (not found_months and not found_years) or temp_df.empty:
-                with st.spinner("Searching Global..."):
-                    ai_res = get_ai_response(user_query)
-                    st.session_state.messages.append({"content": ai_res, "is_user": False})
+            
+            if temp_df.empty and not any(greet in query_lower for greet in ["hi", "hello"]):
+                with st.spinner("Searching Globally..."):
+                    ai_answer = get_ai_response(user_query)
+                    st.session_state.messages.append({"content": f"🌐 **Global Search Result:**\n\n{ai_answer}", "is_user": False})
                     st.rerun()
 
             st.session_state.last_filtered_df = temp_df
@@ -180,32 +166,25 @@ def main():
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
-        if st.session_state.last_filtered_df is not None:
+        if st.session_state.last_filtered_df is not None and not st.session_state.last_filtered_df.empty:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
             results = df_plot[metrics].sum()
             
-            if st.session_state.comparison_data:
-                st.subheader("🆚 Comparison Visualization")
-                c_data = st.session_state.comparison_data
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue Comparison"), use_container_width=True)
-                with col2:
-                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall Comparison"), use_container_width=True)
-
             st.divider()
-            chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Gauge", "2. Footfall Gauge", "3. Trend Line"])
-
+            chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Achievement Gauge", "2. Footfall Achievement Gauge", "3. Comparison"])
+            
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
-            # Fix for Error 1: Changed 'Target footfall' to 'Target Footfall'
+            # Fixed KeyError: Changed 'Target footfall' to 'Target Footfall'
             ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
 
             if chart_option.startswith("1"):
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"})), use_container_width=True)
+                fig = go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}}))
+                st.plotly_chart(fig, use_container_width=True)
             elif chart_option.startswith("2"):
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"})), use_container_width=True)
-
+                fig = go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#636EFA"}}))
+                st.plotly_chart(fig, use_container_width=True)
+            
             st.table(df_plot[metrics].sum().to_frame().T.style.format('{:,.0f}'))
 
     else:
