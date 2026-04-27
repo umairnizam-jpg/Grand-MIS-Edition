@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
-# --- 1. DATA ENGINE (2017 - 2026) ---
+# --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
 def load_excel_data():
     file_options = ["RAW DATA.xlsx", r"Z:\data\RAW DATA.xlsx"]
     file_path = None
@@ -40,6 +40,7 @@ def main():
 
     df_live = load_excel_data()
 
+    # Authentication
     credentials = {"usernames": {"admin": {"name": "Admin", "password": "MIS2024@secure"}}}
     auth = Authenticate(credentials, "joyland_mis", "auth_key", cookie_expiry_days=30)
     auth.login(location='main')
@@ -55,60 +56,57 @@ def main():
         st.sidebar.divider()
         st.sidebar.markdown("### 👨‍💻 System Architect\n**Umair Nizam**")
 
-        st.title("🎢 Joyland Great Grand Master BI")
+        st.title("🎢 Joyland MIS Assistant")
 
         # --- CHAT & VISUALS DISPLAY ---
-        display_container = st.container()
-        with display_container:
+        display_box = st.container()
+        with display_box:
             for msg in st.session_state.messages:
                 with st.chat_message("user" if msg["is_user"] else "assistant"):
                     st.markdown(msg["content"])
             
+            # 8 PROFESSIONAL CHARTS RENDERER
             if st.session_state.chart_data is not None:
                 st.divider()
                 f_df = st.session_state.chart_data['df']
-                rev_ach = st.session_state.chart_data['rev_ach']
-                ff_ach = st.session_state.chart_data['ff_ach']
+                ra, fa = st.session_state.chart_data['ra'], st.session_state.chart_data['fa']
 
-                t1, t2, t3 = st.tabs(["🎯 Achievements", "📈 Growth Trends", "📋 Raw Analysis"])
-                with t1:
+                t1, t2, t3 = st.tabs(["🎯 Achievements", "📈 Growth Trends", "📋 Data Table"])
+                with t1: # 4 Professional Charts
                     c1, c2, c3, c4 = st.columns(4)
-                    c1.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev %"})).update_layout(height=200, template="plotly_dark"))
-                    c2.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF %"})).update_layout(height=200, template="plotly_dark"))
-                    c3.plotly_chart(px.pie(f_df, values='Actual Revenue', names='Months', hole=.3, title="Rev Share").update_layout(height=250, showlegend=False))
-                    c4.plotly_chart(px.bar(f_df, x='Months', y='Actual Revenue', title="Monthly Rev").update_layout(height=250))
-                with t2:
-                    tc1, tc2 = st.columns(2)
-                    tc1.plotly_chart(px.line(f_df, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], title="Revenue vs Target").update_layout(height=300))
-                    tc2.plotly_chart(px.area(f_df, x='Date_Obj', y='Actual Footfall', title="Footfall Volume").update_layout(height=300))
+                    c1.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ra, title={'text': "Rev %"})).update_layout(height=200, template="plotly_dark"))
+                    c2.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=fa, title={'text': "FF %"})).update_layout(height=200, template="plotly_dark"))
+                    c3.plotly_chart(px.pie(f_df, values='Actual Revenue', names='Months', hole=.3, title="Rev Share").update_layout(height=220, showlegend=False))
+                    c4.plotly_chart(px.bar(f_df, x='Months', y='Actual Revenue', title="Monthly Rev").update_layout(height=220))
+
+                with t2: # 4 Trend Charts
+                    tc1, tc2, tc3, tc4 = st.columns(4)
+                    tc1.plotly_chart(px.line(f_df, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], title="Rev Trend").update_layout(height=220))
+                    tc2.plotly_chart(px.area(f_df, x='Date_Obj', y='Actual Footfall', title="FF Volume").update_layout(height=220))
+                    tc3.plotly_chart(px.scatter(f_df, x='Actual Footfall', y='Actual Revenue', title="Correlation").update_layout(height=220))
+                    tc4.plotly_chart(px.bar(f_df, x='Months', y=['Actual Footfall', 'Target Footfall'], barmode='group', title="FF Compare").update_layout(height=220))
+                
                 with t3:
                     st.dataframe(f_df.style.format(subset=['Actual Revenue', 'Target revenue'], formatter="{:,.0f}"))
 
-        # --- INPUT BAR (FIXED UI OPTIMIZATION) ---
+        # --- COMPACT PROFESSIONAL INPUT BAR ---
         st.markdown("---")
-        # Column width optimized to make icons smaller and professional
-        input_col, mic_col, clip_col = st.columns([6, 0.3, 0.3]) 
-        
-        with input_col: 
-            prompt = st.chat_input("Ask about Revenue, Footfall...")
-        
-        with mic_col: 
-            # Compact voice button
-            voice_data = st.audio_input("🎤", key="v_mic", label_visibility="collapsed")
-            
-        with clip_col: 
-            # Professional file attachment with multiple formats
-            attached_file = st.file_uploader("📎", type=['xlsx','csv','docx','pdf','txt'], key="f_clip", label_visibility="collapsed")
+        # Ratio optimized for small icons
+        in_col, v_col, f_col = st.columns([6, 0.3, 0.3])
+        with in_col: prompt = st.chat_input("Ask about Revenue, Footfall, Trends...")
+        with v_col: voice = st.audio_input("🎤", key="v_chat", label_visibility="collapsed")
+        with f_col: attachment = st.file_uploader("📎", type=['xlsx','csv','docx','pdf','txt'], key="f_chat", label_visibility="collapsed")
 
-        user_query = prompt if prompt else ("Voice command received" if voice_data else None)
+        # Process Logic
+        user_input = prompt if prompt else ("Voice command" if voice else None)
 
-        if user_query:
-            st.session_state.messages.append({"content": user_query, "is_user": True})
-            query_lower = user_query.lower()
+        if user_input:
+            st.session_state.messages.append({"content": user_input, "is_user": True})
+            q_low = user_input.lower()
 
-            # --- RESTORE ORIGINAL INTRO (WORD FOR WORD) ---
-            if any(greet in query_lower for greet in ["hi", "hello", "intro", "salam", "introduce"]):
-                intro_msg = (
+            # --- RESTORE ORIGINAL INTRO (EXACT) ---
+            if any(g in q_low for g in ["hi", "hello", "intro", "salam", "who are you"]):
+                intro = (
                     "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\n"
                     "I am a highly intelligent Business Intelligence & Data Analyst assistant, "
                     "proudly **developed by Umair Nizam**. My architecture is optimized to track, "
@@ -119,32 +117,33 @@ def main():
                     "* 📎 **Flexibility:** Attach your own files using the clip icon.\n\n"
                     "How can I assist your data-driven decisions today?"
                 )
-                st.session_state.messages.append({"content": intro_msg, "is_user": False})
+                st.session_state.messages.append({"content": intro, "is_user": False})
                 st.rerun()
 
-            # --- CORE LOGIC (ERROR PROTECTED) ---
+            # --- CORE ANALYTICS ENGINE (ERROR FREE) ---
             if not df_live.empty:
-                filtered_df = df_live.copy() # FIX: Initialized to avoid UnboundLocalError
+                filtered_df = df_live.copy() # FIX: UnboundLocalError solved
                 
-                months_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
-                found_months = [m.capitalize() for m in months_list if m in query_lower or m[:3] in query_lower]
-                found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
+                months_list = ['july','august','september','october','november','december','january','february','march','april','may','june']
+                f_months = [m.capitalize() for m in months_list if m in q_low or m[:3] in q_low]
+                f_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', q_low)]
                 
-                if found_months: filtered_df = filtered_df[filtered_df['Months'].isin(found_months)]
-                if found_years: filtered_df = filtered_df[filtered_df['Year'].isin(found_years)]
+                if f_months: filtered_df = filtered_df[filtered_df['Months'].isin(f_months)]
+                if f_years: filtered_df = filtered_df[filtered_df['Year'].isin(f_years)]
 
                 if not filtered_df.empty:
                     # Sum columns safely
-                    act_rev = filtered_df["Actual Revenue"].sum()
-                    tar_rev = filtered_df["Target revenue"].sum()
-                    act_ff = filtered_df["Actual Footfall"].sum()
-                    tar_ff = filtered_df["Target Footfall"].sum()
-
-                    rev_ach = (act_rev / tar_rev * 100) if tar_rev > 0 else 0
-                    ff_ach = (act_ff / tar_ff * 100) if tar_ff > 0 else 0
+                    ar, tr = filtered_df["Actual Revenue"].sum(), filtered_df["Target revenue"].sum()
+                    af, tf = filtered_df["Actual Footfall"].sum(), filtered_df["Target Footfall"].sum()
                     
-                    st.session_state.chart_data = {'df': filtered_df, 'rev_ach': rev_ach, 'ff_ach': ff_ach}
-                    st.session_state.messages.append({"content": f"✅ Analysis updated for requested period.", "is_user": False})
+                    ra = (ar / tr * 100) if tr > 0 else 0
+                    fa = (af / tf * 100) if tf > 0 else 0
+                    
+                    st.session_state.chart_data = {'df': filtered_df, 'ra': ra, 'fa': fa}
+                    st.session_state.messages.append({"content": f"✅ Report generated for the period. Visuals updated below.", "is_user": False})
+                    st.rerun()
+                else:
+                    st.session_state.messages.append({"content": "No data found for this specific period.", "is_user": False})
                     st.rerun()
 
     else: st.info("System Developed by **Umair Nizam**. Please log in.")
