@@ -7,51 +7,73 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
-# --- 1. ROBUST AI MODULE INITIALIZATION ---
+# --- GLOBAL SEARCH SETUP (Minimal Change) ---
 try:
     import google.generativeai as genai
     AI_AVAILABLE = True
-except (ImportError, ModuleNotFoundError):
+except:
     AI_AVAILABLE = False
 
-# Function to safely get AI Response (Key Check Fix)
-def get_ai_response(query, api_key):
-    if not AI_AVAILABLE:
-        return "⚠️ 'google-generativeai' library is missing. Add it to requirements.txt."
+def get_ai_response(query):
+    if not AI_AVAILABLE: return "Please install google-generativeai"
     try:
-        if not api_key or api_key == "AIzaSyDnxj1Lagn2uNp-ALn6y6GcXq3u78OxS3I":
-            return "Global Search currently unavailable. Please check API Key."
-        genai.configure(api_key=api_key)
+        # APNI ASAL API KEY YAHAN PASTE KAREIN
+        genai.configure(api_key="AIzaSyBPs1uQ01wlgVUS9sB515LBXYOa1OjSm90") 
         model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(f"Act as a BI expert for Joyland. Answer: {query}")
+        response = model.generate_content(query)
         return response.text
     except Exception as e:
-        return f"🌐 Global Search Result: Currently unavailable. Error: {str(e)}"
+        return f"API Error: {str(e)}"
 
-# --- 2. DATA ENGINE (Scope: 2017 - 2026) ---
+# --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
 def load_excel_data():
     file_options = ["RAW DATA.xlsx", r"Z:\data\RAW DATA.xlsx"]
-    file_path = next((path for path in file_options if os.path.exists(path)), None)
+    file_path = None
+    for path in file_options:
+        if os.path.exists(path):
+            file_path = path
+            break
     
-    if not file_path: return pd.DataFrame()
+    if not file_path:
+        return pd.DataFrame()
     
     try:
         df = pd.read_excel(file_path, engine='openpyxl')
         df.columns = [str(c).strip() for c in df.columns]
-        month_map = {'July':7,'August':8,'September':9,'October':10,'November':11,'December':12,
-                     'January':1,'February':2,'March':3,'April':4,'May':5,'June':6}
+        
+        month_map = {
+            'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12,
+            'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6
+        }
         df['Month_Num'] = df['Months'].map(month_map)
+        
+        df['Fiscal_Year_Label'] = df.apply(
+            lambda x: f"FY {x['Year'] if x['Month_Num'] >= 7 else x['Year'] - 1}-{x['Year'] if x['Month_Num'] <= 6 else x['Year'] + 1}", axis=1
+        )
+        
+        fiscal_order = ['July', 'August', 'September', 'October', 'November', 'December', 
+                        'January', 'February', 'March', 'April', 'May', 'June']
+        df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
+        
         df['Date_Obj'] = pd.to_datetime(df['Year'].astype(str) + '-' + df['Month_Num'].astype(str) + '-01')
-        return df[(df['Date_Obj'] >= '2017-07-01') & (df['Date_Obj'] <= '2026-03-01')].sort_values('Date_Obj')
+        mask = (df['Date_Obj'] >= '2017-07-01') & (df['Date_Obj'] <= '2026-03-01')
+        
+        return df.loc[mask].sort_values('Date_Obj')
     except:
         return pd.DataFrame()
 
-# --- 3. MAIN APPLICATION ---
+# --- 2. MAIN APPLICATION ---
 def main():
-    st.set_page_config(page_title="Joyland BI Grand Master", layout="wide")
+    st.set_page_config(page_title="Joyland BI Grand Master", layout="wide", page_icon="📈")
     
-    if "messages" not in st.session_state: st.session_state.messages = []
-    if "last_filtered_df" not in st.session_state: st.session_state.last_filtered_df = None
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "last_filtered_df" not in st.session_state:
+        st.session_state.last_filtered_df = None
+    if "last_variance" not in st.session_state:
+        st.session_state.last_variance = ""
+    if "comparison_data" not in st.session_state:
+        st.session_state.comparison_data = None
 
     df_live = load_excel_data()
 
@@ -61,68 +83,129 @@ def main():
 
     if st.session_state.get("authentication_status"):
         st.sidebar.title(f"Analyst: {st.session_state['name']}")
+        if st.sidebar.button("🗑️ Clear History"):
+            st.session_state.messages = []
+            st.session_state.last_filtered_df = None
+            st.session_state.comparison_data = None
+            st.rerun()
         auth.logout('Logout', 'sidebar')
         st.sidebar.divider()
         st.sidebar.markdown("### 👨‍💻 System Architect\n**Umair Nizam**")
-        
+        st.sidebar.info("Scope: July 2017 – March 2026")
+
         st.title("🎢 Joyland MIS Assistant")
-        
-        for msg in st.session_state.messages:
-            with st.chat_message("user" if msg["is_user"] else "assistant"):
-                st.markdown(msg["content"])
 
-        prompt = st.chat_input("Ask about Revenue or Global Search...")
+        chat_container = st.container()
+        with chat_container:
+            for msg in st.session_state.messages:
+                with st.chat_message("user" if msg["is_user"] else "assistant"):
+                    st.markdown(msg["content"])
 
-        if prompt:
-            st.session_state.messages.append({"content": prompt, "is_user": True})
-            query_l = prompt.lower()
+        st.markdown("---")
+        input_col, mic_col, clip_col = st.columns([5, 0.4, 0.4])
 
-            # Fixed Syntax Error Line 107
-            if any(greet in query_l for greet in ["hi", "hello", "intro", "introduce"]):
-                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**.\n\n* **Flexibility:** Attach your own files using the clip."
+        with input_col:
+            prompt = st.chat_input("Ask about Revenue, Footfall, Comparisons...")
+        with mic_col:
+            voice_data = st.audio_input("🎤", key="v_mic", label_visibility="collapsed")
+        with clip_col:
+            attached_file = st.file_uploader("📎", type=['xlsx', 'csv'], key="f_clip", label_visibility="collapsed")
+
+        user_query = prompt if prompt else ("Voice Command" if voice_data else None)
+
+        if user_query:
+            st.session_state.messages.append({"content": user_query, "is_user": True})
+            query_lower = user_query.lower()
+
+            if any(greet in query_lower for greet in ["hi", "hello", "intro", "who are you", "salam", "introduce"]):
+                intro_msg = "✨ **Greetings! I am the Joyland Ultimate BI Assistant.**\n\nPROUDLY **DEVELOPED BY UMAIR NIZAM**."
                 st.session_state.messages.append({"content": intro_msg, "is_user": False})
                 st.rerun()
 
-            month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
-            found_months = [m.capitalize() for m in re.findall(month_pattern, query_l)]
-            found_years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_l)]
+            month_list = ['july', 'august', 'september', 'october', 'november', 'december', 'january', 'february', 'march', 'april', 'may', 'june']
+            found_months = [m.capitalize() for m in month_list if m in query_lower or m[:3] in query_lower]
+            found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
+            
+            variance_report = ""
+            temp_df = df_live.copy()
+            comp_viz_data = None
 
-            temp_df = pd.DataFrame()
-            if found_months or found_years:
-                temp_df = df_live.copy()
+            if len(found_years) >= 2 and found_months:
+                y1, y2 = found_years[0], found_years[1]
+                v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
+                v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
+                
+                if not v1.empty and not v2.empty:
+                    rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
+                    ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
+                    r_diff, f_diff = rev2 - rev1, ff2 - ff1
+                    r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
+                    f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
+                    
+                    months_str = ", ".join(found_months)
+                    variance_report = (
+                        f"\n\n**Comparison for {months_str}:**\n"
+                        f"* **Period 1 ({y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
+                        f"* **Period 2 ({y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
+                        f"--- \n"
+                        f"**Growth/Variance:**\n"
+                        f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
+                        f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
+                    )
+                    temp_df = pd.concat([v1, v2])
+                    comp_viz_data = {
+                        "labels": [f"{y1} ({months_str})", f"{y2} ({months_str})"],
+                        "revenue": [rev1, rev2],
+                        "footfall": [ff1, ff2]
+                    }
+            else:
                 if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
                 if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
 
-            if temp_df.empty:
-                with st.spinner("Searching Globally..."):
-                    my_api_key = "YOUR_GEMINI_API_KEY" # Replace with your key
-                    answer = get_ai_response(prompt, my_api_key)
-                    st.session_state.messages.append({"content": answer, "is_user": False})
-            else:
-                res = temp_df[["Actual Revenue", "Actual Footfall", "Target revenue", "Target Footfall"]].sum()
-                report = f"### 📊 BI Analysis Result\n* Total Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}**\n* Total Actual Footfall: **{res['Actual Footfall']:,.0f}**"
-                st.session_state.messages.append({"content": report, "is_user": False})
-                st.session_state.last_filtered_df = temp_df
+            # Global Search Trigger (If no local data found)
+            if (not found_months and not found_years) or temp_df.empty:
+                with st.spinner("Searching Global..."):
+                    ai_res = get_ai_response(user_query)
+                    st.session_state.messages.append({"content": ai_res, "is_user": False})
+                    st.rerun()
+
+            st.session_state.last_filtered_df = temp_df
+            st.session_state.last_variance = variance_report
+            st.session_state.comparison_data = comp_viz_data
             
-            st.rerun()
+            if not temp_df.empty:
+                res = temp_df[["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]].sum()
+                report = (f"### 📊 BI Analysis Result\n* Total Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}**\n* Total Actual Footfall: **{res['Actual Footfall']:,.0f}**{variance_report}")
+                st.session_state.messages.append({"content": report, "is_user": False})
+                st.rerun()
 
         if st.session_state.last_filtered_df is not None:
             df_plot = st.session_state.last_filtered_df
-            res_plot = df_plot[["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]].sum()
+            metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
+            results = df_plot[metrics].sum()
             
-            # Fixed KeyError Line 187 (Capital 'F')
-            rev_ach = (res_plot['Actual Revenue'] / res_plot['Target revenue'] * 100) if res_plot['Target revenue'] > 0 else 0
-            ff_ach = (res_plot['Actual Footfall'] / res_plot['Target Footfall'] * 100) if res_plot['Target Footfall'] > 0 else 0
+            if st.session_state.comparison_data:
+                st.subheader("🆚 Comparison Visualization")
+                c_data = st.session_state.comparison_data
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue"), use_container_width=True)
+                with col2:
+                    st.plotly_chart(px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall"), use_container_width=True)
 
             st.divider()
-            # Fixed Syntax Error Line 195
-            col1, col2 = st.columns(2)
-            with col1:
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Revenue Achievement %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}})), use_container_width=True)
-            with col2:
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "Footfall Achievement %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#636EFA"}})), use_container_width=True)
+            chart_option = st.selectbox("🎯 Select Chart", ["1. Revenue Gauge", "2. Footfall Gauge", "3. Trend Line"])
 
-            st.table(df_plot[["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]].sum().to_frame().T.style.format('{:,.0f}'))
+            rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
+            # FIX: results['Target footfall'] changed to results['Target Footfall']
+            ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
+
+            if chart_option.startswith("1"):
+                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"})), use_container_width=True)
+            elif chart_option.startswith("2"):
+                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"})), use_container_width=True)
+
+            st.table(df_plot[metrics].sum().to_frame().T.style.format('{:,.0f}'))
 
     else:
         st.info("System Developed by **Umair Nizam**. Please log in to proceed.")
