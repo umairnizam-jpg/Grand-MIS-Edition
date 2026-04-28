@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ═══════════════════════════════════════════════════════════════
-#  JOYLAND BI GRAND MASTER  ·  v3.0 Ultra
+#  JOYLAND MIS ASSISTANT  ·  v3.0 Ultra
 #  Architect: Umair Nizam  |  Scope: 2017 – 2030
 # ═══════════════════════════════════════════════════════════════
 
