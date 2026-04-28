@@ -105,8 +105,6 @@ def main():
                 st.rerun()
 
             month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
-            
-            # --- DATE RANGE LOGIC ADDED HERE ---
             years_in_query = re.findall(r'\b(20\d{2})\b', query_lower)
             months_in_query = re.findall(month_pattern, query_lower)
             
@@ -114,43 +112,35 @@ def main():
             temp_df = pd.DataFrame()
             comp_viz_data = None
 
-            # Detect "to" or "between" for ranges
-            if " to " in query_lower or " between " in query_lower or len(years_in_query) >= 2:
+            # 1. Range Logic Detection (Merge from update)
+            if " to " in query_lower or " between " in query_lower or (len(years_in_query) >= 2 and not re.search(rf'{month_pattern}\s*20\d{{2}}.*{month_pattern}\s*20\d{{2}}', query_lower)):
                 if len(years_in_query) >= 2:
                     y_start, y_end = sorted([int(years_in_query[0]), int(years_in_query[-1])])
-                    # If months are also provided (e.g., July 2017 to March 2026)
                     if len(months_in_query) >= 2:
-                        m_start = months_in_query[0].capitalize()
-                        m_end = months_in_query[-1].capitalize()
-                        
-                        start_date = pd.to_datetime(f"{y_start}-{m_start}-01")
-                        end_date = pd.to_datetime(f"{y_end}-{m_end}-01")
+                        m_start, m_end = months_in_query[0].capitalize(), months_in_query[-1].capitalize()
+                        start_dt = pd.to_datetime(f"{y_start}-{m_start}-01")
+                        end_dt = pd.to_datetime(f"{y_end}-{m_end}-01")
                     else:
-                        # Year to Year only
-                        start_date = pd.to_datetime(f"{y_start}-07-01") # Fiscal start
-                        end_date = pd.to_datetime(f"{y_end}-06-30")
-                    
-                    temp_df = df_live[(df_live['Date_Obj'] >= start_date) & (df_live['Date_Obj'] <= end_date)]
-            
-            # If not a range, use your original comparison logic
+                        start_dt = pd.to_datetime(f"{y_start}-07-01")
+                        end_dt = pd.to_datetime(f"{y_end}-06-30")
+                    temp_df = df_live[(df_live['Date_Obj'] >= start_dt) & (df_live['Date_Obj'] <= end_dt)]
+
+            # 2. Comparison & Simple Filter Logic (Merge from original)
             if temp_df.empty:
                 matches = re.findall(rf'{month_pattern}\s*(20\d{{2}})', query_lower)
                 if len(matches) >= 2:
-                    found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
-                    found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
-                    
+                    found_years = sorted(list(set([int(y) for y in years_in_query])))
+                    found_months = [m.capitalize() for m in months_in_query]
                     if len(found_years) >= 2 and found_months:
                         y1, y2 = found_years[0], found_years[1]
                         v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
                         v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
-                        
                         if not v1.empty and not v2.empty:
                             rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
                             ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
                             r_diff, f_diff = rev2 - rev1, ff2 - ff1
                             r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
                             f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
-                            
                             months_str = ", ".join(list(dict.fromkeys(found_months)))
                             variance_report = (
                                 f"\n\n**Comparison for {months_str}:**\n"
@@ -164,7 +154,6 @@ def main():
                             temp_df = pd.concat([v1, v2])
                             comp_viz_data = {"labels": [f"{y1}", f"{y2}"], "revenue": [rev1, rev2], "footfall": [ff1, ff2]}
                 else:
-                    # Simple Filter
                     temp_df = df_live.copy()
                     found_months = [m.capitalize() for m in months_in_query]
                     found_years = [int(y) for y in years_in_query]
@@ -181,6 +170,7 @@ def main():
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
+        # --- Visualizations Section ---
         if st.session_state.last_filtered_df is not None:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
@@ -203,7 +193,7 @@ def main():
                 "3. Revenue: Actual vs Target (Bar)", "4. Footfall Trend (Line)",
                 "5. Monthly Revenue Share (Pie)", "6. Revenue Volume (Area)",
                 "7. Footfall vs Revenue (Correlation)", "8. Revenue Target Funnel",
-                "9. Revenue Trend (Line)"  # ADDED OPTION
+                "9. Revenue Trend (Line)"
             ])
 
             rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
@@ -227,7 +217,7 @@ def main():
                 fig = go.Figure(go.Funnel(y=["Target", "Actual"], x=[results['Target revenue'], results['Actual Revenue']], textinfo="value+percent initial"))
                 fig.update_layout(title="Revenue Funnel", template="plotly_dark")
                 st.plotly_chart(fig, use_container_width=True)
-            elif chart_option.startswith("9"): # NEW CHART ADDED
+            elif chart_option.startswith("9"):
                 st.plotly_chart(px.line(df_plot, x='Date_Obj', y='Actual Revenue', markers=True, title="Revenue Trend Line", line_shape="spline", render_mode="svg"), use_container_width=True)
 
             st.table(df_plot[metrics].sum().to_frame().T.style.format('{:,.0f}'))
