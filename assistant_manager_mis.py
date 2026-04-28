@@ -977,7 +977,7 @@ def main():
           <div style='font-family:Orbitron,monospace; font-size:32px; font-weight:900;
                background:linear-gradient(135deg,#00c6ff,#f5c518);
                -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px;'>
-            JOYLAND BI
+            JOYLAND MIS ASSISTANT
           </div>
           <div style='font-family:Rajdhani; font-size:13px; letter-spacing:3px; color:#7a9cc0; margin-bottom:32px;'>
             INTELLIGENCE PLATFORM
