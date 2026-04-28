@@ -46,7 +46,19 @@ PAGE_THEME = """
 /* ── Global Reset ── */
 html, body, [class*="css"] {
   font-family: var(--font-body) !important;
-  color: var(--text-primary) !important;
+  color: #e8f4fd !important;
+}
+
+/* ── Force all p, span, div text to be visible ── */
+p, span, div, label {
+  color: #e8f4fd !important;
+}
+
+.stMarkdown p, .stMarkdown span, .stMarkdown li {
+  color: #ddeeff !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  line-height: 1.8 !important;
 }
 
 .main, .stApp, section[data-testid="stSidebar"] + div {
@@ -86,8 +98,8 @@ section[data-testid="stSidebar"]::before {
 
 /* ── KPI Cards ── */
 div[data-testid="stMetric"] {
-  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card2) 100%) !important;
-  border: 1px solid var(--border) !important;
+  background: linear-gradient(135deg, #0f2544 0%, #0c1d38 100%) !important;
+  border: 1px solid #2a5a9b !important;
   border-radius: 16px !important;
   padding: 24px 20px !important;
   position: relative;
@@ -96,39 +108,41 @@ div[data-testid="stMetric"] {
 }
 div[data-testid="stMetric"]:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0,198,255,0.2) !important;
-  border-color: var(--accent-blue) !important;
+  box-shadow: 0 12px 40px rgba(0,198,255,0.25) !important;
+  border-color: #00c6ff !important;
 }
 div[data-testid="stMetric"]::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-blue), var(--accent-gold));
+  height: 3px;
+  background: linear-gradient(90deg, #00c6ff, #f5c518);
 }
 div[data-testid="stMetricLabel"] > div {
-  color: var(--text-secondary) !important;
+  color: #a8d4f5 !important;
   font-family: var(--font-body) !important;
-  font-size: 13px !important;
+  font-size: 14px !important;
   letter-spacing: 1.5px !important;
   text-transform: uppercase !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 div[data-testid="stMetricValue"] > div {
-  color: var(--text-primary) !important;
+  color: #ffffff !important;
   font-family: var(--font-display) !important;
-  font-size: 22px !important;
-  font-weight: 700 !important;
+  font-size: 26px !important;
+  font-weight: 900 !important;
   letter-spacing: 1px !important;
+  text-shadow: 0 0 20px rgba(0,198,255,0.5) !important;
 }
 div[data-testid="stMetricDelta"] > div {
-  color: var(--accent-green) !important;
-  font-family: var(--font-mono) !important;
-  font-size: 12px !important;
-  background: rgba(0,255,157,0.08);
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(0,255,157,0.2);
+  color: #00ff9d !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  background: rgba(0,255,157,0.15) !important;
+  padding: 3px 12px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(0,255,157,0.4) !important;
 }
 
 /* ── Header Banner ── */
@@ -163,22 +177,24 @@ div[data-testid="stMetricDelta"] > div {
 }
 .hero-subtitle {
   font-family: var(--font-body) !important;
-  color: var(--text-secondary) !important;
-  font-size: 14px !important;
+  color: #c8dff0 !important;
+  font-size: 15px !important;
   letter-spacing: 4px !important;
   text-transform: uppercase !important;
+  font-weight: 600 !important;
 }
 .hero-badge {
   display: inline-block;
-  background: rgba(0,198,255,0.1);
-  border: 1px solid rgba(0,198,255,0.3);
+  background: rgba(0,198,255,0.18);
+  border: 1px solid rgba(0,198,255,0.5);
   border-radius: 20px;
-  padding: 4px 16px;
+  padding: 5px 18px;
   font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--accent-blue);
+  font-size: 12px;
+  color: #00e5ff;
   letter-spacing: 2px;
   margin-top: 12px;
+  font-weight: 700;
 }
 
 /* ── Section Headers ── */
@@ -187,11 +203,12 @@ div[data-testid="stMetricDelta"] > div {
   font-size: 18px !important;
   font-weight: 700 !important;
   letter-spacing: 3px !important;
-  color: var(--accent-blue) !important;
-  border-bottom: 1px solid var(--border);
+  color: #00e5ff !important;
+  border-bottom: 1px solid #1a3a6b;
   padding-bottom: 10px;
   margin: 24px 0 16px 0;
   text-transform: uppercase;
+  text-shadow: 0 0 15px rgba(0,229,255,0.4);
 }
 
 /* ── Chat Messages ── */
@@ -199,13 +216,24 @@ div[data-testid="stChatMessage"] {
   border-radius: 16px !important;
   margin: 8px 0 !important;
 }
-div[data-testid="stChatMessage"][data-testid*="user"] {
-  background: rgba(0,198,255,0.05) !important;
-  border: 1px solid rgba(0,198,255,0.15) !important;
+div[data-testid="stChatMessage"] p,
+div[data-testid="stChatMessage"] span,
+div[data-testid="stChatMessage"] li,
+div[data-testid="stChatMessage"] td {
+  color: #e8f4fd !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  line-height: 1.8 !important;
 }
-div[data-testid="stChatMessage"]:not([data-testid*="user"]) {
-  background: rgba(245,197,24,0.04) !important;
-  border: 1px solid rgba(245,197,24,0.12) !important;
+div[data-testid="stChatMessage"] strong {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+div[data-testid="stChatMessage"] code {
+  color: #00ff9d !important;
+  background: rgba(0,255,157,0.1) !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
 }
 
 /* ── Buttons ── */
@@ -237,14 +265,15 @@ div[data-baseweb="tab-list"] {
 }
 div[data-baseweb="tab"] {
   font-family: var(--font-body) !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
   letter-spacing: 1px !important;
   border-radius: 10px !important;
-  color: var(--text-secondary) !important;
+  color: #a8d4f5 !important;
 }
 div[aria-selected="true"] {
-  background: rgba(0,198,255,0.15) !important;
-  color: var(--accent-blue) !important;
+  background: rgba(0,198,255,0.2) !important;
+  color: #00e5ff !important;
 }
 
 /* ── Selectbox ── */
@@ -318,23 +347,28 @@ div[data-testid="stAlert"] {
 
 /* ── AI Insight Card ── */
 .insight-card {
-  background: linear-gradient(135deg, rgba(182,96,245,0.08), rgba(0,198,255,0.05));
-  border: 1px solid rgba(182,96,245,0.25);
+  background: linear-gradient(135deg, rgba(182,96,245,0.12), rgba(0,198,255,0.08));
+  border: 1px solid rgba(182,96,245,0.4);
   border-radius: 16px;
   padding: 20px 24px;
   margin: 12px 0;
   font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: #ddeeff !important;
+  line-height: 1.7;
   position: relative;
   overflow: hidden;
 }
 .insight-card::before {
   content: '◈ AI INSIGHT';
   font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--accent-purple);
+  font-size: 11px;
+  color: #c890ff;
   letter-spacing: 3px;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  font-weight: 700;
 }
 
 /* ── Status Pulse ── */
@@ -814,19 +848,19 @@ def render_sidebar(df_live, auth_obj):
             date_range = f"{df_live['Date_Obj'].min().strftime('%Y')} – {df_live['Date_Obj'].max().strftime('%Y')}"
             st.markdown(f"""
             <div style='background:rgba(13,31,60,0.8); border:1px solid #1a3a6b; border-radius:12px; padding:14px; margin-bottom:12px;'>
-              <div style='font-family:Rajdhani; font-size:11px; letter-spacing:2px; color:#7a9cc0; text-transform:uppercase; margin-bottom:8px;'>DATA SCOPE</div>
-              <div style='font-family:JetBrains Mono; font-size:12px; color:#e8f4fd; margin:4px 0;'>📅 {date_range}</div>
-              <div style='font-family:JetBrains Mono; font-size:12px; color:#e8f4fd; margin:4px 0;'>📊 {total_months} Data Points</div>
-              <div style='font-family:JetBrains Mono; font-size:12px; color:#e8f4fd; margin:4px 0;'>🎯 AI Model: Poly-2 + LR</div>
+              <div style='font-family:Rajdhani; font-size:11px; letter-spacing:2px; color:#a8d4f5; text-transform:uppercase; margin-bottom:8px; font-weight:700;'>DATA SCOPE</div>
+              <div style='font-family:JetBrains Mono; font-size:13px; color:#e8f4fd; margin:5px 0; font-weight:600;'>📅 {date_range}</div>
+              <div style='font-family:JetBrains Mono; font-size:13px; color:#e8f4fd; margin:5px 0; font-weight:600;'>📊 {total_months} Data Points</div>
+              <div style='font-family:JetBrains Mono; font-size:13px; color:#e8f4fd; margin:5px 0; font-weight:600;'>🎯 AI Model: Poly-2 + LR</div>
             </div>
             """, unsafe_allow_html=True)
 
         st.markdown("""
         <div style='background:rgba(13,31,60,0.8); border:1px solid #1a3a6b; border-radius:12px; padding:14px; margin-bottom:12px;'>
-          <div style='font-family:Rajdhani; font-size:11px; letter-spacing:2px; color:#7a9cc0; text-transform:uppercase; margin-bottom:8px;'>QUERY EXAMPLES</div>
+          <div style='font-family:Rajdhani; font-size:11px; letter-spacing:2px; color:#a8d4f5; text-transform:uppercase; margin-bottom:8px; font-weight:700;'>QUERY EXAMPLES</div>
         """, unsafe_allow_html=True)
         for q in SAMPLE_QUERIES:
-            st.markdown(f"<div style='font-family:JetBrains Mono; font-size:11px; color:#3a5a80; margin:3px 0; cursor:pointer;'>› {q}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-family:JetBrains Mono; font-size:12px; color:#c8dff0; margin:5px 0; font-weight:600;'>› {q}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("""
