@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ═══════════════════════════════════════════════════════════════
-#  JOYLAND MIS ASSISTANT  ·  v3.0 Ultra
+#  JOYLAND BI GRAND MASTER  ·  v3.0 Ultra
 #  Architect: Umair Nizam  |  Scope: 2017 – 2030
 # ═══════════════════════════════════════════════════════════════
 
@@ -324,6 +324,42 @@ div[data-testid="stChatInput"] button {
 div[data-testid="stChatInput"] button:hover {
   background: linear-gradient(135deg, #00e5ff, #00c6ff) !important;
   box-shadow: 0 0 12px rgba(0,198,255,0.5) !important;
+}
+
+/* ── CRITICAL: Kill the white bottom bar / footer container ── */
+div[data-testid="stBottom"] {
+  background: #050b18 !important;
+  border-top: 1px solid #1a3a6b !important;
+  padding: 12px 16px !important;
+}
+div[data-testid="stBottom"] > div {
+  background: #050b18 !important;
+}
+.stChatFloatingInputContainer,
+div[class*="stChatFloatingInputContainer"] {
+  background: #050b18 !important;
+  border-top: 1px solid #1a3a6b !important;
+}
+/* Streamlit's sticky bottom wrapper */
+div[data-testid="stAppViewBlockContainer"] {
+  background: #050b18 !important;
+}
+footer, footer * {
+  background: #050b18 !important;
+  color: #3a5a80 !important;
+  border-top: 1px solid #1a3a6b !important;
+}
+/* Any leftover white containers */
+section.main > div,
+.block-container {
+  background: #050b18 !important;
+}
+/* Remove white flash on page edges */
+body {
+  background: #050b18 !important;
+}
+html {
+  background: #050b18 !important;
 }
 
 /* ── Divider ── */
