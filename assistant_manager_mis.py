@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ═══════════════════════════════════════════════════════════════
-#  JOYLAND MIS ASSISTANT  ·  v3.0 Ultra
+#  JOYLAND BI GRAND MASTER  ·  v3.0 Ultra
 #  Architect: Umair Nizam  |  Scope: 2017 – 2030
 # ═══════════════════════════════════════════════════════════════
 
@@ -286,17 +286,44 @@ div[data-baseweb="select"] > div {
 }
 
 /* ── Chat Input ── */
+div[data-testid="stChatInput"] {
+  background: #0f2544 !important;
+  border: 1.5px solid #2a5a9b !important;
+  border-radius: 16px !important;
+}
 div[data-testid="stChatInput"] textarea {
-  background: var(--bg-card2) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 14px !important;
-  color: var(--text-primary) !important;
+  background: #0f2544 !important;
+  border: none !important;
+  border-radius: 16px !important;
+  color: #ffffff !important;
   font-family: var(--font-body) !important;
   font-size: 15px !important;
+  font-weight: 500 !important;
+  caret-color: #00c6ff !important;
+}
+div[data-testid="stChatInput"] textarea::placeholder {
+  color: #6a9abf !important;
+  font-style: italic !important;
+  font-size: 14px !important;
 }
 div[data-testid="stChatInput"] textarea:focus {
-  border-color: var(--accent-blue) !important;
-  box-shadow: 0 0 0 2px rgba(0,198,255,0.15) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+div[data-testid="stChatInput"]:focus-within {
+  border-color: #00c6ff !important;
+  box-shadow: 0 0 0 2px rgba(0,198,255,0.2), 0 0 20px rgba(0,198,255,0.1) !important;
+}
+/* Send button */
+div[data-testid="stChatInput"] button {
+  background: linear-gradient(135deg, #00c6ff, #0090cc) !important;
+  border-radius: 10px !important;
+  border: none !important;
+  color: #ffffff !important;
+}
+div[data-testid="stChatInput"] button:hover {
+  background: linear-gradient(135deg, #00e5ff, #00c6ff) !important;
+  box-shadow: 0 0 12px rgba(0,198,255,0.5) !important;
 }
 
 /* ── Divider ── */
@@ -930,7 +957,7 @@ def main():
     # ── HERO BANNER ──
     st.markdown("""
     <div class='hero-banner'>
-      <div class='hero-title'>JOYLAND  MIS ASSISTANT</div>
+      <div class='hero-title'>JOYLAND  BI</div>
       <div class='hero-subtitle'>Advanced Business Intelligence & Predictive Analytics Platform</div>
       <div class='hero-badge'>⬡ AI-POWERED · SCOPE 2017–2030 · GRAND MASTER v3.0</div>
     </div>
@@ -982,6 +1009,33 @@ def main():
     if prompt:
         st.session_state.messages.append({"content": prompt, "is_user": True})
         query_lower = prompt.lower().strip()
+
+        # ── GREETING / INTRO INTENT ──
+        greeting_keywords = ['hi', 'hello', 'hey', 'salam', 'assalam', 'helo', 'hii', 'who are you',
+                             'introduce', 'intro', 'aap kaun', 'tumhara naam', 'your name', 'about you',
+                             'what are you', 'tell me about yourself', 'help']
+        if any(query_lower.strip() == g or query_lower.startswith(g) for g in greeting_keywords):
+            intro_msg = (
+                "### 👋 Assalam o Alaikum! Welcome to **Joyland BI**\n\n"
+                "---\n"
+                "🤖 **I am the Joyland MIS Assistant** — an AI-powered Business Intelligence Bot built exclusively for **Joyland Amusement Park**.\n\n"
+                "I was developed by **MIS Assistant Manager Umair Nizam** to help the management team make smarter, faster, data-driven decisions.\n\n"
+                "---\n"
+                "### 🧠 What I Can Do For You:\n\n"
+                "| Capability | Example Query |\n"
+                "|------------|---------------|\n"
+                "| 💰 Revenue Analysis | `Revenue July 2023` |\n"
+                "| 👥 Footfall Reports | `Footfall August 2024` |\n"
+                "| 📊 Period Comparison | `August 2023 vs August 2024` |\n"
+                "| 🔮 AI Forecasting | `Forecast March 2027` |\n"
+                "| 📅 Fiscal Year Data | `FY 2023 revenue` |\n"
+                "| 🌙 Event Predictions | `Predict December 2028` |\n\n"
+                "---\n"
+                "> *Scope: 2017 – 2030 · Model: Polynomial Regression + Seasonal AI Multipliers*\n\n"
+                "**How can I assist you today? Just ask! 🚀**"
+            )
+            st.session_state.messages.append({"content": intro_msg, "is_user": False})
+            st.rerun()
 
         # ── FORECAST INTENT ──
         forecast_keywords = ['forecast', 'predict', 'projection', 'estimate', 'btao', 'prediction', 'expected']
