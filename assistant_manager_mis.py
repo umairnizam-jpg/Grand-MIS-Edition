@@ -939,7 +939,7 @@ def render_sidebar(df_live, auth_obj):
 # ═══════════════════════════════════════════════════════════════
 def main():
     st.set_page_config(
-        page_title="Joyland BI · Grand Master",
+        page_title="Joyland MIS Assistant · Grand Master",
         layout="wide",
         page_icon="🎢",
         initial_sidebar_state="expanded"
