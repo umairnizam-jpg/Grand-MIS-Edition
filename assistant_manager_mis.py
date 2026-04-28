@@ -276,13 +276,30 @@ div[aria-selected="true"] {
   color: #00e5ff !important;
 }
 
-/* ── Selectbox ── */
-div[data-baseweb="select"] > div {
-  background: var(--bg-card2) !important;
-  border: 1px solid var(--border) !important;
+/* ── Selectbox TRIGGER ── */
+div[data-baseweb="select"] > div,
+div[data-baseweb="select"] > div:hover,
+div[data-baseweb="select"] > div:focus-within {
+  background: #091530 !important;
+  border: 1px solid #1a3a6b !important;
   border-radius: 10px !important;
-  color: var(--text-primary) !important;
+  color: #e8f4fd !important;
   font-family: var(--font-body) !important;
+}
+
+/* ── Selectbox selected text ── */
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div[class*="ValueContainer"] span,
+div[data-baseweb="select"] div[class*="singleValue"],
+div[data-baseweb="select"] div[class*="placeholder"] {
+  color: #e8f4fd !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-weight: 600 !important;
+}
+
+/* ── Selectbox chevron icon ── */
+div[data-baseweb="select"] svg {
+  fill: #7a9cc0 !important;
 }
 
 /* ── Chat Input ── */
@@ -314,7 +331,6 @@ div[data-testid="stChatInput"]:focus-within {
   border-color: #00c6ff !important;
   box-shadow: 0 0 0 2px rgba(0,198,255,0.2), 0 0 20px rgba(0,198,255,0.1) !important;
 }
-/* Send button */
 div[data-testid="stChatInput"] button {
   background: linear-gradient(135deg, #00c6ff, #0090cc) !important;
   border-radius: 10px !important;
@@ -326,7 +342,7 @@ div[data-testid="stChatInput"] button:hover {
   box-shadow: 0 0 12px rgba(0,198,255,0.5) !important;
 }
 
-/* ── CRITICAL: Kill the white bottom bar / footer container ── */
+/* ── Kill white bottom bar / footer ── */
 div[data-testid="stBottom"] {
   background: #050b18 !important;
   border-top: 1px solid #1a3a6b !important;
@@ -340,7 +356,6 @@ div[class*="stChatFloatingInputContainer"] {
   background: #050b18 !important;
   border-top: 1px solid #1a3a6b !important;
 }
-/* Streamlit's sticky bottom wrapper */
 div[data-testid="stAppViewBlockContainer"] {
   background: #050b18 !important;
 }
@@ -349,18 +364,12 @@ footer, footer * {
   color: #3a5a80 !important;
   border-top: 1px solid #1a3a6b !important;
 }
-/* Any leftover white containers */
 section.main > div,
 .block-container {
   background: #050b18 !important;
 }
-/* Remove white flash on page edges */
-body {
-  background: #050b18 !important;
-}
-html {
-  background: #050b18 !important;
-}
+body { background: #050b18 !important; }
+html { background: #050b18 !important; }
 
 /* ── Divider ── */
 hr { border-color: var(--border) !important; }
@@ -401,6 +410,273 @@ div[data-testid="stAlert"] {
   border-radius: 12px !important;
   font-family: var(--font-body) !important;
 }
+
+/* ══════════════════════════════════════════════════════════
+   ▼▼▼  COMPREHENSIVE WHITE-BACKGROUND KILLER  ▼▼▼
+   Fixes: Dropdown popup, Plotly chart wrapper, DataFrame,
+          Tab panels, Input fields, Multiselect, Expander
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Dropdown POPUP / LIST container ── */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] > div,
+div[data-baseweb="popover"] > div > div,
+ul[role="listbox"],
+div[role="listbox"],
+[data-baseweb="menu"],
+[data-baseweb="menu"] ul,
+[data-baseweb="menu"] > div,
+[data-baseweb="menu"] > div > div {
+  background: #091530 !important;
+  background-color: #091530 !important;
+  border: 1px solid #1a3a6b !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7) !important;
+}
+
+/* ── Dropdown INDIVIDUAL OPTION items ── */
+li[role="option"],
+div[role="option"],
+[data-baseweb="menu"] li,
+[data-baseweb="menu"] div[role="option"],
+ul[role="listbox"] li,
+[data-baseweb="list"] li {
+  background: #091530 !important;
+  background-color: #091530 !important;
+  color: #e8f4fd !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+/* ── Dropdown option HOVER & SELECTED state ── */
+li[role="option"]:hover,
+div[role="option"]:hover,
+[data-baseweb="menu"] li:hover,
+li[aria-selected="true"],
+div[aria-selected="true"][role="option"],
+li[role="option"]:focus,
+div[role="option"]:focus {
+  background: rgba(0,198,255,0.15) !important;
+  background-color: rgba(0,198,255,0.15) !important;
+  color: #00e5ff !important;
+  cursor: pointer !important;
+}
+
+/* ── Plotly chart OUTER wrapper — kills the white box ── */
+div[data-testid="stPlotlyChart"],
+div[data-testid="stPlotlyChart"] > div,
+div[data-testid="stPlotlyChart"] > div > div,
+div[data-testid="stPlotlyChart"] > div > div > div,
+.stPlotlyChart,
+.js-plotly-plot,
+.js-plotly-plot .plotly,
+.js-plotly-plot .plotly .main-svg,
+.js-plotly-plot svg {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* ── Plotly modebar (top-right chart toolbar) ── */
+.modebar,
+.modebar-container,
+.modebar-group {
+  background: rgba(9,21,48,0.85) !important;
+  border-radius: 8px !important;
+}
+.modebar-btn path {
+  fill: #7a9cc0 !important;
+}
+.modebar-btn:hover path {
+  fill: #00c6ff !important;
+}
+
+/* ── iFrame (Plotly sometimes renders inside iframe) ── */
+iframe {
+  background: transparent !important;
+  color-scheme: dark !important;
+}
+
+/* ── Streamlit DataFrame / st.dataframe ── */
+div[data-testid="stDataFrame"],
+div[data-testid="stDataFrame"] > div,
+div[data-testid="stDataFrame"] > div > div,
+div[data-testid="stDataFrame"] iframe,
+div[data-testid="stDataEditor"],
+div[data-testid="stDataEditor"] > div {
+  background: #0d1f3c !important;
+  background-color: #0d1f3c !important;
+  border: 1px solid #1a3a6b !important;
+  border-radius: 12px !important;
+}
+
+/* ── DataFrame inner canvas (glide-data-grid) ── */
+.dvn-scroller,
+.dvn-scroller > canvas,
+canvas[data-testid="data-grid-canvas"] {
+  background: #0d1f3c !important;
+  background-color: #0d1f3c !important;
+}
+
+/* ── st.table static HTML table wrapper ── */
+div[data-testid="stTable"] {
+  background: #091530 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+/* ── Multiselect tag pill ── */
+div[data-baseweb="tag"] {
+  background: rgba(0,198,255,0.15) !important;
+  border: 1px solid rgba(0,198,255,0.4) !important;
+  border-radius: 6px !important;
+}
+div[data-baseweb="tag"] span {
+  color: #00e5ff !important;
+  font-family: 'Rajdhani', sans-serif !important;
+}
+
+/* ── Text / Number input fields ── */
+div[data-testid="stTextInput"] input,
+div[data-testid="stNumberInput"] input,
+div[data-baseweb="input"] input,
+div[data-baseweb="base-input"] input,
+div[data-baseweb="base-input"] {
+  background: #091530 !important;
+  background-color: #091530 !important;
+  border: 1px solid #1a3a6b !important;
+  border-radius: 8px !important;
+  color: #e8f4fd !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-weight: 600 !important;
+}
+div[data-baseweb="input"] {
+  background: #091530 !important;
+  border-radius: 8px !important;
+}
+
+/* ── Tab CONTENT panels — white flash fix ── */
+div[data-baseweb="tab-panel"],
+div[role="tabpanel"],
+div[role="tabpanel"] > div {
+  background: #050b18 !important;
+  background-color: #050b18 !important;
+  padding-top: 16px !important;
+}
+
+/* ── Expander widget ── */
+div[data-testid="stExpander"],
+details[data-testid="stExpander"] {
+  background: #091530 !important;
+  border: 1px solid #1a3a6b !important;
+  border-radius: 12px !important;
+}
+details[data-testid="stExpander"] summary {
+  color: #a8d4f5 !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-weight: 700 !important;
+  background: #091530 !important;
+}
+details[data-testid="stExpander"] > div {
+  background: #091530 !important;
+}
+
+/* ── Download button ── */
+div[data-testid="stDownloadButton"] button {
+  background: linear-gradient(135deg, rgba(0,198,255,0.15), rgba(0,198,255,0.05)) !important;
+  border: 1px solid rgba(0,198,255,0.4) !important;
+  color: #00c6ff !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+}
+div[data-testid="stDownloadButton"] button:hover {
+  background: rgba(0,198,255,0.25) !important;
+  box-shadow: 0 0 20px rgba(0,198,255,0.3) !important;
+}
+
+/* ── Sidebar inner select/dropdown ── */
+section[data-testid="stSidebar"] div[data-baseweb="select"] > div {
+  background: #071020 !important;
+  border-color: #1a3a6b !important;
+}
+section[data-testid="stSidebar"] ul[role="listbox"],
+section[data-testid="stSidebar"] div[data-baseweb="popover"],
+section[data-testid="stSidebar"] [data-baseweb="menu"] {
+  background: #071020 !important;
+  border-color: #1a3a6b !important;
+}
+section[data-testid="stSidebar"] li[role="option"],
+section[data-testid="stSidebar"] div[role="option"] {
+  background: #071020 !important;
+  color: #e8f4fd !important;
+}
+section[data-testid="stSidebar"] li[role="option"]:hover,
+section[data-testid="stSidebar"] div[role="option"]:hover {
+  background: rgba(0,198,255,0.12) !important;
+}
+
+/* ── Radio buttons ── */
+div[data-testid="stRadio"] label {
+  color: #e8f4fd !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-weight: 600 !important;
+}
+
+/* ── Checkbox ── */
+div[data-testid="stCheckbox"] label {
+  color: #e8f4fd !important;
+  font-family: 'Rajdhani', sans-serif !important;
+  font-weight: 600 !important;
+}
+
+/* ── Date input ── */
+div[data-testid="stDateInput"] input {
+  background: #091530 !important;
+  border: 1px solid #1a3a6b !important;
+  color: #e8f4fd !important;
+  border-radius: 8px !important;
+}
+
+/* ── Tooltip / popover overlay ── */
+div[data-testid="tooltipHoverTarget"] > div,
+div[class*="Tooltip"],
+div[data-baseweb="tooltip"] {
+  background: #0d1f3c !important;
+  border: 1px solid #1a3a6b !important;
+  color: #e8f4fd !important;
+  border-radius: 8px !important;
+}
+
+/* ── Catch-all: block containers transparent ── */
+div[data-testid="block-container"],
+div[data-testid="stVerticalBlock"],
+div[data-testid="stHorizontalBlock"],
+div[data-testid="column"],
+div[data-testid="stMarkdownContainer"],
+div[data-testid="stColumns"] > div,
+div[data-testid="stColumn"] {
+  background: transparent !important;
+}
+
+/* ── Catch-all: override any inline white backgrounds ── */
+[style*="background: white"],
+[style*="background-color: white"],
+[style*="background: rgb(255, 255, 255)"],
+[style*="background-color: rgb(255, 255, 255)"],
+[style*="background:#fff"],
+[style*="background: #fff"],
+[style*="background-color:#fff"],
+[style*="background-color: #fff"] {
+  background: #091530 !important;
+  background-color: #091530 !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   END WHITE-BACKGROUND KILLER
+   ══════════════════════════════════════════════════════════ */
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -522,7 +798,6 @@ def generate_advanced_forecast(df, m_num, y_num, metric_col):
     if len(df_clean) < 3:
         return 0, 0, "Insufficient Data"
 
-    # Polynomial regression (degree 2 for seasonality curve)
     X = np.array(range(len(df_clean))).reshape(-1, 1)
     y = df_clean[metric_col].values
     poly_model = make_pipeline(PolynomialFeatures(2), LinearRegression())
@@ -533,7 +808,6 @@ def generate_advanced_forecast(df, m_num, y_num, metric_col):
     months_diff = (target_date.year - start_date.year) * 12 + (target_date.month - start_date.month)
     base_pred = max(0, poly_model.predict([[months_diff]])[0])
 
-    # Multiplier stacking
     multiplier = 1.0
     event_notes = []
 
@@ -551,8 +825,6 @@ def generate_advanced_forecast(df, m_num, y_num, metric_col):
         event_notes.append("🎆 Year-End Surge")
 
     final_pred = base_pred * multiplier
-
-    # Confidence band (±12%)
     lower = final_pred * 0.88
     upper = final_pred * 1.12
 
@@ -561,19 +833,16 @@ def generate_advanced_forecast(df, m_num, y_num, metric_col):
 
 
 def compute_ai_insights(df):
-    """Generate automatic AI insights from data."""
     insights = []
     if df.empty:
         return insights
 
-    # Best month
     if 'Actual Revenue' in df.columns and 'Months' in df.columns:
         monthly = df.groupby('Months', observed=True)['Actual Revenue'].sum()
         if not monthly.empty:
             best_m = monthly.idxmax()
             insights.append(f"🏆 **Peak Month:** {best_m} generates the highest revenue historically.")
 
-    # YoY growth
     if 'Year' in df.columns and 'Actual Revenue' in df.columns:
         yearly = df.groupby('Year')['Actual Revenue'].sum().sort_index()
         if len(yearly) >= 2:
@@ -582,7 +851,6 @@ def compute_ai_insights(df):
             direction = "↑ growth" if growth > 0 else "↓ decline"
             insights.append(f"📊 **YoY Trend:** {abs(growth):.1f}% {direction} in latest fiscal year.")
 
-    # Footfall efficiency
     if 'Actual Revenue' in df.columns and 'Actual Footfall' in df.columns:
         df2 = df.dropna(subset=['Actual Revenue', 'Actual Footfall'])
         if not df2.empty and df2['Actual Footfall'].sum() > 0:
@@ -654,7 +922,6 @@ def build_revenue_gauge(actual, target):
 
 def build_trend_chart(df, y_col, color, title):
     fig = go.Figure()
-    # Area fill
     fig.add_trace(go.Scatter(
         x=df['Date_Obj'], y=df[y_col],
         fill='tozeroy',
@@ -663,7 +930,6 @@ def build_trend_chart(df, y_col, color, title):
         name=y_col,
         hovertemplate='<b>%{x|%b %Y}</b><br>' + f'{y_col}: ' + '%{y:,.0f}<extra></extra>'
     ))
-    # Moving average
     if len(df) >= 6:
         ma = df[y_col].rolling(3, min_periods=1).mean()
         fig.add_trace(go.Scatter(
@@ -754,7 +1020,6 @@ def build_comparison_chart(comp_data):
 
 
 def build_scatter_rff(df):
-    """Revenue vs Footfall scatter with regression line."""
     d = df.dropna(subset=['Actual Revenue', 'Actual Footfall'])
     if len(d) < 3:
         return None
@@ -806,7 +1071,6 @@ MONTH_MAP_FULL = {
 MONTH_PATTERN = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
 
 def parse_and_filter(query_lower, df_live):
-    """Parse query and return filtered dataframe + comparison data."""
     comp_viz_data = None
     variance_report = ""
 
@@ -905,7 +1169,6 @@ def render_sidebar(df_live, auth_obj):
 
         st.markdown("""<div style='border-bottom:1px solid #1a3a6b; margin:16px 0;'></div>""", unsafe_allow_html=True)
 
-        # Data overview
         if not df_live.empty:
             total_months = len(df_live)
             date_range = f"{df_live['Date_Obj'].min().strftime('%Y')} – {df_live['Date_Obj'].max().strftime('%Y')}"
@@ -946,7 +1209,6 @@ def main():
     )
     st.markdown(PAGE_THEME, unsafe_allow_html=True)
 
-    # Session state init
     defaults = {
         'messages': [],
         'last_filtered_df': None,
@@ -986,7 +1248,6 @@ def main():
         """, unsafe_allow_html=True)
         return
 
-    # ── AUTHENTICATED VIEW ──
     if auth:
         render_sidebar(df_live, auth)
 
@@ -1234,7 +1495,6 @@ def main():
                 if fig:
                     st.plotly_chart(fig, use_container_width=True)
 
-            # Summary table
             st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
             disp_cols = [c for c in ['Actual Revenue', 'Target revenue', 'Actual Footfall', 'Target Footfall'] if c in df_plot.columns]
             if disp_cols:
@@ -1261,7 +1521,6 @@ def main():
                 if hm_fig:
                     st.plotly_chart(hm_fig, use_container_width=True)
 
-            # Monthly YoY comparison
             if 'Year' in df_plot.columns and 'Actual Revenue' in df_plot.columns:
                 years = sorted(df_plot['Year'].dropna().unique())
                 if len(years) >= 2:
@@ -1283,7 +1542,6 @@ def main():
         with tab3:
             st.markdown("<div class='section-header'>◈ PREDICTIVE ANALYTICS ENGINE</div>", unsafe_allow_html=True)
 
-            # Full historical + projection chart
             if not df_live.empty and 'Actual Revenue' in df_live.columns:
                 fig_full = go.Figure()
                 fig_full.add_trace(go.Scatter(
@@ -1294,7 +1552,6 @@ def main():
                     fillcolor='rgba(0,198,255,0.06)',
                     hovertemplate='<b>%{x|%b %Y}</b><br>Rs. %{y:,.0f}<extra></extra>'
                 ))
-                # Trend line projection
                 df_hist = df_live.dropna(subset=['Actual Revenue'])
                 if len(df_hist) >= 5:
                     X = np.arange(len(df_hist)).reshape(-1, 1)
@@ -1316,7 +1573,6 @@ def main():
                 fig_full.update_layout(**PLOTLY_LAYOUT, title="2017–2030 Revenue Trajectory & AI Forecast", height=450)
                 st.plotly_chart(fig_full, use_container_width=True)
 
-                # Eid calendar info
                 st.markdown("""
                 <div style='background:rgba(245,197,24,0.06); border:1px solid rgba(245,197,24,0.2); border-radius:12px; padding:16px 20px; margin-top:8px;'>
                   <div style='font-family:Orbitron; font-size:12px; letter-spacing:3px; color:#f5c518; margin-bottom:10px;'>🌙 EID SEASON MULTIPLIER CALENDAR</div>
