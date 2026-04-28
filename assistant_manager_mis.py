@@ -1254,7 +1254,7 @@ def main():
     # ── HERO BANNER ──
     st.markdown("""
     <div class='hero-banner'>
-      <div class='hero-title'>JOYLAND  BI</div>
+      <div class='hero-title'>JOYLAND  MIS ASSISTANT</div>
       <div class='hero-subtitle'>Advanced Business Intelligence & Predictive Analytics Platform</div>
       <div class='hero-badge'>⬡ AI-POWERED · SCOPE 2017–2030 · GRAND MASTER v3.0</div>
     </div>
