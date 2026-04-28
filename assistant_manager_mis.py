@@ -7,6 +7,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_authenticator import Authenticate
 
+# --- ERROR HANDLING FOR LIBRARIES ---
+try:
+    import google.generativeai as genai
+    GOOGLE_AI_AVAILABLE = True
+except ImportError:
+    GOOGLE_AI_AVAILABLE = False
+
 # --- 1. DATA ENGINE (Scope: 2017 - 2026) ---
 def load_excel_data():
     file_options = ["RAW DATA.xlsx", r"Z:\data\RAW DATA.xlsx"]
@@ -105,8 +112,6 @@ def main():
                 st.rerun()
 
             month_pattern = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
-            
-            # --- DATE RANGE LOGIC ADDED HERE ---
             years_in_query = re.findall(r'\b(20\d{2})\b', query_lower)
             months_in_query = re.findall(month_pattern, query_lower)
             
@@ -114,121 +119,84 @@ def main():
             temp_df = pd.DataFrame()
             comp_viz_data = None
 
-            # Detect "to" or "between" for ranges
-            if " to " in query_lower or " between " in query_lower or len(years_in_query) >= 2:
+            # Date Range Detection
+            if " to " in query_lower or len(years_in_query) >= 2:
                 if len(years_in_query) >= 2:
                     y_start, y_end = sorted([int(years_in_query[0]), int(years_in_query[-1])])
-                    # If months are also provided (e.g., July 2017 to March 2026)
                     if len(months_in_query) >= 2:
-                        m_start = months_in_query[0].capitalize()
-                        m_end = months_in_query[-1].capitalize()
-                        
+                        m_start, m_end = months_in_query[0].capitalize(), months_in_query[-1].capitalize()
                         start_date = pd.to_datetime(f"{y_start}-{m_start}-01")
                         end_date = pd.to_datetime(f"{y_end}-{m_end}-01")
                     else:
-                        # Year to Year only
-                        start_date = pd.to_datetime(f"{y_start}-07-01") # Fiscal start
+                        start_date = pd.to_datetime(f"{y_start}-07-01")
                         end_date = pd.to_datetime(f"{y_end}-06-30")
-                    
                     temp_df = df_live[(df_live['Date_Obj'] >= start_date) & (df_live['Date_Obj'] <= end_date)]
             
-            # If not a range, use your original comparison logic
             if temp_df.empty:
                 matches = re.findall(rf'{month_pattern}\s*(20\d{{2}})', query_lower)
                 if len(matches) >= 2:
+                    # Comparison Logic
                     found_years = sorted(list(set([int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)])))
                     found_months = [m.capitalize() for m in re.findall(month_pattern, query_lower)]
-                    
                     if len(found_years) >= 2 and found_months:
                         y1, y2 = found_years[0], found_years[1]
                         v1 = df_live[(df_live['Year'] == y1) & (df_live['Months'].isin(found_months))]
                         v2 = df_live[(df_live['Year'] == y2) & (df_live['Months'].isin(found_months))]
-                        
                         if not v1.empty and not v2.empty:
                             rev1, rev2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
                             ff1, ff2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
                             r_diff, f_diff = rev2 - rev1, ff2 - ff1
                             r_perc = (r_diff / rev1 * 100) if rev1 > 0 else 0
                             f_perc = (f_diff / ff1 * 100) if ff1 > 0 else 0
-                            
-                            months_str = ", ".join(list(dict.fromkeys(found_months)))
-                            variance_report = (
-                                f"\n\n**Comparison for {months_str}:**\n"
-                                f"* **Period 1 ({y1}):** Rev: Rs. {rev1:,.0f} | FF: {ff1:,.0f}\n"
-                                f"* **Period 2 ({y2}):** Rev: Rs. {rev2:,.0f} | FF: {ff2:,.0f}\n"
-                                f"--- \n"
-                                f"**Growth/Variance:**\n"
-                                f"* Revenue: **Rs. {r_diff:,.0f}** ({r_perc:.1f}%)\n"
-                                f"* Footfall: **{f_diff:,.0f}** ({f_perc:.1f}%)\n"
-                            )
+                            variance_report = f"\n\n**Growth:** Revenue: Rs. {r_diff:,.0f} ({r_perc:.1f}%) | FF: {f_diff:,.0f} ({f_perc:.1f}%)"
                             temp_df = pd.concat([v1, v2])
-                            comp_viz_data = {"labels": [f"{y1}", f"{y2}"], "revenue": [rev1, rev2], "footfall": [ff1, ff2]}
+                            comp_viz_data = {"labels": [str(y1), str(y2)], "revenue": [rev1, rev2], "footfall": [ff1, ff2]}
                 else:
-                    # Simple Filter
+                    # Filtered logic
                     temp_df = df_live.copy()
-                    found_months = [m.capitalize() for m in months_in_query]
-                    found_years = [int(y) for y in years_in_query]
-                    if found_months: temp_df = temp_df[temp_df['Months'].isin(found_months)]
-                    if found_years: temp_df = temp_df[temp_df['Year'].isin(found_years)]
+                    if months_in_query: temp_df = temp_df[temp_df['Months'].isin([m.capitalize() for m in months_in_query])]
+                    if years_in_query: temp_df = temp_df[temp_df['Year'].isin([int(y) for y in years_in_query])]
 
             st.session_state.last_filtered_df = temp_df
             st.session_state.last_variance = variance_report
             st.session_state.comparison_data = comp_viz_data
             
             if not temp_df.empty:
-                res = temp_df[["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]].sum()
-                report = (f"### 📊 BI Analysis Result\n* Total Actual Revenue: **Rs. {res['Actual Revenue']:,.0f}**\n* Total Actual Footfall: **{res['Actual Footfall']:,.0f}**{variance_report}")
+                res = temp_df[["Actual Revenue", "Actual Footfall"]].sum()
+                report = f"### 📊 Result\n* Revenue: **Rs. {res['Actual Revenue']:,.0f}**\n* Footfall: **{res['Actual Footfall']:,.0f}**{variance_report}"
                 st.session_state.messages.append({"content": report, "is_user": False})
                 st.rerun()
 
-        if st.session_state.last_filtered_df is not None:
+        if st.session_state.last_filtered_df is not None and not st.session_state.last_filtered_df.empty:
             df_plot = st.session_state.last_filtered_df
             metrics = ["Actual Revenue", "Target revenue", "Actual Footfall", "Target Footfall"]
             results = df_plot[metrics].sum()
             
-            if st.session_state.comparison_data:
-                st.subheader("🆚 Comparison Visualization")
-                c_data = st.session_state.comparison_data
-                col1, col2 = st.columns(2)
-                with col1:
-                    fig_rev = px.bar(x=c_data['labels'], y=c_data['revenue'], title="Revenue Comparison", labels={'x':'Period', 'y':'Revenue'}, color=c_data['labels'], color_discrete_sequence=['#00CC96', '#636EFA'])
-                    st.plotly_chart(fig_rev, use_container_width=True)
-                with col2:
-                    fig_ff = px.bar(x=c_data['labels'], y=c_data['footfall'], title="Footfall Comparison", labels={'x':'Period', 'y':'Footfall'}, color=c_data['labels'], color_discrete_sequence=['#EF553B', '#AB63FA'])
-                    st.plotly_chart(fig_ff, use_container_width=True)
-
             st.divider()
-            chart_option = st.selectbox("🎯 Select Chart to Display", [
-                "1. Revenue Achievement Gauge", "2. Footfall Achievement Gauge",
-                "3. Revenue: Actual vs Target (Bar)", "4. Footfall Trend (Line)",
-                "5. Monthly Revenue Share (Pie)", "6. Revenue Volume (Area)",
-                "7. Footfall vs Revenue (Correlation)", "8. Revenue Target Funnel",
-                "9. Revenue Trend (Line)"  # ADDED OPTION
+            chart_option = st.selectbox("🎯 Select Chart", [
+                "1. Revenue Achievement Gauge", "2. Actual Revenue (Bar Chart)", 
+                "3. Revenue vs Target (Bar)", "4. Footfall Trend (Line)", 
+                "5. Revenue Trend (Line)", "6. Revenue Share (Pie)"
             ])
 
-            rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
-            ff_ach = (results['Actual Footfall'] / results['Target Footfall'] * 100) if results['Target Footfall'] > 0 else 0
-
             if chart_option.startswith("1"):
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#00CC96"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
-            elif chart_option.startswith("2"):
-                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=ff_ach, title={'text': "FF Ach %"}, gauge={'axis': {'range': [0, 100]}, 'bar': {'color': "#636EFA"}})).update_layout(height=400, template="plotly_dark"), use_container_width=True)
+                rev_ach = (results['Actual Revenue'] / results['Target revenue'] * 100) if results['Target revenue'] > 0 else 0
+                st.plotly_chart(go.Figure(go.Indicator(mode="gauge+number", value=rev_ach, title={'text': "Rev Ach %"})).update_layout(height=350, template="plotly_dark"), use_container_width=True)
+            
+            elif chart_option.startswith("2"): # REVENUE BAR CHART ADDED
+                st.plotly_chart(px.bar(df_plot, x='Date_Obj', y='Actual Revenue', color='Months', title="Actual Revenue by Month"), use_container_width=True)
+                
             elif chart_option.startswith("3"):
-                st.plotly_chart(px.bar(df_plot, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], barmode='group', title="Revenue Comparison"), use_container_width=True)
+                st.plotly_chart(px.bar(df_plot, x='Date_Obj', y=['Actual Revenue', 'Target revenue'], barmode='group', title="Revenue vs Target"), use_container_width=True)
+            
             elif chart_option.startswith("4"):
                 st.plotly_chart(px.line(df_plot, x='Date_Obj', y='Actual Footfall', markers=True, title="Footfall Trend"), use_container_width=True)
+            
             elif chart_option.startswith("5"):
-                st.plotly_chart(px.pie(df_plot, values='Actual Revenue', names='Months', hole=0.4, title="Revenue Share"), use_container_width=True)
+                st.plotly_chart(px.line(df_plot, x='Date_Obj', y='Actual Revenue', markers=True, title="Revenue Trend"), use_container_width=True)
+            
             elif chart_option.startswith("6"):
-                st.plotly_chart(px.area(df_plot, x='Date_Obj', y='Actual Revenue', title="Revenue Volume"), use_container_width=True)
-            elif chart_option.startswith("7"):
-                st.plotly_chart(px.scatter(df_plot, x='Actual Footfall', y='Actual Revenue', size='Actual Revenue', color='Months', title="Correlation"), use_container_width=True)
-            elif chart_option.startswith("8"):
-                fig = go.Figure(go.Funnel(y=["Target", "Actual"], x=[results['Target revenue'], results['Actual Revenue']], textinfo="value+percent initial"))
-                fig.update_layout(title="Revenue Funnel", template="plotly_dark")
-                st.plotly_chart(fig, use_container_width=True)
-            elif chart_option.startswith("9"): # NEW CHART ADDED
-                st.plotly_chart(px.line(df_plot, x='Date_Obj', y='Actual Revenue', markers=True, title="Revenue Trend Line", line_shape="spline", render_mode="svg"), use_container_width=True)
+                st.plotly_chart(px.pie(df_plot, values='Actual Revenue', names='Months', hole=0.4, title="Revenue Share"), use_container_width=True)
 
             st.table(df_plot[metrics].sum().to_frame().T.style.format('{:,.0f}'))
 
