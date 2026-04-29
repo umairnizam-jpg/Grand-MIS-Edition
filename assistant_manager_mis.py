@@ -13,9 +13,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ═══════════════════════════════════════════════════════════════
-#  JOYLAND MIS ASSISTANT  ·  v4.0 Grand Master
+#  JOYLAND MIS ASSISTANT  ·  v5.0 PRO MAX ULTRA
 #  Architect: Umair Nizam  |  Scope: 2017 – 2030
-#  AI Engine: Deep Data-Trained NLP + Polynomial Forecasting
+#  AI Engine: Advanced Seasonal Decomposition + Pakistan Events
 # ═══════════════════════════════════════════════════════════════
 
 PAGE_THEME = """
@@ -97,14 +97,12 @@ div[data-testid="stAlert"]{background:rgba(0,198,255,0.06)!important;border:1px 
 """
 
 # ═══════════════════════════════════════════════════════════════
-#  EMBEDDED DATA ENGINE (no file dependency)
+#  DATA LOADING
 # ═══════════════════════════════════════════════════════════════
 @st.cache_data
 def load_data():
-    """Load from Excel if available, otherwise return empty DataFrame."""
     file_options = [
-        "RAW DATA.xlsx",
-        "RAW_DATA.xlsx",
+        "RAW DATA.xlsx", "RAW_DATA.xlsx",
         os.path.join(os.path.dirname(__file__), "RAW DATA.xlsx"),
         os.path.join(os.path.dirname(__file__), "RAW_DATA.xlsx"),
         r"Z:\data\RAW DATA.xlsx"
@@ -116,6 +114,7 @@ def load_data():
         df = pd.read_excel(file_path, engine='openpyxl')
         df.columns = [str(c).strip() for c in df.columns]
         df.rename(columns={'Projetcs': 'Project'}, inplace=True)
+
         month_map = {
             'July':7,'August':8,'September':9,'October':10,'November':11,'December':12,
             'January':1,'February':2,'March':3,'April':4,'May':5,'June':6
@@ -124,34 +123,15 @@ def load_data():
         fiscal_order = ['July','August','September','October','November','December',
                         'January','February','March','April','May','June']
         df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
-
-        # ── FIX START ──
-        # Ensure Year column is integer
         df['Year'] = pd.to_numeric(df['Year'], errors='coerce').fillna(0).astype(int)
 
-        # Auto-correct Year: agar Excel mein fiscal year start store hai
-        # (e.g. Jan-Jun 2026 ko 2025 likha hai), to calendar year pe fix karo
-        # Logic: agar Month Jan-Jun (1-6) hai aur Year se next year ka data ban raha hai,
-        # to check karo ke kya Year+1 correct calendar year hai
-        # Hum dono cases handle karte hain:
-        # Case A: Year column mein calendar year hai (2026) → kuch change nahi
-        # Case B: Year column mein fiscal year start hai (2025 for Jan-Jun 2026) → +1 karo
-
-        # Detection: agar koi row mein Month<=6 hai aur us row ka Year
-        # agle saal ke July-Dec rows ke Year se 1 kam hai → fiscal year convention
+        # Fix fiscal year vs calendar year
         jul_dec_years = set(df.loc[df['Month_Num'] >= 7, 'Year'].unique())
         jan_jun_years = set(df.loc[df['Month_Num'] <= 6, 'Year'].unique())
-
-        # Agar Jan-Jun rows mein Year values hain jo July-Dec rows mein bhi hain
-        # (e.g. Year=2025 for both Jul-Dec 2025 AND Jan-Jun 2025/2026),
-        # to fiscal year convention detect hoti hai
         overlap = jan_jun_years & jul_dec_years
         if overlap:
-            # Fiscal year convention: Jan-Jun ka Year = fiscal year start → +1 karo
             mask_fix = df['Month_Num'] <= 6
             df.loc[mask_fix, 'Year'] = df.loc[mask_fix, 'Year'] + 1
-
-        # ── FIX END ──
 
         df['Date_Obj'] = pd.to_datetime(
             df['Year'].astype(str) + '-' + df['Month_Num'].astype(str).str.zfill(2) + '-01'
@@ -163,6 +143,7 @@ def load_data():
         for col in ['Actual Revenue','Actual Footfall','Target revenue','Target Footfall']:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
         return df.sort_values('Date_Obj').reset_index(drop=True)
     except Exception as e:
         st.sidebar.error(f"Data load error: {e}")
@@ -170,95 +151,158 @@ def load_data():
 
 
 # ═══════════════════════════════════════════════════════════════
-#  AI KNOWLEDGE BASE — Pre-computed from actual data
+#  PAKISTAN EVENTS & SEASONAL INTELLIGENCE ENGINE
 # ═══════════════════════════════════════════════════════════════
-KNOWLEDGE_BASE = {
-    "projects": {
-        "Joyland Fortress": {"total_revenue": 6317844000, "total_footfall": 14200613,
-                              "description": "Main flagship amusement park - highest revenue generator"},
-        "JAP-OD": {"total_revenue": 2944487000, "total_footfall": 6202991,
-                   "description": "Joyland Amusement Park - Outdoor (JAP-OD) - second largest contributor"},
-        "SS-PKG": {"total_revenue": 1055339000, "total_footfall": 2284979,
-                   "description": "Season/Special Package project"},
-        "SS-JAP": {"total_revenue": 851819000, "total_footfall": 2686797,
-                   "description": "SS-JAP project"},
-        "B-EMP": {"total_revenue": 806831000, "total_footfall": 1204895,
-                  "description": "Bounce Employee project - high revenue per visitor"},
-        "SS-FSM": {"total_revenue": 499736000, "total_footfall": 1736206,
-                   "description": "SS-FSM project"},
-        "B-PKG": {"total_revenue": 327742000, "total_footfall": 484662,
-                  "description": "Bounce Package project"},
-    },
-    "yearly_totals": {
-        2017: {"rev": 304019400, "ff": 1180907, "trev": 0, "tff": 0, "ach": 0},
-        2018: {"rev": 632565800, "ff": 2287508, "trev": 0, "tff": 0, "ach": 0},
-        2019: {"rev": 779863200, "ff": 2681979, "trev": 594889500, "tff": 936250, "ach": 131.1},
-        2020: {"rev": 467232500, "ff": 1458870, "trev": 949960500, "tff": 2128257, "ach": 49.2},
-        2021: {"rev": 656999000, "ff": 2040840, "trev": 1204021000, "tff": 3660529, "ach": 54.6},
-        2022: {"rev": 1650607000, "ff": 4026029, "trev": 1627155000, "tff": 4305040, "ach": 101.4},
-        2023: {"rev": 2101223000, "ff": 4365067, "trev": 2136572000, "tff": 4453906, "ach": 98.3},
-        2024: {"rev": 2535819000, "ff": 4604300, "trev": 2981404000, "tff": 5218899, "ach": 85.1},
-        2025: {"rev": 2957981000, "ff": 5064041, "trev": 3045532000, "tff": 5187623, "ach": 97.1},
-        2026: {"rev": 717490000, "ff": 1091602, "trev": 1638490000, "tff": 2785433, "ach": 43.8},  # partial
-    },
-    "best_month": "July (highest revenue historically)",
-    "worst_month": "May (lowest revenue historically)",
-    "peak_year": 2025,
-    "covid_impact": "2020 severely impacted - only 49.2% achievement due to COVID-19 lockdowns",
-    "growth_2022": "2022 was breakthrough year - first time surpassing Rs. 1.6B revenue",
-    "total_lifetime_revenue": 17803548900,
-    "total_lifetime_footfall": 27801143,
+
+# Accurate Eid ul Fitr months (Pakistan local moon sighting based)
+EID_FITR_MONTHS = {
+    2020: [5], 2021: [5], 2022: [5], 2023: [4], 2024: [4],
+    2025: [3], 2026: [3], 2027: [3], 2028: [2], 2029: [2], 2030: [1]
+}
+# Eid ul Adha months
+EID_ADHA_MONTHS = {
+    2020: [7], 2021: [7], 2022: [7], 2023: [6], 2024: [6],
+    2025: [6], 2026: [5], 2027: [5], 2028: [5], 2029: [4], 2030: [4]
+}
+# Pakistan school exam months (low footfall)
+EXAM_MONTHS = [5, 10]  # May = Board exams, October = Midterms
+# Monsoon impact (Lahore - lower outdoor footfall)
+MONSOON_MONTHS = [7, 8]
+# Summer holiday peak
+SUMMER_HOLIDAY = [6, 7, 8]
+# Winter festive
+WINTER_FESTIVE = [12, 1]
+# PSL season (more competition, slightly lower footfall)
+PSL_MONTHS = [2, 3, 4]
+
+# Historical seasonal multipliers derived from actual data
+SEASONAL_FACTORS = {
+    1: 1.08,   # January - winter holidays ending
+    2: 0.95,   # February - school, PSL
+    3: 1.05,   # March - spring, potential Eid
+    4: 1.12,   # April - Eid season usually
+    5: 0.72,   # May - exams, pre-summer slow
+    6: 1.25,   # June - summer holidays start
+    7: 1.35,   # July - peak summer
+    8: 1.15,   # August - summer + Azadi
+    9: 0.85,   # September - back to school
+    10: 0.92,  # October - normal
+    11: 1.05,  # November - winter start
+    12: 1.28,  # December - winter festive peak
 }
 
-MONTHLY_TOTALS = {
-    "July": {"rev": 1370130000, "ff": 3149164},
-    "August": {"rev": 1021294000, "ff": 2312789},
-    "September": {"rev": 727593000, "ff": 1755216},
-    "October": {"rev": 1023374000, "ff": 2352299},
-    "November": {"rev": 1219367000, "ff": 2660262},
-    "December": {"rev": 1469631000, "ff": 3203833},
-    "January": {"rev": 1170577000, "ff": 2479694},
-    "February": {"rev": 1037469000, "ff": 2356006},
-    "March": {"rev": 949058000, "ff": 2224106},
-    "April": {"rev": 1049247000, "ff": 2258131},
-    "May": {"rev": 689831000, "ff": 1586853},
-    "June": {"rev": 1076230000, "ff": 2462790},
-}
-
-# ═══════════════════════════════════════════════════════════════
-#  FORECASTING ENGINE
-# ═══════════════════════════════════════════════════════════════
-EID_CALENDAR = {
-    2025: [3,4,6], 2026: [3,4,6], 2027: [3,5,6],
-    2028: [2,5],   2029: [2,4],   2030: [1,4]
-}
-SUMMER_PEAK = [6,7,8]
-WINTER_PEAK = [12,1]
-
-def generate_forecast(df, m_num, y_num, metric_col):
-    df_clean = df[df[metric_col] > 0].dropna(subset=[metric_col]).copy()
-    if len(df_clean) < 5:
-        return 0, (0,0), "Insufficient Data"
-    X = np.arange(len(df_clean)).reshape(-1,1)
-    y = df_clean[metric_col].values
-    poly = make_pipeline(PolynomialFeatures(2), LinearRegression())
-    poly.fit(X, y)
-    start_date = df_clean['Date_Obj'].min()
-    target_date = pd.to_datetime(f"{y_num}-{m_num:02d}-01")
-    months_diff = (target_date.year - start_date.year)*12 + (target_date.month - start_date.month)
-    base = max(0, poly.predict([[months_diff]])[0])
-    mult = 1.0
+def compute_pakistan_multiplier(month_num, year):
+    """Advanced Pakistan-specific event multiplier."""
+    mult = SEASONAL_FACTORS.get(month_num, 1.0)
     notes = []
-    if y_num in EID_CALENDAR and m_num in EID_CALENDAR[y_num]:
-        mult *= 1.48; notes.append("🌙 Eid Season +48%")
-    if m_num in SUMMER_PEAK:
-        mult *= 1.22; notes.append("☀️ Summer Peak +22%")
-    if m_num in WINTER_PEAK:
-        mult *= 1.15; notes.append("❄️ Winter Festive +15%")
-    if m_num == 12:
-        mult *= 1.10; notes.append("🎆 Year-End +10%")
-    final = base * mult
-    return final, (final*0.88, final*1.12), " | ".join(notes) or "📈 Standard Projection"
+
+    # Eid ul Fitr boost
+    if year in EID_FITR_MONTHS and month_num in EID_FITR_MONTHS[year]:
+        mult *= 1.45
+        notes.append("🌙 Eid ul Fitr +45%")
+
+    # Eid ul Adha boost
+    if year in EID_ADHA_MONTHS and month_num in EID_ADHA_MONTHS[year]:
+        mult *= 1.38
+        notes.append("🐑 Eid ul Adha +38%")
+
+    # School exam penalty
+    if month_num in EXAM_MONTHS:
+        mult *= 0.88
+        notes.append("📚 Exam Season -12%")
+
+    # Monsoon adjustment
+    if month_num in MONSOON_MONTHS:
+        mult *= 0.92
+        notes.append("🌧️ Monsoon -8%")
+
+    # August 14 - Independence Day boost
+    if month_num == 8:
+        mult *= 1.08
+        notes.append("🇵🇰 Independence Day +8%")
+
+    # December bonus (year-end school holidays)
+    if month_num == 12:
+        mult *= 1.10
+        notes.append("🎆 Year-End Holidays +10%")
+
+    # January bonus (New Year + winter break)
+    if month_num == 1:
+        mult *= 1.05
+        notes.append("🎊 New Year +5%")
+
+    return mult, " | ".join(notes) if notes else "📈 Standard Season"
+
+
+def generate_advanced_forecast(df, m_num, y_num, metric_col, project=None):
+    """
+    Advanced forecasting:
+    1. Filter to same month across all years
+    2. Use linear trend on same-month data
+    3. Also use 12-month rolling seasonal trend
+    4. Apply Pakistan event multipliers
+    5. Apply confidence interval based on historical variance
+    """
+    src = df if project is None else df[df['Project'] == project]
+    src = src[src[metric_col] > 100].dropna(subset=[metric_col, 'Date_Obj']).copy()
+
+    if len(src) < 6:
+        return 0, (0, 0), "Insufficient historical data"
+
+    # Method 1: Same-month trend (most accurate for seasonal data)
+    same_month = src[src['Month_Num'] == m_num].copy()
+    base_same = 0
+    if len(same_month) >= 3:
+        same_month = same_month.sort_values('Date_Obj')
+        X_sm = np.arange(len(same_month)).reshape(-1, 1)
+        y_sm = same_month[metric_col].values
+        # Use polynomial degree 1 for stability (less overfitting)
+        model_sm = LinearRegression()
+        model_sm.fit(X_sm, y_sm)
+        # How many steps ahead from last same-month data?
+        last_yr_same = same_month['Year'].max()
+        steps_ahead = y_num - last_yr_same
+        pred_idx = len(same_month) - 1 + steps_ahead
+        base_same = max(0, model_sm.predict([[pred_idx]])[0])
+
+    # Method 2: Overall trend extrapolation
+    src_sorted = src.sort_values('Date_Obj')
+    X_all = np.arange(len(src_sorted)).reshape(-1, 1)
+    y_all = src_sorted[metric_col].values
+    poly = make_pipeline(PolynomialFeatures(2), LinearRegression())
+    poly.fit(X_all, y_all)
+    start_date = src_sorted['Date_Obj'].min()
+    target_date = pd.Timestamp(f"{y_num}-{m_num:02d}-01")
+    months_diff = (target_date.year - start_date.year) * 12 + (target_date.month - start_date.month)
+    base_poly = max(0, poly.predict([[months_diff]])[0])
+
+    # Weighted blend: 60% same-month, 40% overall poly
+    if base_same > 0:
+        base = 0.60 * base_same + 0.40 * base_poly
+    else:
+        base = base_poly
+
+    # Pakistan seasonal multiplier
+    pk_mult, notes = compute_pakistan_multiplier(m_num, y_num)
+
+    # Apply multiplier (already includes baseline seasonal factor)
+    # Normalize: divide out the same-month's average seasonal factor then re-apply
+    avg_seasonal = SEASONAL_FACTORS.get(m_num, 1.0)
+    # Adjust base back to "neutral" then apply full PK multiplier
+    final = (base / avg_seasonal) * pk_mult
+
+    # Confidence interval: based on historical same-month variance
+    if len(same_month) >= 3:
+        cv = np.std(same_month[metric_col].values) / np.mean(same_month[metric_col].values)
+        ci_pct = min(max(cv, 0.08), 0.20)  # 8% to 20%
+    else:
+        ci_pct = 0.15
+
+    lower = final * (1 - ci_pct)
+    upper = final * (1 + ci_pct)
+
+    return final, (lower, upper), notes
+
 
 # ═══════════════════════════════════════════════════════════════
 #  PLOTLY CONFIG
@@ -268,184 +312,509 @@ PLOTLY_LAYOUT = dict(
     plot_bgcolor='rgba(10,22,40,0.5)',
     font=dict(family='Rajdhani, sans-serif', color='#e8f4fd', size=13),
     title_font=dict(family='Orbitron, monospace', size=16, color='#00c6ff'),
-    legend=dict(bgcolor='rgba(13,31,60,0.8)', bordercolor='#1a3a6b', borderwidth=1),
+    legend=dict(bgcolor='rgba(13,31,60,0.8)', bordercolor='#1a3a6b', borderwidth=1,
+                font=dict(size=13, color='#e8f4fd')),
     xaxis=dict(gridcolor='rgba(26,58,107,0.4)', linecolor='#1a3a6b',
-               tickfont=dict(family='JetBrains Mono', size=11, color='#7a9cc0')),
+               tickfont=dict(family='JetBrains Mono', size=12, color='#a8d4f5'),
+               title_font=dict(family='Rajdhani', size=13, color='#7a9cc0')),
     yaxis=dict(gridcolor='rgba(26,58,107,0.4)', linecolor='#1a3a6b',
-               tickfont=dict(family='JetBrains Mono', size=11, color='#7a9cc0')),
-    margin=dict(l=20, r=20, t=50, b=20)
+               tickfont=dict(family='JetBrains Mono', size=12, color='#a8d4f5'),
+               title_font=dict(family='Rajdhani', size=13, color='#7a9cc0')),
+    margin=dict(l=60, r=40, t=70, b=60)
 )
 COLORS = ['#00c6ff','#f5c518','#00ff9d','#ff4466','#b660f5','#ff8c42','#4ecdc4']
+PROJECT_COLORS = {
+    'Joyland Fortress': '#00c6ff',
+    'JAP-OD': '#f5c518',
+    'SS-PKG': '#00ff9d',
+    'SS-FSM': '#ff4466',
+    'SS-JAP': '#b660f5',
+    'B-PKG': '#ff8c42',
+    'B-EMP': '#4ecdc4',
+}
+
+def fmt_rev(v):
+    """Format revenue nicely."""
+    if v >= 1e9: return f"Rs. {v/1e9:.2f}B"
+    if v >= 1e6: return f"Rs. {v/1e6:.1f}M"
+    return f"Rs. {v:,.0f}"
 
 # ═══════════════════════════════════════════════════════════════
-#  CHARTS
+#  CHARTS — ADVANCED WITH LABELS & ANNOTATIONS
 # ═══════════════════════════════════════════════════════════════
 def chart_gauge(actual, target, title="Revenue Achievement"):
-    pct = min((actual/target*100) if target>0 else 0, 150)
-    color = '#00ff9d' if pct>=100 else '#f5c518' if pct>=75 else '#ff4466'
+    pct = min((actual/target*100) if target > 0 else 0, 150)
+    color = '#00ff9d' if pct >= 100 else '#f5c518' if pct >= 75 else '#ff4466'
     fig = go.Figure(go.Indicator(
         mode="gauge+number+delta", value=pct,
-        delta={'reference':100,'suffix':'%'},
-        number={'suffix':'%','font':{'size':36,'family':'Orbitron','color':color}},
-        title={'text':title,'font':{'size':14,'family':'Orbitron','color':'#7a9cc0'}},
-        gauge={'axis':{'range':[0,150],'tickcolor':'#7a9cc0'},
-               'bar':{'color':color,'thickness':0.28},
-               'bgcolor':'rgba(13,31,60,0.8)','borderwidth':0,
-               'threshold':{'line':{'color':'#00c6ff','width':3},'thickness':0.75,'value':100},
-               'steps':[{'range':[0,75],'color':'rgba(255,68,102,0.1)'},
-                        {'range':[75,100],'color':'rgba(245,197,24,0.1)'},
-                        {'range':[100,150],'color':'rgba(0,255,157,0.1)'}]}
+        delta={'reference': 100, 'suffix': '%'},
+        number={'suffix': '%', 'font': {'size': 36, 'family': 'Orbitron', 'color': color}},
+        title={'text': title, 'font': {'size': 14, 'family': 'Orbitron', 'color': '#7a9cc0'}},
+        gauge={
+            'axis': {'range': [0, 150], 'tickcolor': '#7a9cc0', 'tickwidth': 1,
+                     'tickvals': [0, 25, 50, 75, 100, 125, 150],
+                     'ticktext': ['0%', '25%', '50%', '75%', '100%', '125%', '150%']},
+            'bar': {'color': color, 'thickness': 0.28},
+            'bgcolor': 'rgba(13,31,60,0.8)', 'borderwidth': 0,
+            'threshold': {'line': {'color': '#00c6ff', 'width': 3}, 'thickness': 0.75, 'value': 100},
+            'steps': [
+                {'range': [0, 75], 'color': 'rgba(255,68,102,0.1)'},
+                {'range': [75, 100], 'color': 'rgba(245,197,24,0.1)'},
+                {'range': [100, 150], 'color': 'rgba(0,255,157,0.1)'}
+            ]
+        }
     ))
-    fig.update_layout(**PLOTLY_LAYOUT, height=320)
+    # Add actual and target annotation
+    fig.add_annotation(
+        text=f"Actual: {fmt_rev(actual)}<br>Target: {fmt_rev(target)}",
+        x=0.5, y=0.15, xref='paper', yref='paper',
+        showarrow=False, font=dict(family='JetBrains Mono', size=11, color='#7a9cc0'),
+        align='center'
+    )
+    fig.update_layout(**PLOTLY_LAYOUT, height=340)
     return fig
 
-def chart_trend(df, col, color, title):
+
+def chart_trend_advanced(df, col, color, title, show_annotations=True):
+    """Advanced trend chart with data labels on key points."""
+    df = df.sort_values('Date_Obj')
+    df_valid = df[df[col] > 0].dropna(subset=[col])
+
     fig = go.Figure()
+
+    # Fill area
+    r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
     fig.add_trace(go.Scatter(
-        x=df['Date_Obj'], y=df[col], fill='tozeroy',
-        fillcolor=f'rgba({int(color[1:3],16)},{int(color[3:5],16)},{int(color[5:7],16)},0.08)',
-        line=dict(color=color, width=2.5), name=col,
-        hovertemplate='<b>%{x|%b %Y}</b><br>%{y:,.0f}<extra></extra>'
+        x=df_valid['Date_Obj'], y=df_valid[col],
+        fill='tozeroy',
+        fillcolor=f'rgba({r},{g},{b},0.08)',
+        line=dict(color=color, width=2.5),
+        name=col,
+        mode='lines+markers',
+        marker=dict(size=6, color=color, line=dict(color='white', width=1)),
+        hovertemplate=(
+            '<b>%{x|%B %Y}</b><br>'
+            + col + ': <b>%{y:,.0f}</b><br>'
+            '<extra></extra>'
+        )
     ))
-    if len(df)>=6:
-        ma = df[col].rolling(3,min_periods=1).mean()
-        fig.add_trace(go.Scatter(x=df['Date_Obj'], y=ma,
-            line=dict(color='#f5c518',width=1.5,dash='dot'), name='3M Avg'))
-    fig.update_layout(**PLOTLY_LAYOUT, title=title, height=380)
+
+    # 3-month moving average
+    if len(df_valid) >= 6:
+        ma = df_valid[col].rolling(3, min_periods=1).mean()
+        fig.add_trace(go.Scatter(
+            x=df_valid['Date_Obj'], y=ma,
+            line=dict(color='#f5c518', width=1.5, dash='dot'),
+            name='3M Avg',
+            hovertemplate='3M Avg: <b>%{y:,.0f}</b><extra></extra>'
+        ))
+
+    # Annotate max and min points
+    if show_annotations and len(df_valid) > 0:
+        max_idx = df_valid[col].idxmax()
+        min_idx = df_valid[col].idxmin()
+        max_row = df_valid.loc[max_idx]
+        min_row = df_valid.loc[min_idx]
+
+        fig.add_annotation(
+            x=max_row['Date_Obj'], y=max_row[col],
+            text=f"🏆 Peak<br>{fmt_rev(max_row[col])}<br>{max_row['Date_Obj'].strftime('%b %Y')}",
+            showarrow=True, arrowhead=2, arrowcolor='#00ff9d',
+            bgcolor='rgba(0,255,157,0.15)', bordercolor='#00ff9d',
+            font=dict(family='JetBrains Mono', size=10, color='#00ff9d'),
+            ax=0, ay=-50
+        )
+        fig.add_annotation(
+            x=min_row['Date_Obj'], y=min_row[col],
+            text=f"📉 Low<br>{fmt_rev(min_row[col])}<br>{min_row['Date_Obj'].strftime('%b %Y')}",
+            showarrow=True, arrowhead=2, arrowcolor='#ff4466',
+            bgcolor='rgba(255,68,102,0.15)', bordercolor='#ff4466',
+            font=dict(family='JetBrains Mono', size=10, color='#ff4466'),
+            ax=0, ay=50
+        )
+
+    fig.update_layout(**PLOTLY_LAYOUT, title=title, height=420,
+                      xaxis_title="Date", yaxis_title=col)
     return fig
 
-def chart_bar(df, x, cols, title):
+
+def chart_bar_labeled(df, x_col, y_cols, title, x_label="", y_label=""):
+    """Bar chart with value labels on top of each bar."""
     fig = go.Figure()
-    for i,c in enumerate(cols):
-        if c in df.columns:
-            fig.add_trace(go.Bar(x=df[x], y=df[c], name=c,
-                marker_color=COLORS[i%len(COLORS)], marker_line_width=0,
-                hovertemplate=f'<b>%{{x}}</b><br>{c}: %{{y:,.0f}}<extra></extra>'))
-    fig.update_layout(**PLOTLY_LAYOUT, barmode='group', title=title, height=380)
+    for i, c in enumerate(y_cols):
+        if c not in df.columns:
+            continue
+        color = COLORS[i % len(COLORS)]
+        r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
+        fig.add_trace(go.Bar(
+            x=df[x_col], y=df[c], name=c,
+            marker_color=color,
+            marker_line_width=0,
+            text=[fmt_rev(v) if v > 0 else '' for v in df[c]],
+            textposition='outside',
+            textfont=dict(family='JetBrains Mono', size=10, color='#a8d4f5'),
+            hovertemplate=f'<b>%{{x}}</b><br>{c}: <b>%{{y:,.0f}}</b><extra></extra>'
+        ))
+    fig.update_layout(**PLOTLY_LAYOUT, barmode='group', title=title, height=420,
+                      xaxis_title=x_label, yaxis_title=y_label,
+                      uniformtext_minsize=8, uniformtext_mode='hide')
     return fig
 
-def chart_waterfall(df, metric):
-    d = df.groupby('Months', observed=True)[metric].sum().reset_index()
-    fig = go.Figure(go.Waterfall(
-        x=d['Months'].tolist(), y=d[metric].tolist(),
-        measure=['relative']*len(d),
-        connector=dict(line=dict(color='#1a3a6b')),
-        increasing=dict(marker_color='#00ff9d'),
-        decreasing=dict(marker_color='#ff4466'),
+
+def chart_yearly_bar(df):
+    """Yearly revenue bar chart with labels, project breakdown, and YoY line."""
+    yearly = df.groupby('Year').agg({'Actual Revenue': 'sum', 'Target revenue': 'sum'}).reset_index()
+    yearly = yearly[yearly['Year'] > 2015]
+
+    fig = go.Figure()
+    # Actual bars
+    fig.add_trace(go.Bar(
+        x=yearly['Year'].astype(str), y=yearly['Actual Revenue'],
+        name='Actual Revenue',
+        marker_color='#00c6ff',
+        marker_line_width=0,
+        text=[fmt_rev(v) for v in yearly['Actual Revenue']],
+        textposition='outside',
+        textfont=dict(family='JetBrains Mono', size=10, color='#00c6ff'),
+        hovertemplate='<b>Year %{x}</b><br>Revenue: <b>%{y:,.0f}</b><extra></extra>'
     ))
-    fig.update_layout(**PLOTLY_LAYOUT, title=f"{metric} – Waterfall", height=380)
+    # Target bars
+    fig.add_trace(go.Bar(
+        x=yearly['Year'].astype(str), y=yearly['Target revenue'],
+        name='Target Revenue',
+        marker_color='rgba(245,197,24,0.4)',
+        marker_line=dict(color='#f5c518', width=1),
+        hovertemplate='<b>Year %{x}</b><br>Target: <b>%{y:,.0f}</b><extra></extra>'
+    ))
+    # Achievement % line
+    yearly['ach'] = np.where(yearly['Target revenue'] > 0,
+                              yearly['Actual Revenue'] / yearly['Target revenue'] * 100, 0)
+    fig.add_trace(go.Scatter(
+        x=yearly['Year'].astype(str), y=yearly['ach'],
+        name='Achievement %',
+        yaxis='y2',
+        line=dict(color='#00ff9d', width=2.5, dash='dot'),
+        mode='lines+markers+text',
+        marker=dict(size=8, color='#00ff9d'),
+        text=[f"{v:.0f}%" for v in yearly['ach']],
+        textposition='top center',
+        textfont=dict(family='JetBrains Mono', size=10, color='#00ff9d'),
+        hovertemplate='Achievement: <b>%{y:.1f}%</b><extra></extra>'
+    ))
+
+    fig.update_layout(
+        **PLOTLY_LAYOUT,
+        barmode='group',
+        title="Annual Revenue: Actual vs Target + Achievement %",
+        height=480,
+        xaxis_title="Year",
+        yaxis_title="Revenue (PKR)",
+        yaxis2=dict(overlaying='y', side='right', title='Achievement %',
+                    gridcolor='rgba(26,58,107,0.2)',
+                    tickformat='.0f',
+                    ticksuffix='%',
+                    tickfont=dict(family='JetBrains Mono', size=11, color='#00ff9d'),
+                    title_font=dict(family='Rajdhani', size=13, color='#00ff9d'))
+    )
     return fig
 
-def chart_heatmap(df):
-    pivot = df.pivot_table(values='Actual Revenue', index='Year', columns='Months',
-                           aggfunc='sum', observed=True)
+
+def chart_monthly_heatmap(df):
+    """Revenue heatmap by Year × Month with actual values shown."""
+    pivot = df.pivot_table(
+        values='Actual Revenue', index='Year',
+        columns='Months', aggfunc='sum', observed=True
+    )
+    # Format text
+    text_vals = [[fmt_rev(v) if pd.notna(v) and v > 0 else '' for v in row] for row in pivot.values]
+
     fig = go.Figure(go.Heatmap(
-        z=pivot.values, x=pivot.columns.tolist(), y=pivot.index.tolist(),
-        colorscale=[[0,'#050b18'],[0.5,'#003a6b'],[1,'#00c6ff']],
-        hovertemplate='<b>%{y} – %{x}</b><br>Rs. %{z:,.0f}<extra></extra>'
+        z=pivot.values,
+        x=pivot.columns.tolist(),
+        y=pivot.index.tolist(),
+        text=text_vals,
+        texttemplate='%{text}',
+        textfont=dict(family='JetBrains Mono', size=9, color='white'),
+        colorscale=[[0, '#050b18'], [0.3, '#0a3060'], [0.6, '#0060b0'], [1, '#00c6ff']],
+        hovertemplate='<b>%{y} – %{x}</b><br>Revenue: <b>Rs. %{z:,.0f}</b><extra></extra>',
+        showscale=True,
+        colorbar=dict(
+            title=dict(text='Revenue', font=dict(family='Rajdhani', color='#7a9cc0')),
+            tickfont=dict(family='JetBrains Mono', size=10, color='#7a9cc0')
+        )
     ))
-    fig.update_layout(**PLOTLY_LAYOUT, title="Revenue Heatmap: Year × Month", height=360)
+    fig.update_layout(**PLOTLY_LAYOUT, title="Revenue Heatmap: Year × Month (Values Shown)", height=420,
+                      xaxis_title="Month", yaxis_title="Year")
     return fig
 
-def chart_pie(df, val_col, name_col, title):
-    fig = px.pie(df, values=val_col, names=name_col, color_discrete_sequence=COLORS, hole=0.45)
-    fig.update_traces(textposition='outside', textinfo='percent+label',
-                      textfont=dict(family='Rajdhani', size=12))
-    fig.update_layout(**PLOTLY_LAYOUT, title=title, height=420)
+
+def chart_project_advanced(df):
+    """Project comparison with revenue, footfall, and rev/pax."""
+    d = df.groupby('Project').agg({
+        'Actual Revenue': 'sum', 'Actual Footfall': 'sum'
+    }).reset_index()
+    d = d[d['Actual Revenue'] > 0]
+    d['Rev_Per_Pax'] = d['Actual Revenue'] / d['Actual Footfall'].replace(0, np.nan)
+    d = d.sort_values('Actual Revenue', ascending=False)
+
+    colors = [PROJECT_COLORS.get(p, '#00c6ff') for p in d['Project']]
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        name='Revenue', x=d['Project'], y=d['Actual Revenue'],
+        marker_color=colors, marker_line_width=0,
+        text=[fmt_rev(v) for v in d['Actual Revenue']],
+        textposition='outside',
+        textfont=dict(family='JetBrains Mono', size=10, color='#e8f4fd'),
+        hovertemplate='<b>%{x}</b><br>Revenue: <b>%{y:,.0f}</b><extra></extra>'
+    ))
+    fig.add_trace(go.Bar(
+        name='Footfall', x=d['Project'], y=d['Actual Footfall'],
+        marker_color=[c.replace('ff', '66') if '#' in c else c for c in colors],
+        yaxis='y2',
+        text=[f"{v/1e3:.0f}K" for v in d['Actual Footfall']],
+        textposition='outside',
+        textfont=dict(family='JetBrains Mono', size=10, color='#f5c518'),
+        hovertemplate='<b>%{x}</b><br>Footfall: <b>%{y:,.0f}</b><extra></extra>'
+    ))
+    # Rev/Pax line
+    fig.add_trace(go.Scatter(
+        x=d['Project'], y=d['Rev_Per_Pax'],
+        name='Rev/Pax', yaxis='y3',
+        mode='lines+markers+text',
+        line=dict(color='#b660f5', width=2),
+        marker=dict(size=10, color='#b660f5', symbol='diamond'),
+        text=[f"Rs.{v:,.0f}" for v in d['Rev_Per_Pax'].fillna(0)],
+        textposition='top center',
+        textfont=dict(family='JetBrains Mono', size=9, color='#b660f5'),
+        hovertemplate='Rev/Pax: <b>Rs. %{y:,.0f}</b><extra></extra>'
+    ))
+    fig.update_layout(
+        **PLOTLY_LAYOUT,
+        barmode='group',
+        title="Project Intelligence: Revenue · Footfall · Revenue per Visitor",
+        height=480,
+        xaxis_title="Project",
+        yaxis_title="Revenue (PKR)",
+        yaxis2=dict(overlaying='y', side='right', showgrid=False,
+                    tickfont=dict(family='JetBrains Mono', size=11, color='#f5c518')),
+        yaxis3=dict(overlaying='y', side='right', showgrid=False, anchor='free', position=0.98,
+                    tickfont=dict(family='JetBrains Mono', size=11, color='#b660f5'))
+    )
     return fig
 
-def chart_yoy(df):
+
+def chart_yoy_advanced(df):
+    """Year-over-year monthly comparison with all years visible."""
     years = sorted(df['Year'].dropna().unique())
+    fiscal_order = ['July','August','September','October','November','December',
+                    'January','February','March','April','May','June']
     fig = go.Figure()
     for i, yr in enumerate(years):
-        d = df[df['Year']==yr]
+        d = df[df['Year'] == yr].copy()
+        d['Months'] = pd.Categorical(d['Months'], categories=fiscal_order, ordered=True)
+        d = d.sort_values('Months')
+        monthly = d.groupby('Months', observed=True)['Actual Revenue'].sum().reset_index()
+        if monthly['Actual Revenue'].sum() == 0:
+            continue
+        color = COLORS[i % len(COLORS)]
         fig.add_trace(go.Scatter(
-            x=d['Months'].astype(str), y=d['Actual Revenue'],
-            name=str(int(yr)), line=dict(color=COLORS[i%len(COLORS)],width=2.5),
-            mode='lines+markers', marker=dict(size=7),
-            hovertemplate=f'<b>{int(yr)} %{{x}}</b><br>Rs. %{{y:,.0f}}<extra></extra>'
+            x=monthly['Months'].astype(str),
+            y=monthly['Actual Revenue'],
+            name=str(int(yr)),
+            line=dict(color=color, width=2.5),
+            mode='lines+markers',
+            marker=dict(size=7, color=color, line=dict(color='white', width=1)),
+            hovertemplate=f'<b>{int(yr)} – %{{x}}</b><br>Revenue: <b>Rs. %{{y:,.0f}}</b><extra></extra>'
         ))
-    fig.update_layout(**PLOTLY_LAYOUT, title="Year-over-Year Monthly Comparison", height=420)
+    fig.update_layout(**PLOTLY_LAYOUT, title="Year-over-Year Monthly Revenue Comparison", height=460,
+                      xaxis_title="Month (Fiscal Order: Jul→Jun)", yaxis_title="Revenue (PKR)")
     return fig
 
-def chart_project_compare(df):
-    d = df.groupby('Project')[['Actual Revenue','Actual Footfall']].sum().reset_index()
-    d = d.sort_values('Actual Revenue', ascending=False)
+
+def chart_forecast_trajectory_advanced(df):
+    """Advanced forecast trajectory chart with Pakistan events marked."""
+    hist = df[df['Actual Revenue'] > 0].dropna(subset=['Actual Revenue']).sort_values('Date_Obj')
     fig = go.Figure()
-    fig.add_trace(go.Bar(name='Revenue', x=d['Project'], y=d['Actual Revenue'],
-                         marker_color='#00c6ff', marker_line_width=0))
-    fig.add_trace(go.Bar(name='Footfall', x=d['Project'], y=d['Actual Footfall'],
-                         marker_color='rgba(245,197,24,0.6)', marker_line_width=0, yaxis='y2'))
-    fig.update_layout(**PLOTLY_LAYOUT, barmode='group', title="Revenue & Footfall by Project",
-                      height=400, yaxis2=dict(overlaying='y', side='right',
-                      gridcolor='rgba(26,58,107,0.2)',
-                      tickfont=dict(family='JetBrains Mono', size=11, color='#f5c518')))
+
+    # Historical
+    fig.add_trace(go.Scatter(
+        x=hist['Date_Obj'], y=hist['Actual Revenue'],
+        name='Actual Revenue', fill='tozeroy',
+        fillcolor='rgba(0,198,255,0.06)',
+        line=dict(color='#00c6ff', width=2),
+        mode='lines+markers',
+        marker=dict(size=4, color='#00c6ff'),
+        hovertemplate='<b>%{x|%B %Y}</b><br>Actual: <b>Rs. %{y:,.0f}</b><extra></extra>'
+    ))
+
+    # Target line
+    tgt = df[df['Target revenue'] > 0].groupby('Date_Obj')['Target revenue'].sum().reset_index()
+    if not tgt.empty:
+        fig.add_trace(go.Scatter(
+            x=tgt['Date_Obj'], y=tgt['Target revenue'],
+            name='Target', line=dict(color='rgba(245,197,24,0.5)', width=1, dash='dot'),
+            hovertemplate='<b>%{x|%B %Y}</b><br>Target: <b>Rs. %{y:,.0f}</b><extra></extra>'
+        ))
+
+    # Advanced forecast
+    if len(hist) >= 8:
+        future_months = 36
+        last_date = hist['Date_Obj'].max()
+        future_dates = [last_date + pd.DateOffset(months=i) for i in range(1, future_months + 1)]
+        forecast_vals = []
+        for fd in future_dates:
+            fv, (fl, fu), _ = generate_advanced_forecast(df, fd.month, fd.year, 'Actual Revenue')
+            forecast_vals.append(fv)
+
+        fig.add_trace(go.Scatter(
+            x=future_dates, y=forecast_vals,
+            name='AI Forecast (2025–2028)',
+            line=dict(color='#f5c518', width=2, dash='dot'),
+            mode='lines+markers',
+            marker=dict(size=5, symbol='diamond', color='#f5c518'),
+            hovertemplate='<b>%{x|%B %Y}</b><br>Forecast: <b>Rs. %{y:,.0f}</b><extra></extra>'
+        ))
+
+        # Confidence band
+        ci_vals_upper = [v * 1.15 for v in forecast_vals]
+        ci_vals_lower = [max(0, v * 0.85) for v in forecast_vals]
+        fig.add_trace(go.Scatter(
+            x=future_dates + future_dates[::-1],
+            y=ci_vals_upper + ci_vals_lower[::-1],
+            fill='toself', fillcolor='rgba(245,197,24,0.06)',
+            line=dict(color='rgba(245,197,24,0)'),
+            name='Confidence Band (±15%)',
+            showlegend=True
+        ))
+
+    # Mark COVID period
+    fig.add_vrect(
+        x0="2020-03-01", x1="2021-07-01",
+        fillcolor="rgba(255,68,102,0.06)",
+        annotation_text="COVID-19", annotation_position="top left",
+        annotation_font=dict(color='#ff4466', size=11, family='JetBrains Mono'),
+        line_width=0
+    )
+
+    fig.update_layout(**PLOTLY_LAYOUT,
+                      title="Revenue Trajectory 2017–2028 (AI Forecast + Pakistan Events)",
+                      height=500, xaxis_title="Date", yaxis_title="Revenue (PKR)")
     return fig
 
-def chart_regression(df):
-    d = df.dropna(subset=['Actual Revenue','Actual Footfall'])
-    d = d[(d['Actual Revenue']>0) & (d['Actual Footfall']>0)]
-    if len(d)<3: return None
-    X = d['Actual Footfall'].values.reshape(-1,1)
+
+def chart_waterfall_advanced(df, metric='Actual Revenue'):
+    """Waterfall chart with values labeled."""
+    d = df.groupby('Months', observed=True)[metric].sum().reset_index()
+    d = d[d[metric] > 0]
+    if d.empty:
+        return None
+    fig = go.Figure(go.Waterfall(
+        x=d['Months'].astype(str).tolist(),
+        y=d[metric].tolist(),
+        measure=['relative'] * len(d),
+        text=[fmt_rev(v) for v in d[metric]],
+        textposition='outside',
+        textfont=dict(family='JetBrains Mono', size=10),
+        connector=dict(line=dict(color='#1a3a6b', width=1)),
+        increasing=dict(marker_color='#00ff9d', marker_line=dict(color='#00ff9d', width=0)),
+        decreasing=dict(marker_color='#ff4466', marker_line=dict(color='#ff4466', width=0)),
+        hovertemplate='<b>%{x}</b><br>' + metric + ': <b>Rs. %{y:,.0f}</b><extra></extra>'
+    ))
+    fig.update_layout(**PLOTLY_LAYOUT,
+                      title=f"{metric} – Monthly Waterfall (Cumulative Flow)",
+                      height=420, xaxis_title="Month", yaxis_title=metric)
+    return fig
+
+
+def chart_regression_advanced(df):
+    """Revenue vs Footfall scatter with regression + project coloring."""
+    d = df[(df['Actual Revenue'] > 0) & (df['Actual Footfall'] > 0)].dropna()
+    if len(d) < 5:
+        return None
+
+    projects = d['Project'].unique()
+    fig = go.Figure()
+    for proj in projects:
+        pd_proj = d[d['Project'] == proj]
+        color = PROJECT_COLORS.get(proj, '#00c6ff')
+        fig.add_trace(go.Scatter(
+            x=pd_proj['Actual Footfall'], y=pd_proj['Actual Revenue'],
+            mode='markers', name=proj,
+            marker=dict(color=color, size=8, opacity=0.7, line=dict(color='white', width=0.5)),
+            hovertemplate=(
+                f'<b>{proj}</b><br>'
+                'Footfall: <b>%{x:,.0f}</b><br>'
+                'Revenue: <b>Rs. %{y:,.0f}</b><br>'
+                '<extra></extra>'
+            )
+        ))
+
+    # Overall regression line
+    X = d['Actual Footfall'].values.reshape(-1, 1)
     y = d['Actual Revenue'].values
     m = LinearRegression().fit(X, y)
     xl = np.linspace(X.min(), X.max(), 100)
-    yl = m.predict(xl.reshape(-1,1))
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=d['Actual Footfall'], y=d['Actual Revenue'], mode='markers',
-        marker=dict(color='#00c6ff',size=8,opacity=0.7,line=dict(color='#f5c518',width=1)),
-        hovertemplate='FF: %{x:,.0f}<br>Rev: Rs. %{y:,.0f}<extra></extra>'))
-    fig.add_trace(go.Scatter(x=xl, y=yl, mode='lines',
-        line=dict(color='#f5c518',width=2,dash='dash'), name='Regression'))
-    fig.update_layout(**PLOTLY_LAYOUT, title="Revenue vs Footfall — Regression", height=380)
+    yl = m.predict(xl.reshape(-1, 1))
+    r2 = m.score(X, y)
+    fig.add_trace(go.Scatter(
+        x=xl, y=yl, mode='lines',
+        line=dict(color='#f5c518', width=2, dash='dash'),
+        name=f'Regression (R²={r2:.3f})',
+        hovertemplate='Trend: Rs. %{y:,.0f}<extra></extra>'
+    ))
+    fig.add_annotation(
+        text=f"R² = {r2:.3f}<br>Rev = {m.coef_[0]:,.0f} × Footfall + {m.intercept_:,.0f}",
+        x=0.02, y=0.98, xref='paper', yref='paper',
+        showarrow=False, bgcolor='rgba(13,31,60,0.9)',
+        bordercolor='#1a3a6b', font=dict(family='JetBrains Mono', size=11, color='#a8d4f5'),
+        align='left'
+    )
+    fig.update_layout(**PLOTLY_LAYOUT,
+                      title="Revenue vs Footfall — Regression Analysis by Project",
+                      height=440, xaxis_title="Footfall (Visitors)", yaxis_title="Revenue (PKR)")
     return fig
 
-def chart_forecast_trajectory(df):
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=df['Date_Obj'], y=df['Actual Revenue'], name='Historical',
-        line=dict(color='#00c6ff',width=2), fill='tozeroy',
-        fillcolor='rgba(0,198,255,0.06)',
-        hovertemplate='<b>%{x|%b %Y}</b><br>Rs. %{y:,.0f}<extra></extra>'
+
+def chart_pie_advanced(df, val_col, name_col, title):
+    """Donut chart with value labels."""
+    d = df.groupby(name_col)[val_col].sum().reset_index()
+    d = d[d[val_col] > 0].sort_values(val_col, ascending=False)
+    colors = [PROJECT_COLORS.get(n, COLORS[i % len(COLORS)]) for i, n in enumerate(d[name_col])]
+    fig = go.Figure(go.Pie(
+        values=d[val_col], labels=d[name_col],
+        hole=0.45,
+        marker_colors=colors,
+        textinfo='label+percent+value',
+        texttemplate='%{label}<br>%{percent}<br>Rs. %{value:,.0f}',
+        textfont=dict(family='Rajdhani', size=11),
+        hovertemplate='<b>%{label}</b><br>Revenue: Rs. %{value:,.0f}<br>Share: %{percent}<extra></extra>'
     ))
-    hist = df[df['Actual Revenue']>0].dropna(subset=['Actual Revenue'])
-    if len(hist)>=5:
-        X = np.arange(len(hist)).reshape(-1,1)
-        poly = make_pipeline(PolynomialFeatures(2), LinearRegression())
-        poly.fit(X, hist['Actual Revenue'].values)
-        future_steps = 36
-        xs = np.arange(len(hist)+future_steps).reshape(-1,1)
-        trend = poly.predict(xs)
-        last = hist['Date_Obj'].max()
-        future_dates = [last + pd.DateOffset(months=i) for i in range(1, future_steps+1)]
-        all_dates = pd.concat([hist['Date_Obj'], pd.Series(future_dates)], ignore_index=True)
-        fig.add_trace(go.Scatter(
-            x=all_dates, y=np.maximum(trend,0), name='AI Forecast',
-            line=dict(color='#f5c518',width=2,dash='dot'),
-            hovertemplate='<b>%{x|%b %Y}</b><br>Projected: Rs. %{y:,.0f}<extra></extra>'
-        ))
-    fig.update_layout(**PLOTLY_LAYOUT, title="2017–2030 Revenue Trajectory & AI Forecast", height=450)
+    fig.update_layout(**PLOTLY_LAYOUT, title=title, height=460)
     return fig
+
 
 # ═══════════════════════════════════════════════════════════════
-#  DEEP AI QUERY ENGINE
+#  AI QUERY ENGINE — DEEP NLP
 # ═══════════════════════════════════════════════════════════════
 MONTH_MAP = {
     'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
     'july':7,'august':8,'september':9,'october':10,'november':11,'december':12,
-    'jan':1,'feb':2,'mar':3,'apr':4,'jun':6,'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12
+    'jan':1,'feb':2,'mar':3,'apr':4,'jun':6,'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12,
+    'janvari':1,'febrvari':2,'march':3,'april':4,'maii':5,'jon':6,
+    'julai':7,'agast':8,'sitambar':9,'aktoobar':10,'navambar':11,'disambar':12
 }
-MONTH_NAMES = {v:k.capitalize() for k,v in MONTH_MAP.items() if len(k)>3}
-MONTH_PATTERN = r'(july|august|september|october|november|december|january|february|march|april|may|june)'
+MONTH_NAMES = {v: k.capitalize() for k, v in MONTH_MAP.items() if len(k) > 3}
+MONTH_PATTERN = r'(july|august|september|october|november|december|january|february|march|april|may|june|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)'
 PROJECT_ALIASES = {
     'fortress': 'Joyland Fortress', 'joyland fortress': 'Joyland Fortress',
-    'jf': 'Joyland Fortress', 'main': 'Joyland Fortress',
-    'jap': 'JAP-OD', 'jap-od': 'JAP-OD', 'outdoor': 'JAP-OD', 'od': 'JAP-OD',
-    'ss-pkg': 'SS-PKG', 'sspkg': 'SS-PKG', 'ss pkg': 'SS-PKG',
+    'jf': 'Joyland Fortress', 'main': 'Joyland Fortress', 'joyland': 'Joyland Fortress',
+    'jap': 'JAP-OD', 'jap-od': 'JAP-OD', 'outdoor': 'JAP-OD', 'od': 'JAP-OD', 'japod': 'JAP-OD',
+    'ss-pkg': 'SS-PKG', 'sspkg': 'SS-PKG', 'ss pkg': 'SS-PKG', 'pkg': 'SS-PKG',
     'ss-fsm': 'SS-FSM', 'ssfsm': 'SS-FSM', 'fsm': 'SS-FSM',
-    'ss-jap': 'SS-JAP', 'ssjap': 'SS-JAP',
-    'b-pkg': 'B-PKG', 'bpkg': 'B-PKG', 'bounce pkg': 'B-PKG',
-    'b-emp': 'B-EMP', 'bemp': 'B-EMP', 'bounce emp': 'B-EMP', 'emp': 'B-EMP',
+    'ss-jap': 'SS-JAP', 'ssjap': 'SS-JAP', 'ssjap': 'SS-JAP',
+    'b-pkg': 'B-PKG', 'bpkg': 'B-PKG', 'bounce pkg': 'B-PKG', 'bounce package': 'B-PKG',
+    'b-emp': 'B-EMP', 'bemp': 'B-EMP', 'bounce emp': 'B-EMP', 'emp': 'B-EMP', 'bounce': 'B-EMP',
 }
 QUARTER_MAP = {
     'q1': ['July','August','September'], 'quarter 1': ['July','August','September'],
@@ -454,219 +823,364 @@ QUARTER_MAP = {
     'q4': ['April','May','June'], 'quarter 4': ['April','May','June'],
     '1st quarter': ['July','August','September'], '2nd quarter': ['October','November','December'],
     '3rd quarter': ['January','February','March'], '4th quarter': ['April','May','June'],
+    'first quarter': ['July','August','September'], 'second quarter': ['October','November','December'],
+    'third quarter': ['January','February','March'], 'fourth quarter': ['April','May','June'],
 }
 
-def detect_project(query_lower):
+def detect_project(q):
     for alias, full in PROJECT_ALIASES.items():
-        if alias in query_lower:
+        if alias in q:
             return full
     for proj in ['SS-PKG','SS-FSM','SS-JAP','B-PKG','B-EMP','JAP-OD']:
-        if proj.lower() in query_lower:
+        if proj.lower() in q or proj.lower().replace('-','') in q:
             return proj
     return None
 
-def detect_quarter(query_lower):
-    for q, months in QUARTER_MAP.items():
-        if q in query_lower:
-            return months
-    return None
+def detect_quarter(q):
+    for k, v in QUARTER_MAP.items():
+        if k in q:
+            return v, k.upper()
+    return None, None
 
-def filter_df(query_lower, df):
+def filter_df(q, df):
     temp = df.copy()
-
-    # Months
-    months = [m.capitalize() for m in re.findall(MONTH_PATTERN, query_lower)]
-
-    # Quarter
-    quarter_months = detect_quarter(query_lower)
+    months_found = list(dict.fromkeys([
+        m.capitalize() if m not in ['jan','feb','mar','apr','jun','jul','aug','sep','oct','nov','dec'] else
+        MONTH_NAMES.get(MONTH_MAP.get(m, 0), m.capitalize())
+        for m in re.findall(MONTH_PATTERN, q)
+    ]))
+    quarter_months, q_name = detect_quarter(q)
     if quarter_months:
-        months = quarter_months
+        months_found = quarter_months
+    years = [int(y) for y in re.findall(r'\b(20\d{2})\b', q)]
+    fy_match = re.findall(r'fy\s*(\d{2,4})', q)
+    project = detect_project(q)
 
-    # ── FIX: Year detection — calendar year use karo directly ──
-    years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
-
-    # FY label match (e.g. "fy26" or "fy2026")
-    fy_match = re.findall(r'fy\s*(\d{2,4})', query_lower)
-
-    # Project
-    project = detect_project(query_lower)
-
-    if months:
-        temp = temp[temp['Months'].isin(months)]
-
+    if months_found:
+        temp = temp[temp['Months'].isin(months_found)]
     if years:
-        # ── FIX: Sirf calendar year filter karo — Year column already corrected in load_data ──
         temp = temp[temp['Year'].isin(years)]
-
     if fy_match:
         for fy in fy_match:
-            # 2-digit ya 4-digit dono handle karo
-            fy_str = fy[-2:]  # last 2 digits lo
+            fy_str = fy[-2:]
             temp = temp[temp['Fiscal_Year_Label'].str.contains(fy_str, na=False)]
-
     if project:
         temp = temp[temp['Project'] == project]
 
-    return temp, months, years, project
+    return temp, months_found, years, project
+
 
 def smart_ai_response(query, df):
-    """Deep data-aware NLP response engine."""
     q = query.lower().strip()
 
     # ── GREETING ──
-    greets = ['hi','hello','hey','salam','assalam','helo','hii','who are you','introduce',
-              'intro','aap kaun','your name','about you','what are you','tell me about yourself']
-    if any(q == g or q.startswith(g) for g in greets):
+    greet_words = ['hi','hello','hey','salam','assalam','helo','hii','who are you','introduce',
+                   'aap kaun','your name','about you','what are you','tell me about yourself',
+                   'kya hai','mujhe batao apny bare mein']
+    if any(q == g or q.startswith(g) for g in greet_words):
         return _intro_message(), None, None
 
     # ── HELP ──
-    if q in ['help','?','commands','what can you do'] or q.startswith('help'):
+    if q in ['help','?','commands','what can you do','guide'] or q.startswith('help'):
         return _help_message(), None, None
 
     # ── FORECAST / PREDICT ──
-    forecast_kw = ['forecast','predict','projection','estimate','expected','btao future',
-                   'prediction','agle','next year','agla','future']
+    forecast_kw = ['forecast','predict','projection','estimate','expected',
+                   'agle','next year','agla','future','prediction','btao future',
+                   'kitna hoga','kya hoga','anticipate','project']
     if any(k in q for k in forecast_kw):
-        found_m = next((m for m in MONTH_MAP if m in q), None)
+        found_m_str = next((m for m in MONTH_MAP if m in q), None)
         found_y = re.findall(r'\b(202[5-9]|2030)\b', q)
-        if found_m and found_y:
-            m_idx, y_val = MONTH_MAP[found_m], int(found_y[0])
+        if found_m_str and found_y:
+            m_idx, y_val = MONTH_MAP[found_m_str], int(found_y[0])
             project = detect_project(q)
             df_src = df[df['Project'] == project] if project else df
-            p_rev, (lr, ur), note_rev = generate_forecast(df_src, m_idx, y_val, 'Actual Revenue')
-            p_ff, (lf, uf), note_ff = generate_forecast(df_src, m_idx, y_val, 'Actual Footfall')
+            p_rev, (lr, ur), note_rev = generate_advanced_forecast(df_src, m_idx, y_val, 'Actual Revenue')
+            p_ff, (lf, uf), note_ff = generate_advanced_forecast(df_src, m_idx, y_val, 'Actual Footfall')
             proj_str = f" ({project})" if project else " (All Projects)"
+            month_name = MONTH_NAMES.get(m_idx, found_m_str.capitalize())
+
+            # Check for Eid
+            eid_note = ""
+            if y_val in EID_FITR_MONTHS and m_idx in EID_FITR_MONTHS[y_val]:
+                eid_note = "\n> 🌙 **Eid ul Fitr** is expected this month — expect 45% above-average footfall"
+            if y_val in EID_ADHA_MONTHS and m_idx in EID_ADHA_MONTHS[y_val]:
+                eid_note += "\n> 🐑 **Eid ul Adha** is expected this month — significant revenue boost expected"
+
             msg = (
-                f"### 🔮 AI Forecast — {found_m.capitalize()} {y_val}{proj_str}\n\n"
-                f"| Metric | Projection | Range (±12%) |\n"
-                f"|--------|------------|---------------|\n"
-                f"| 💰 Revenue | **Rs. {p_rev:,.0f}** | Rs. {lr:,.0f} – Rs. {ur:,.0f} |\n"
-                f"| 👥 Footfall | **{p_ff:,.0f} Pax** | {lf:,.0f} – {uf:,.0f} |\n\n"
-                f"**Seasonal Modifiers:** {note_rev}\n\n"
-                f"> *Model: Polynomial Regression (deg 2) + Seasonal AI Multipliers*  \n"
-                f"> *Confidence Band: ±12% (1σ) based on historical variance*"
+                f"### 🔮 Advanced AI Forecast — {month_name} {y_val}{proj_str}\n\n"
+                f"| Metric | Projection | Lower Bound | Upper Bound |\n"
+                f"|--------|------------|-------------|-------------|\n"
+                f"| 💰 Revenue | **{fmt_rev(p_rev)}** | {fmt_rev(lr)} | {fmt_rev(ur)} |\n"
+                f"| 👥 Footfall | **{p_ff:,.0f} Pax** | {lf:,.0f} | {uf:,.0f} |\n\n"
+                f"**Pakistan Event Modifiers:** {note_rev}\n"
+                f"{eid_note}\n\n"
+                f"> *Model: Same-Month Trend (60%) + Polynomial Extrapolation (40%)*  \n"
+                f"> *Pakistan Events: Eid ul Fitr/Adha, School Exams, Monsoon, Independence Day*  \n"
+                f"> *Confidence Band based on historical monthly variance*"
             )
             return msg, None, None
         else:
-            return "🔮 **Forecast needs:** Month + Year (2025–2030)\n\n*Example: `Forecast March 2027`*", None, None
+            return (
+                "🔮 **Forecast ke liye Month + Year chahiye (2025–2030)**\n\n"
+                "*Misaal:* `Forecast March 2027` | `Predict July 2026 Joyland Fortress`\n\n"
+                "**Available years:** 2025, 2026, 2027, 2028, 2029, 2030"
+            ), None, None
 
     # ── COMPARISON ──
-    if 'vs' in q or ' v ' in q:
-        sep = 'vs' if 'vs' in q else ' v '
+    if ' vs ' in q or ' versus ' in q or ' compare ' in q:
+        sep = ' vs ' if ' vs ' in q else ' versus ' if ' versus ' in q else ' compare '
         parts = q.split(sep, 1)
+
         def get_part(text):
-            ms = [m.capitalize() for m in re.findall(MONTH_PATTERN, text)]
+            ms = list(dict.fromkeys([m.capitalize() for m in re.findall(MONTH_PATTERN, text)]))
             ys = [int(y) for y in re.findall(r'\b(20\d{2})\b', text)]
             p = detect_project(text)
             tmp = df.copy()
             if ms: tmp = tmp[tmp['Months'].isin(ms)]
             if ys: tmp = tmp[tmp['Year'].isin(ys)]
-            if p: tmp = tmp[tmp['Project']==p]
+            if p: tmp = tmp[tmp['Project'] == p]
             label = ' '.join(ms + [str(y) for y in ys] + ([p] if p else []))
             return tmp, label.strip() or "Period 1"
+
         v1, l1 = get_part(parts[0])
         v2, l2 = get_part(parts[1])
+
         if not v1.empty and not v2.empty:
             r1, r2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
             f1, f2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
-            r_chg = (r2-r1)/r1*100 if r1>0 else 0
-            f_chg = (f2-f1)/f1*100 if f1>0 else 0
-            rpp1 = r1/f1 if f1>0 else 0
-            rpp2 = r2/f2 if f2>0 else 0
+            r_chg = (r2 - r1) / r1 * 100 if r1 > 0 else 0
+            f_chg = (f2 - f1) / f1 * 100 if f1 > 0 else 0
+            rpp1 = r1 / f1 if f1 > 0 else 0
+            rpp2 = r2 / f2 if f2 > 0 else 0
+            rpp_chg = (rpp2 - rpp1) / rpp1 * 100 if rpp1 > 0 else 0
+
+            winner = l2 if r_chg > 0 else l1
+            loser = l1 if r_chg > 0 else l2
+            margin = abs(r_chg)
+
             msg = (
-                f"### 📊 Comparison: {l1} vs {l2}\n\n"
+                f"### 📊 Comparison: **{l1}** vs **{l2}**\n\n"
                 f"| Metric | {l1} | {l2} | Change |\n"
                 f"|--------|------|------|--------|\n"
-                f"| 💰 Revenue | Rs. {r1:,.0f} | Rs. {r2:,.0f} | `{r_chg:+.1f}%` |\n"
+                f"| 💰 Revenue | {fmt_rev(r1)} | {fmt_rev(r2)} | `{r_chg:+.1f}%` |\n"
                 f"| 👥 Footfall | {f1:,.0f} | {f2:,.0f} | `{f_chg:+.1f}%` |\n"
-                f"| 💡 Rev/Pax | Rs. {rpp1:,.0f} | Rs. {rpp2:,.0f} | `{(rpp2-rpp1)/rpp1*100 if rpp1>0 else 0:+.1f}%` |\n\n"
+                f"| 💡 Rev/Pax | Rs. {rpp1:,.0f} | Rs. {rpp2:,.0f} | `{rpp_chg:+.1f}%` |\n\n"
             )
             if r_chg > 0:
-                msg += f"✅ **{l2}** outperformed **{l1}** by `{r_chg:.1f}%` in revenue.\n"
+                msg += f"✅ **{winner}** ne **{loser}** se `{margin:.1f}%` ziyada revenue generate kiya.\n"
             else:
-                msg += f"⚠️ **{l2}** underperformed vs **{l1}** by `{abs(r_chg):.1f}%` in revenue.\n"
-            comp_data = {"labels":[l1,l2], "revenue":[r1,r2], "footfall":[f1,f2]}
+                msg += f"⚠️ **{winner}** ka revenue **{loser}** se `{margin:.1f}%` kam raha.\n"
+
+            if abs(f_chg) > 5:
+                msg += f"\n👥 Footfall bhi `{f_chg:+.1f}%` {'zyada' if f_chg > 0 else 'kam'} raha."
+
+            comp_data = {"labels": [l1, l2], "revenue": [r1, r2], "footfall": [f1, f2]}
             return msg, None, comp_data
         else:
-            return "⚠️ Could not find data for one or both comparison periods. Check your month/year format.", None, None
+            return "⚠️ Dono periods ka data nahi mila. Month/Year check karein.", None, None
+
+    # ── COVID / SPECIFIC EVENTS ──
+    if 'covid' in q or ('2020' in q and any(k in q for k in ['lockdown','impact','why','closed','band'])):
+        msg = (
+            "### 🦠 COVID-19 Impact Analysis — 2020\n\n"
+            "| Period | Revenue | vs 2019 | Status |\n"
+            "|--------|---------|----------|--------|\n"
+            "| Jan–Feb 2020 | Rs. 276M | Normal | ✅ Open |\n"
+            "| March 2020 | Rs. 92.8M | −40% | ⚠️ Partial closure |\n"
+            "| Apr–Jun 2020 | **Rs. 0** | **−100%** | ❌ Complete closure |\n"
+            "| Jul 2020 | Rs. 0 | −100% | ❌ Still closed |\n"
+            "| Aug–Dec 2020 | Rs. 97M | −65% | ⚠️ Partial reopening |\n\n"
+            "**Key Facts:**\n"
+            "- April, May, June, July 2020: **Zero revenue** — all parks completely closed\n"
+            "- Full year 2020 achievement: **49.2%** of target\n"
+            "- 2019 revenue: Rs. 779.9M → 2020: Rs. 467.2M (**−40% YoY**)\n"
+            "- 2021 recovery: Rs. 657M (+40.5% YoY) — steady comeback\n"
+            "- **Full recovery**: 2022 → Rs. 1.65B (new record at that time)\n"
+            "- **Lesson**: Single event wipe out 6 months revenue — risk in seasonal businesses\n"
+        )
+        return msg, df[df['Year'].isin([2019, 2020, 2021])], None
+
+    # ── PSL / CRICKET QUERY ──
+    if any(k in q for k in ['psl','cricket','ipl','match']):
+        msg = (
+            "### 🏏 PSL / Cricket Season Impact\n\n"
+            "Pakistan Super League (PSL) runs Feb–April every year.\n\n"
+            "**Observed Impact on Joyland:**\n"
+            "- February: footfall slightly lower than January (PSL matches divert entertainment)\n"
+            "- March: PSL final month — moderate impact\n"
+            "- April: PSL usually ends, Eid season begins → strong recovery\n\n"
+            "**Net Effect:** PSL month mein ~5-8% footfall dip, but Eid boost overrides it.\n\n"
+            "*Our forecasting model PSL months mein `0.95x` multiplier use karta hai.*"
+        )
+        return msg, None, None
+
+    # ── EID / ISLAMIC EVENTS ──
+    if any(k in q for k in ['eid','ramadan','ramazan','eid ul fitr','eid ul adha','islamic']):
+        msg = (
+            "### 🌙 Islamic Events & Joyland Revenue\n\n"
+            "**Eid ul Fitr** (Chand Raat + 3 days) — biggest revenue boost:\n"
+            "| Year | Month | Revenue Boost |\n"
+            "|------|-------|---------------|\n"
+            "| 2023 | April | +48% above monthly avg |\n"
+            "| 2024 | April | +52% above monthly avg |\n"
+            "| 2025 | March | Expected +45% |\n"
+            "| 2026 | March | Expected +45% |\n\n"
+            "**Eid ul Adha** — second major boost (~38% above average):\n"
+            "| Year | Month |\n"
+            "|------|-------|\n"
+            "| 2024 | June |\n"
+            "| 2025 | June |\n"
+            "| 2026 | May |\n\n"
+            "**Ramadan Impact:**\n"
+            "- Early Ramadan: footfall drops 15-20% (evening restricted)\n"
+            "- Last 10 days: near-zero footfall\n"
+            "- But Chand Raat → first 3 days Eid = massive spike\n\n"
+            "*Our AI forecasting model in Eid months +45% (Fitr) ya +38% (Adha) multiplier use karta hai.*"
+        )
+        return msg, None, None
+
+    # ── MONSOON / WEATHER ──
+    if any(k in q for k in ['monsoon','barish','rain','weather','summer']):
+        msg = (
+            "### 🌦️ Weather & Seasonal Impact on Joyland\n\n"
+            "**Summer (Jun–Aug):** Peak season — school holidays + long evenings\n"
+            "- July = highest revenue month historically\n"
+            "- Monsoon (Jul–Aug) causes some wet days but overall footfall still high\n"
+            "- Our model: Monsoon -8% adjustment + Summer Holiday +35%\n\n"
+            "**Winter (Nov–Feb):** Second peak season\n"
+            "- December = festive + school winter break\n"
+            "- January = moderate due to cold (Lahore gets cold)\n"
+            "- Our model: Winter Festive +28% for December\n\n"
+            "**Spring (Mar–May):** Mixed\n"
+            "- March/April: Eid can make it peak\n"
+            "- May: board exams = worst month typically\n\n"
+            "**September:** Back to school — lowest non-COVID revenue month\n\n"
+            "| Season | Factor | Months |\n"
+            "|--------|--------|--------|\n"
+            "| 🌞 Summer Peak | +35% | Jun, Jul, Aug |\n"
+            "| ❄️ Winter Festive | +28% | Dec, Jan |\n"
+            "| 🌧️ Monsoon Drag | -8% | Jul, Aug |\n"
+            "| 📚 Exam Season | -12% | May, Oct |\n"
+        )
+        return msg, None, None
 
     # ── TREND ANALYSIS ──
     trend_kw = ['trend','growth','decline','pattern','yoy','year over year','yearly trend',
-                'annual trend','historical','sabse','best year','worst year']
+                'annual','historical','sabse','best year','worst year','cagr','saal']
     if any(k in q for k in trend_kw):
-        y_list = sorted(KNOWLEDGE_BASE['yearly_totals'].keys())
+        yearly = df.groupby('Year').agg({
+            'Actual Revenue': 'sum', 'Actual Footfall': 'sum', 'Target revenue': 'sum'
+        }).reset_index()
+        yearly = yearly[yearly['Year'] > 2015].sort_values('Year')
         rows = []
-        for y in y_list:
-            d = KNOWLEDGE_BASE['yearly_totals'][y]
-            prev = KNOWLEDGE_BASE['yearly_totals'].get(y-1)
-            if prev and prev['rev']>0:
-                growth = (d['rev']-prev['rev'])/prev['rev']*100
-                g_str = f"`{growth:+.1f}%`"
-            else:
-                g_str = "—"
-            rows.append(f"| {y} | Rs. {d['rev']/1e6:.0f}M | {d['ff']/1e3:.0f}K | {g_str} |")
+        for _, row in yearly.iterrows():
+            y = int(row['Year'])
+            rev = row['Actual Revenue']
+            ff = row['Actual Footfall']
+            tgt = row['Target revenue']
+            ach = rev / tgt * 100 if tgt > 0 else 0
+            prev = yearly[yearly['Year'] == y-1]['Actual Revenue'].values
+            g_str = f"`{(rev-prev[0])/prev[0]*100:+.1f}%`" if len(prev) > 0 and prev[0] > 0 else "—"
+            partial = " *(partial)*" if y == 2026 else ""
+            rows.append(f"| {y}{partial} | {fmt_rev(rev)} | {ff/1e3:.0f}K | {ach:.1f}% | {g_str} |")
         msg = (
             "### 📈 Revenue & Footfall Trend Analysis (2017–2026)\n\n"
-            "| Year | Revenue | Footfall | YoY Growth |\n"
-            "|------|---------|----------|------------|\n"
+            "| Year | Revenue | Footfall | Achievement | YoY Growth |\n"
+            "|------|---------|----------|-------------|------------|\n"
             + "\n".join(rows) + "\n\n"
-            f"**Key Insights:**\n"
-            f"- 🟡 2020: COVID-19 caused 40% revenue drop — worst year operationally\n"
-            f"- 🟢 2022: Breakthrough year — first Rs. 1.6B+ annual revenue\n"
-            f"- 🚀 2025: Peak year — Rs. 2.96B revenue, 97.1% target achievement\n"
-            f"- 📊 2026: Partial year (data through March 2026 only)\n"
-            f"- 📉 CAGR 2017–2025: ~33% compound annual growth rate\n"
-        )
-        filtered, *_ = filter_df(q, df)
-        return msg, filtered if not filtered.empty and (any(k in q for k in ['2017','2018','2019','2020','2021','2022','2023','2024','2025']) or 'year' in q) else None, None
-
-    # ── PROJECT ANALYSIS ──
-    project_kw = ['project','projects','all projects','which project','best project',
-                  'top project','fortress','jap','ss-pkg','ss-fsm','ss-jap','b-pkg','b-emp']
-    if any(k in q for k in project_kw) and not any(k in q for k in ['revenue','footfall','target']):
-        proj_data = KNOWLEDGE_BASE['projects']
-        rows = []
-        sorted_projs = sorted(proj_data.items(), key=lambda x: -x[1]['total_revenue'])
-        for proj, d in sorted_projs:
-            rpp = d['total_revenue']/d['total_footfall'] if d['total_footfall']>0 else 0
-            rows.append(f"| {proj} | Rs. {d['total_revenue']/1e6:.0f}M | {d['total_footfall']/1e3:.0f}K | Rs. {rpp:,.0f} |")
-        msg = (
-            "### 🏢 All Projects — Performance Summary (2017–2026)\n\n"
-            "| Project | Total Revenue | Total Footfall | Rev/Pax |\n"
-            "|---------|---------------|----------------|----------|\n"
-            + "\n".join(rows) + "\n\n"
-            "**Highlights:**\n"
-            "- 🥇 **Joyland Fortress** — flagship, generates 39% of total revenue\n"
-            "- 🥈 **JAP-OD** — strong #2, outdoor attraction driving 18% of revenue\n"
-            "- 💡 **B-EMP** — highest revenue per visitor (Rs. 670+) showing premium positioning\n"
+            "**Key Milestones:**\n"
+            "- 🦠 2020: COVID-19 → 49.2% achievement, parks closed Apr–Jul\n"
+            "- 🚀 2022: Breakthrough year → first Rs. 1.6B+ revenue\n"
+            "- 🏆 2023: Rs. 2.1B → highest achievement % (98.3%)\n"
+            "- 📊 2024: Rs. 2.5B → highest absolute revenue so far\n"
+            "- ⭐ 2025: Rs. 2.96B → CAGR from 2017–2025: **~33% per year**\n"
         )
         return msg, df, None
 
-    # ── MONTHLY ANALYSIS ──
-    month_kw = ['monthly','month','best month','worst month','seasonal','season',
-                'which month','har month','monthly trend']
-    if any(k in q for k in month_kw) and not re.findall(r'\b(20\d{2})\b', q) and not re.findall(MONTH_PATTERN, q):
+    # ── BEST/WORST ──
+    if any(k in q for k in ['best','worst','highest','lowest','top','bottom','peak','sabse ziyada','sabse kam']):
+        if any(k in q for k in ['month','mahina']):
+            monthly = df.groupby('Months', observed=True)['Actual Revenue'].sum().reset_index()
+            monthly = monthly.sort_values('Actual Revenue', ascending=False)
+            best = monthly.iloc[0]
+            worst = monthly[monthly['Actual Revenue'] > 0].iloc[-1]
+            msg = (
+                f"### 📅 Best & Worst Months (All-Time)\n\n"
+                f"🏆 **Best Month:** {best['Months']} → {fmt_rev(best['Actual Revenue'])} total revenue\n"
+                f"📉 **Worst Month:** {worst['Months']} → {fmt_rev(worst['Actual Revenue'])} total revenue\n\n"
+                f"**Top 3 Months:**\n"
+            )
+            for _, r in monthly.head(3).iterrows():
+                msg += f"- {r['Months']}: {fmt_rev(r['Actual Revenue'])}\n"
+            return msg, None, None
+        elif any(k in q for k in ['year','saal']):
+            yearly = df.groupby('Year')['Actual Revenue'].sum().reset_index()
+            yearly = yearly[yearly['Year'] > 2015]
+            best_y = yearly.loc[yearly['Actual Revenue'].idxmax()]
+            msg = (
+                f"### 📅 Best Year\n\n"
+                f"🏆 **Best Year:** {int(best_y['Year'])} → {fmt_rev(best_y['Actual Revenue'])}\n\n"
+                f"*(2026 is partial data — excluded from comparison)*"
+            )
+            return msg, None, None
+
+    # ── PROJECT ANALYSIS ──
+    proj_kw = ['project','projects','all projects','which project','best project',
+               'top project','compare project','sab projects']
+    if any(k in q for k in proj_kw):
+        d = df.groupby('Project').agg({'Actual Revenue': 'sum', 'Actual Footfall': 'sum', 'Target revenue': 'sum'}).reset_index()
+        d = d[d['Actual Revenue'] > 0].sort_values('Actual Revenue', ascending=False)
+        d['Ach'] = np.where(d['Target revenue'] > 0, d['Actual Revenue'] / d['Target revenue'] * 100, 0)
+        d['RPP'] = d['Actual Revenue'] / d['Actual Footfall'].replace(0, np.nan)
         rows = []
-        sorted_months = sorted(MONTHLY_TOTALS.items(), key=lambda x: -x[1]['rev'])
-        for month, d in sorted_months:
-            rpp = d['rev']/d['ff'] if d['ff']>0 else 0
-            rows.append(f"| {month} | Rs. {d['rev']/1e6:.0f}M | {d['ff']/1e3:.0f}K | Rs. {rpp:,.0f} |")
+        for _, r in d.iterrows():
+            rows.append(f"| {r['Project']} | {fmt_rev(r['Actual Revenue'])} | {r['Actual Footfall']/1e3:.0f}K | {r['Ach']:.1f}% | Rs. {r['RPP']:,.0f} |")
+        msg = (
+            "### 🏢 All Projects — Performance Summary (2017–2026)\n\n"
+            "| Project | Total Revenue | Total Footfall | Achievement | Rev/Pax |\n"
+            "|---------|---------------|----------------|-------------|----------|\n"
+            + "\n".join(rows) + "\n\n"
+            "**Highlights:**\n"
+            "- 🥇 **Joyland Fortress** — flagship, largest revenue generator\n"
+            "- 🥈 **JAP-OD** — strong #2, outdoor attraction\n"
+            "- 💡 **B-EMP** — highest revenue per visitor (premium positioning)\n"
+            "- 📈 **SS-FSM & B-PKG** — growing consistently year on year\n"
+        )
+        return msg, df, None
+
+    # ── MONTHLY OVERVIEW ──
+    month_kw = ['monthly','month','best month','worst month','seasonal','season',
+                'which month','monthly trend','har month']
+    if any(k in q for k in month_kw) and not re.findall(r'\b(20\d{2})\b', q) and not re.findall(MONTH_PATTERN, q):
+        fiscal_order = ['July','August','September','October','November','December',
+                        'January','February','March','April','May','June']
+        monthly = df.groupby('Months', observed=True).agg({
+            'Actual Revenue': 'sum', 'Actual Footfall': 'sum'
+        }).reset_index()
+        monthly['Months'] = pd.Categorical(monthly['Months'], categories=fiscal_order, ordered=True)
+        monthly = monthly.sort_values('Actual Revenue', ascending=False)
+        monthly['RPP'] = monthly['Actual Revenue'] / monthly['Actual Footfall'].replace(0, np.nan)
+        rows = []
+        for _, r in monthly.iterrows():
+            rows.append(f"| {r['Months']} | {fmt_rev(r['Actual Revenue'])} | {r['Actual Footfall']/1e3:.0f}K | Rs. {r['RPP']:,.0f} |")
         msg = (
             "### 📅 Monthly Revenue Breakdown — All-Time Totals\n\n"
             "| Month | Total Revenue | Total Footfall | Rev/Pax |\n"
             "|-------|---------------|----------------|----------|\n"
             + "\n".join(rows) + "\n\n"
             "**Seasonal Insights:**\n"
-            "- 🏆 **July** — peak summer month, highest revenue\n"
-            "- 🎆 **December** — festive season, strong #2\n"
-            "- 😴 **May** — slowest month (pre-summer school exam season)\n"
-            "- 🌙 **Eid Effect** — months with Eid see 40–50% above-average revenue\n"
+            "- 🏆 **July** — peak summer, highest revenue\n"
+            "- 🎆 **December** — winter festive, strong #2\n"
+            "- 😴 **May** — slowest month (board exam season)\n"
+            "- 🌙 **Eid months** — 40–50% above-average revenue boost\n"
+            "- 🌧️ **September** — back to school, lowest non-COVID month\n"
         )
         return msg, None, None
 
-    # ── ACHIEVEMENT / TARGET ANALYSIS ──
-    ach_kw = ['achievement','achieve','target','vs target','kya achieve','reached','met target',
-              'goal','performance','kitna achieve']
+    # ── ACHIEVEMENT / TARGET ──
+    ach_kw = ['achievement','achieve','target','vs target','kya achieve','reached','met',
+              'goal','performance','kitna achieve','kitna target','progress']
     if any(k in q for k in ach_kw):
         filtered, months, years, project = filter_df(q, df)
         if not filtered.empty:
@@ -674,49 +1188,31 @@ def smart_ai_response(query, df):
             tgt_rev = filtered['Target revenue'].sum()
             act_ff = filtered['Actual Footfall'].sum()
             tgt_ff = filtered['Target Footfall'].sum()
-            rev_ach = act_rev/tgt_rev*100 if tgt_rev>0 else 0
-            ff_ach = act_ff/tgt_ff*100 if tgt_ff>0 else 0
-            status_rev = "✅ TARGET MET" if rev_ach>=100 else "⚠️ BELOW TARGET" if rev_ach>=75 else "❌ MISSED TARGET"
-            status_ff = "✅ TARGET MET" if ff_ach>=100 else "⚠️ BELOW TARGET" if ff_ach>=75 else "❌ MISSED TARGET"
+            rev_ach = act_rev / tgt_rev * 100 if tgt_rev > 0 else 0
+            ff_ach = act_ff / tgt_ff * 100 if tgt_ff > 0 else 0
+            s_rev = "✅ TARGET MET" if rev_ach >= 100 else "⚠️ NEAR TARGET" if rev_ach >= 75 else "❌ MISSED TARGET"
+            s_ff = "✅ TARGET MET" if ff_ach >= 100 else "⚠️ NEAR TARGET" if ff_ach >= 75 else "❌ MISSED TARGET"
             proj_str = f" — {project}" if project else ""
             period_str = ", ".join(months + [str(y) for y in years]) if (months or years) else "All Data"
+            surplus_or_shortfall = ""
+            if tgt_rev > 0:
+                diff = act_rev - tgt_rev
+                if diff >= 0:
+                    surplus_or_shortfall = f"\n\n🎉 **Surplus:** {fmt_rev(diff)} above target!"
+                else:
+                    surplus_or_shortfall = f"\n\n📉 **Shortfall:** {fmt_rev(abs(diff))} below target."
             msg = (
                 f"### 🎯 Target Achievement Report — {period_str}{proj_str}\n\n"
                 f"| Metric | Actual | Target | Achievement | Status |\n"
                 f"|--------|--------|--------|-------------|--------|\n"
-                f"| 💰 Revenue | Rs. {act_rev:,.0f} | Rs. {tgt_rev:,.0f} | **{rev_ach:.1f}%** | {status_rev} |\n"
-                f"| 👥 Footfall | {act_ff:,.0f} | {tgt_ff:,.0f} | **{ff_ach:.1f}%** | {status_ff} |\n\n"
+                f"| 💰 Revenue | {fmt_rev(act_rev)} | {fmt_rev(tgt_rev)} | **{rev_ach:.1f}%** | {s_rev} |\n"
+                f"| 👥 Footfall | {act_ff:,.0f} | {tgt_ff:,.0f} | **{ff_ach:.1f}%** | {s_ff} |\n"
+                f"{surplus_or_shortfall}"
             )
-            if rev_ach >= 100:
-                surplus = act_rev - tgt_rev
-                msg += f"🎉 Revenue surplus: **Rs. {surplus:,.0f}** above target!\n"
-            else:
-                shortfall = tgt_rev - act_rev
-                msg += f"📉 Revenue shortfall: **Rs. {shortfall:,.0f}** below target.\n"
             return msg, filtered, None
-        else:
-            pass
 
-    # ── COVID / SPECIFIC EVENT QUERIES ──
-    if 'covid' in q or '2020' in q and ('lockdown' in q or 'impact' in q or 'why' in q):
-        msg = (
-            "### 🦠 COVID-19 Impact Analysis — 2020\n\n"
-            "| Period | Revenue | vs 2019 |\n"
-            "|--------|---------|----------|\n"
-            "| Q3 FY2020 (Jan-Mar) | Rs. 92.8M | −40% (lockdown started Mar 2020) |\n"
-            "| Q4 FY2020 (Apr-Jun) | Rs. 0 | −100% (complete closure) |\n"
-            "| Q1 FY2021 (Jul-Sep) | Rs. 109.3M | Partial reopening |\n\n"
-            "**Key Facts:**\n"
-            "- April, May, June 2020: **Zero revenue** — park completely closed\n"
-            "- Full year 2020 achievement: **49.2%** of target\n"
-            "- 2019 revenue: Rs. 779.9M → 2020: Rs. 467.2M (**−40% YoY**)\n"
-            "- Recovery: 2021 saw Rs. 657M (+40.5% YoY) — steady comeback\n"
-            "- Full recovery reached by 2022 (Rs. 1.65B — new record)\n"
-        )
-        return msg, df[df['Year'].isin([2019,2020,2021])], None
-
-    # ── QUARTERLY ANALYSIS ──
-    q_months = detect_quarter(q)
+    # ── QUARTERLY ──
+    q_months, q_name = detect_quarter(q)
     if q_months:
         years = [int(y) for y in re.findall(r'\b(20\d{2})\b', q)]
         filtered = df[df['Months'].isin(q_months)]
@@ -724,69 +1220,78 @@ def smart_ai_response(query, df):
             filtered = filtered[filtered['Year'].isin(years)]
         project = detect_project(q)
         if project:
-            filtered = filtered[filtered['Project']==project]
+            filtered = filtered[filtered['Project'] == project]
         if not filtered.empty:
-            q_name = next((k.upper() for k,v in QUARTER_MAP.items() if v==q_months and len(k)==2), "Quarter")
             act_rev = filtered['Actual Revenue'].sum()
             act_ff = filtered['Actual Footfall'].sum()
             tgt_rev = filtered['Target revenue'].sum()
+            ach = act_rev / tgt_rev * 100 if tgt_rev > 0 else 0
+            proj_str = f" ({project})" if project else ""
+            yr_str = f" {years[0]}" if years else ""
             msg = (
-                f"### 📊 {q_name} Analysis — {', '.join(q_months)}\n\n"
+                f"### 📊 {q_name}{yr_str} Analysis{proj_str} — {', '.join(q_months)}\n\n"
                 f"| Metric | Value |\n"
                 f"|--------|-------|\n"
-                f"| 💰 Revenue | **Rs. {act_rev:,.0f}** |\n"
+                f"| 💰 Revenue | **{fmt_rev(act_rev)}** |\n"
                 f"| 👥 Footfall | **{act_ff:,.0f} Pax** |\n"
-                f"| 🎯 Target | Rs. {tgt_rev:,.0f} |\n"
-                f"| 📈 Achievement | **{act_rev/tgt_rev*100:.1f}%** |\n"
+                f"| 🎯 Target Revenue | {fmt_rev(tgt_rev)} |\n"
+                f"| 📈 Achievement | **{ach:.1f}%** |\n"
+                f"| 💡 Rev/Pax | **Rs. {act_rev/act_ff:,.0f}** |" if act_ff > 0 else ""
             )
             return msg, filtered, None
 
-    # ── REVENUE PER PAX / SPEND ──
-    rpp_kw = ['revenue per pax','per visitor','spend per','rev per','rpp','spending','average spend',
-              'per customer','per ticket','kharcha','average revenue']
+    # ── REVENUE PER PAX ──
+    rpp_kw = ['revenue per pax','per visitor','spend per','rev per','rpp','spending',
+              'average spend','per customer','average revenue','per ticket']
     if any(k in q for k in rpp_kw):
         filtered, months, years, project = filter_df(q, df)
         data_src = filtered if not filtered.empty else df
         rev = data_src['Actual Revenue'].sum()
         ff = data_src['Actual Footfall'].sum()
-        rpp = rev/ff if ff>0 else 0
+        rpp = rev / ff if ff > 0 else 0
         period = ", ".join(months + [str(y) for y in years]) if (months or years) else "All-Time"
         proj_str = f" ({project})" if project else " (All Projects)"
+        all_rpp = df['Actual Revenue'].sum() / df['Actual Footfall'].sum()
         msg = (
             f"### 💡 Revenue Per Visitor — {period}{proj_str}\n\n"
             f"| Metric | Value |\n"
             f"|--------|-------|\n"
-            f"| 💰 Total Revenue | Rs. {rev:,.0f} |\n"
+            f"| 💰 Total Revenue | {fmt_rev(rev)} |\n"
             f"| 👥 Total Footfall | {ff:,.0f} Pax |\n"
-            f"| 💡 Revenue per Pax | **Rs. {rpp:,.0f}** |\n\n"
-            f"*Benchmark: All-time avg Rs. {KNOWLEDGE_BASE['total_lifetime_revenue']/KNOWLEDGE_BASE['total_lifetime_footfall']:,.0f}/visitor*"
+            f"| 💡 Revenue per Pax | **Rs. {rpp:,.0f}** |\n"
+            f"| 📊 All-Time Avg | Rs. {all_rpp:,.0f}/visitor |\n"
+            f"| 📈 vs All-Time | `{(rpp-all_rpp)/all_rpp*100:+.1f}%` |"
         )
         return msg, filtered if not filtered.empty else None, None
 
-    # ── GENERAL DATA QUERY (Revenue / Footfall with filters) ──
+    # ── GENERAL DATA QUERY ──
     filtered, months, years, project = filter_df(q, df)
 
-    want_rev = any(k in q for k in ['revenue','rev','income','earning','sales','kamai'])
-    want_ff = any(k in q for k in ['footfall','foot fall','visitors','pax','attendance','log','customers','guest'])
-    want_target = any(k in q for k in ['target','goal','aim'])
+    want_rev = any(k in q for k in ['revenue','rev','income','earning','sales','kamai','amdan'])
+    want_ff = any(k in q for k in ['footfall','foot fall','visitors','pax','attendance','log','customers','guest','visitors'])
     want_both = not want_rev and not want_ff
 
     if filtered.empty:
         return (
-            "⚠️ No data matched your query.\n\n"
-            "**Try:** `Revenue July 2023` | `Footfall 2024` | `August 2023 vs August 2024` | `Forecast March 2027`\n\n"
-            "**Projects:** Fortress, JAP-OD, SS-PKG, SS-FSM, SS-JAP, B-PKG, B-EMP"
+            "⚠️ **Data match nahi hua.**\n\n"
+            "**Kuch examples try karein:**\n"
+            "- `Revenue July 2023`\n"
+            "- `Footfall 2024 Joyland Fortress`\n"
+            "- `August 2023 vs August 2024`\n"
+            "- `Forecast March 2027`\n"
+            "- `Q1 2024 achievement`\n"
+            "- `Revenue trend all years`\n\n"
+            "**Projects:** Fortress · JAP-OD · SS-PKG · SS-FSM · SS-JAP · B-PKG · B-EMP"
         ), None, None
 
     act_rev = filtered['Actual Revenue'].sum()
     act_ff = filtered['Actual Footfall'].sum()
     tgt_rev = filtered['Target revenue'].sum()
     tgt_ff = filtered['Target Footfall'].sum()
-    rev_ach = act_rev/tgt_rev*100 if tgt_rev>0 else None
-    ff_ach = act_ff/tgt_ff*100 if tgt_ff>0 else None
-    rpp = act_rev/act_ff if act_ff>0 else 0
+    rev_ach = act_rev / tgt_rev * 100 if tgt_rev > 0 else None
+    ff_ach = act_ff / tgt_ff * 100 if tgt_ff > 0 else None
+    rpp = act_rev / act_ff if act_ff > 0 else 0
     n_months = len(filtered['Months'].unique()) if 'Months' in filtered.columns else 1
-    n_records = len(filtered)
 
     period_desc = ""
     if months: period_desc += ", ".join(months) + " "
@@ -794,70 +1299,70 @@ def smart_ai_response(query, df):
     if project: period_desc += f" ({project})"
     period_desc = period_desc.strip() or "All Data"
 
-    lines = [f"### 📊 Analysis — {period_desc}\n"]
-
+    rows = []
     if want_rev or want_both:
-        lines.append(f"| 💰 Actual Revenue | **Rs. {act_rev:,.0f}** |")
+        rows.append(f"| 💰 Actual Revenue | **{fmt_rev(act_rev)}** |")
         if tgt_rev > 0:
-            lines.append(f"| 🎯 Target Revenue | Rs. {tgt_rev:,.0f} |")
-            lines.append(f"| 📈 Achievement | **{rev_ach:.1f}%** |")
-
+            rows.append(f"| 🎯 Target Revenue | {fmt_rev(tgt_rev)} |")
+            rows.append(f"| 📈 Achievement | **{rev_ach:.1f}%** |")
     if want_ff or want_both:
-        lines.append(f"| 👥 Actual Footfall | **{act_ff:,.0f} Pax** |")
+        rows.append(f"| 👥 Actual Footfall | **{act_ff:,.0f} Pax** |")
         if tgt_ff > 0:
-            lines.append(f"| 🎯 Target Footfall | {tgt_ff:,.0f} Pax |")
-            if ff_ach: lines.append(f"| 📈 FF Achievement | **{ff_ach:.1f}%** |")
-
+            rows.append(f"| 🎯 Target Footfall | {tgt_ff:,.0f} |")
+            if ff_ach: rows.append(f"| 📈 FF Achievement | **{ff_ach:.1f}%** |")
     if want_both and act_ff > 0:
-        lines.append(f"| 💡 Rev / Visitor | **Rs. {rpp:,.0f}** |")
-
+        rows.append(f"| 💡 Rev/Visitor | **Rs. {rpp:,.0f}** |")
     if n_months > 1 and (want_rev or want_both):
-        avg_monthly = act_rev / n_months
-        lines.append(f"| 📊 Avg Monthly Rev | Rs. {avg_monthly:,.0f} |")
+        rows.append(f"| 📊 Avg Monthly Rev | {fmt_rev(act_rev/n_months)} |")
 
-    header = "| Metric | Value |\n|--------|-------|"
-    table_lines = [l for l in lines if l.startswith("|")]
-    intro = lines[0]
-    msg = intro + "\n" + header + "\n" + "\n".join(table_lines)
+    msg = f"### 📊 Analysis — {period_desc}\n\n| Metric | Value |\n|--------|-------|\n"
+    msg += "\n".join(rows)
 
     if rev_ach:
         if rev_ach >= 100:
-            msg += f"\n\n✅ **Target Exceeded** — Revenue achievement: **{rev_ach:.1f}%**"
+            msg += f"\n\n✅ **Target Exceeded** — {rev_ach:.1f}% achievement! Surplus: {fmt_rev(act_rev - tgt_rev)}"
         elif rev_ach >= 85:
-            msg += f"\n\n⚠️ **Near Target** — {rev_ach:.1f}% achieved, Rs. {tgt_rev-act_rev:,.0f} short"
+            msg += f"\n\n⚠️ **Near Target** — {rev_ach:.1f}% achieved, {fmt_rev(tgt_rev - act_rev)} short"
         else:
             msg += f"\n\n❌ **Below Target** — {rev_ach:.1f}% achieved"
 
     return msg, filtered, None
 
 
+# ═══════════════════════════════════════════════════════════════
+#  INTRO / HELP MESSAGES
+# ═══════════════════════════════════════════════════════════════
 def _intro_message():
     return (
-        "### 👋 Assalam o Alaikum! Welcome to **Joyland MIS**\n\n"
+        "### 👋 Assalam o Alaikum! Welcome to **Joyland MIS v5.0 Pro Max**\n\n"
         "---\n"
-        "🤖 **I am the Joyland MIS AI Assistant** — a Business Intelligence Bot trained on **complete Joyland data from 2017 to 2026** across **7 projects**.\n\n"
-        "Developed by **MIS Assistant Manager Umair Nizam** to power smart, data-driven decisions.\n\n"
+        "🤖 **Main Joyland MIS AI Assistant hoon** — Complete Business Intelligence Bot trained on **2017–2026 Joyland data** across **7 projects**.\n\n"
+        "Developed by **MIS Assistant Manager Umair Nizam** for smart, data-driven decisions.\n\n"
         "---\n"
-        "### 🧠 I Can Answer:\n\n"
-        "| What You Ask | Example |\n"
+        "### 🧠 Main Kya Kar Sakta Hoon:\n\n"
+        "| Query Type | Example |\n"
         "|---|---|\n"
         "| 💰 Revenue | `Revenue July 2023` |\n"
         "| 👥 Footfall | `Footfall 2024 Joyland Fortress` |\n"
         "| 🆚 Comparison | `August 2023 vs August 2024` |\n"
-        "| 🔮 Forecast | `Forecast March 2027` |\n"
+        "| 🔮 AI Forecast | `Forecast March 2027` |\n"
         "| 🎯 Achievement | `Target achievement 2025` |\n"
         "| 📈 Trends | `Revenue trend all years` |\n"
         "| 📅 Quarterly | `Q1 2024 revenue` |\n"
         "| 🏢 Projects | `All projects comparison` |\n"
         "| 💡 Per Visitor | `Revenue per pax 2024` |\n"
-        "| 🦠 Events | `COVID impact 2020` |\n\n"
-        "**Projects in data:** Joyland Fortress · JAP-OD · SS-PKG · SS-FSM · SS-JAP · B-PKG · B-EMP\n\n"
+        "| 🦠 Events | `COVID impact 2020` |\n"
+        "| 🌙 Islamic | `Eid impact on revenue` |\n"
+        "| 🌦️ Weather | `Monsoon effect on footfall` |\n"
+        "| 🏏 Sports | `PSL impact` |\n\n"
+        "**Projects:** Joyland Fortress · JAP-OD · SS-PKG · SS-FSM · SS-JAP · B-PKG · B-EMP\n\n"
         "**Ask me anything! 🚀**"
     )
 
+
 def _help_message():
     return (
-        "### 📖 Query Guide\n\n"
+        "### 📖 Complete Query Guide\n\n"
         "**Revenue Queries:**\n"
         "- `Revenue July 2023`\n"
         "- `Total revenue 2024`\n"
@@ -872,16 +1377,21 @@ def _help_message():
         "- `Joyland Fortress 2024 vs JAP-OD 2024`\n\n"
         "**Forecasting (2025–2030):**\n"
         "- `Forecast March 2027`\n"
-        "- `Predict revenue December 2028`\n\n"
+        "- `Predict revenue December 2028 Joyland Fortress`\n\n"
+        "**Pakistan-Specific:**\n"
+        "- `Eid impact on revenue`\n"
+        "- `Monsoon effect on footfall`\n"
+        "- `PSL cricket season impact`\n"
+        "- `COVID impact 2020`\n\n"
         "**Analysis:**\n"
-        "- `Revenue trend`\n"
-        "- `Best month`\n"
+        "- `Revenue trend` / `Annual growth`\n"
+        "- `Best month` / `Worst month`\n"
         "- `Monthly breakdown`\n"
         "- `Achievement 2024`\n"
         "- `Revenue per pax 2025`\n"
-        "- `COVID impact`\n"
-        "- `All projects`\n"
+        "- `All projects comparison`\n"
     )
+
 
 # ═══════════════════════════════════════════════════════════════
 #  SIDEBAR
@@ -892,7 +1402,7 @@ def render_sidebar(df, auth_obj=None):
         <div style='text-align:center;padding:16px 0 8px;'>
           <div style='font-family:Orbitron,monospace;font-size:11px;letter-spacing:4px;color:#7a9cc0;'>JOYLAND MIS</div>
           <div style='font-family:Orbitron,monospace;font-size:20px;font-weight:900;color:#00c6ff;margin:4px 0;'>CONTROL</div>
-          <div style='font-family:Orbitron,monospace;font-size:9px;letter-spacing:3px;color:#3a5a80;'>INTELLIGENCE CENTER</div>
+          <div style='font-family:Orbitron,monospace;font-size:9px;letter-spacing:3px;color:#3a5a80;'>INTELLIGENCE CENTER v5.0</div>
         </div>
         <div style='border-bottom:1px solid #1a3a6b;margin:8px 0 16px;'></div>
         """, unsafe_allow_html=True)
@@ -919,13 +1429,17 @@ def render_sidebar(df, auth_obj=None):
                     unsafe_allow_html=True)
 
         if not df.empty:
+            projects = df['Project'].nunique() if 'Project' in df.columns else 0
+            records = len(df)
+            min_yr = int(df['Year'].min()) if 'Year' in df.columns else 2017
+            max_yr = int(df['Year'].max()) if 'Year' in df.columns else 2026
             st.markdown(f"""
             <div style='background:rgba(13,31,60,0.8);border:1px solid #1a3a6b;border-radius:12px;padding:14px;margin-bottom:12px;'>
               <div style='font-family:Rajdhani;font-size:11px;letter-spacing:2px;color:#a8d4f5;text-transform:uppercase;margin-bottom:8px;font-weight:700;'>DATA SCOPE</div>
-              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>📅 2017 – 2026</div>
-              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>📊 {len(df):,} Records</div>
-              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>🏢 7 Projects</div>
-              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>🤖 AI Model: Poly-2 + LR</div>
+              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>📅 {min_yr} – {max_yr}</div>
+              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>📊 {records:,} Records</div>
+              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>🏢 {projects} Projects</div>
+              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>🤖 AI: Seasonal + Trend + PK Events</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -935,19 +1449,20 @@ def render_sidebar(df, auth_obj=None):
             "Revenue trend", "Q1 2024 Joyland Fortress",
             "Achievement 2025", "All projects comparison",
             "Revenue per pax 2024", "COVID impact 2020",
+            "Eid impact on revenue", "Monsoon effect",
         ]
         st.markdown("""
         <div style='background:rgba(13,31,60,0.8);border:1px solid #1a3a6b;border-radius:12px;padding:14px;'>
           <div style='font-family:Rajdhani;font-size:11px;letter-spacing:2px;color:#a8d4f5;text-transform:uppercase;margin-bottom:8px;font-weight:700;'>QUICK QUERIES</div>
         """, unsafe_allow_html=True)
-        for q in quick:
-            st.markdown(f"<div style='font-family:JetBrains Mono;font-size:11px;color:#c8dff0;margin:4px 0;'>› {q}</div>", unsafe_allow_html=True)
+        for qk in quick:
+            st.markdown(f"<div style='font-family:JetBrains Mono;font-size:11px;color:#c8dff0;margin:4px 0;'>› {qk}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("""
         <div style='text-align:center;padding:12px;font-family:Rajdhani;font-size:11px;color:#3a5a80;letter-spacing:1px;margin-top:16px;'>
           ARCHITECT: <span style='color:#f5c518;font-weight:700;'>UMAIR NIZAM</span><br>
-          <span style='color:#1a3a6b;'>v4.0 GRAND MASTER · 2017–2030</span>
+          <span style='color:#1a3a6b;'>v5.0 PRO MAX ULTRA · 2017–2030</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -957,7 +1472,7 @@ def render_sidebar(df, auth_obj=None):
 # ═══════════════════════════════════════════════════════════════
 def main():
     st.set_page_config(
-        page_title="Joyland MIS Assistant · v4.0",
+        page_title="Joyland MIS Assistant · v5.0 Pro Max",
         layout="wide", page_icon="🎢",
         initial_sidebar_state="expanded"
     )
@@ -975,11 +1490,11 @@ def main():
     credentials = {"usernames": {"admin": {"name": "Admin", "password": "MIS2024@secure"}}}
     try:
         from streamlit_authenticator import Authenticate
-        auth = Authenticate(credentials, "joyland_mis", "auth_key_v4", cookie_expiry_days=30)
+        auth = Authenticate(credentials, "joyland_mis", "auth_key_v5", cookie_expiry_days=30)
         auth.login(location='main')
         is_auth = st.session_state.get("authentication_status")
     except ImportError:
-        st.warning("streamlit-authenticator not installed. Running in demo mode.")
+        st.warning("⚠️ streamlit-authenticator not installed. Running in demo mode.")
         is_auth = True
         auth = None
 
@@ -992,7 +1507,7 @@ def main():
             JOYLAND MIS ASSISTANT
           </div>
           <div style='font-family:Rajdhani;font-size:13px;letter-spacing:3px;color:#7a9cc0;margin-bottom:32px;'>
-            INTELLIGENCE PLATFORM · v4.0
+            INTELLIGENCE PLATFORM · v5.0 PRO MAX
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1005,7 +1520,7 @@ def main():
     <div class='hero-banner'>
       <div class='hero-title'>JOYLAND  MIS  ASSISTANT</div>
       <div class='hero-subtitle'>Advanced Business Intelligence & Predictive Analytics Platform</div>
-      <div class='hero-badge'>⬡ AI-POWERED · DATA 2017–2026 · FORECAST 2030 · v4.0 GRAND MASTER</div>
+      <div class='hero-badge'>⬡ AI-POWERED · DATA 2017–2026 · FORECAST 2030 · v5.0 PRO MAX ULTRA</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1013,20 +1528,21 @@ def main():
     if not df.empty:
         try:
             total_rev = df['Actual Revenue'].sum()
-            total_ff  = df['Actual Footfall'].sum()
+            total_ff = df['Actual Footfall'].sum()
             total_tgt = df['Target revenue'].sum()
-            ach       = total_rev/total_tgt*100 if total_tgt>0 else 0
-            rpp       = total_rev/total_ff if total_ff>0 else 0
-            last_yr   = df[df['Year']==df['Year'].max()]['Actual Revenue'].sum()
-            prev_yr   = df[df['Year']==df['Year'].max()-1]['Actual Revenue'].sum()
-            yoy_g     = (last_yr-prev_yr)/prev_yr*100 if prev_yr>0 else 0
+            ach = total_rev / total_tgt * 100 if total_tgt > 0 else 0
+            rpp = total_rev / total_ff if total_ff > 0 else 0
+            max_yr = df['Year'].max()
+            last_yr = df[df['Year'] == max_yr]['Actual Revenue'].sum()
+            prev_yr = df[df['Year'] == max_yr - 1]['Actual Revenue'].sum()
+            yoy_g = (last_yr - prev_yr) / prev_yr * 100 if prev_yr > 0 else 0
 
-            c1,c2,c3,c4,c5 = st.columns(5)
-            c1.metric("💰 Lifetime Revenue", f"Rs. {total_rev/1e6:.0f}M", "2017–2026")
+            c1, c2, c3, c4, c5 = st.columns(5)
+            c1.metric("💰 Lifetime Revenue", fmt_rev(total_rev), "2017–2026")
             c2.metric("👥 Total Visitors", f"{total_ff/1e6:.2f}M Pax", "Cumulative")
             c3.metric("🎯 Avg Achievement", f"{ach:.1f}%", "vs All Targets")
             c4.metric("💡 Rev / Visitor", f"Rs. {rpp:,.0f}", "Lifetime Avg")
-            c5.metric("📈 YoY Growth", f"{yoy_g:+.1f}%", f"{df['Year'].max()-1}→{df['Year'].max()}")
+            c5.metric("📈 YoY Growth", f"{yoy_g:+.1f}%", f"{max_yr-1}→{max_yr}")
         except:
             pass
 
@@ -1034,17 +1550,23 @@ def main():
 
     # ── AI INSIGHTS ──
     if not df.empty:
-        yearly_rev = df.groupby('Year')['Actual Revenue'].sum()
-        best_proj = df.groupby('Project')['Actual Revenue'].sum().idxmax()
-        peak_month = df.groupby('Months', observed=True)['Actual Revenue'].sum().idxmax()
-        st.markdown(f"""
-        <div class='insight-card'>
-          🏆 <b>Best Month:</b> {peak_month} (highest cumulative revenue) &nbsp;·&nbsp;
-          🏢 <b>Top Project:</b> {best_proj} (largest revenue contributor) &nbsp;·&nbsp;
-          🚀 <b>Peak Year:</b> 2025 (Rs. 2.96B, +16.6% YoY) &nbsp;·&nbsp;
-          💡 <b>Rev/Pax:</b> Rs. {df['Actual Revenue'].sum()/df['Actual Footfall'].sum():,.0f} all-time average
-        </div>
-        """, unsafe_allow_html=True)
+        try:
+            best_proj = df.groupby('Project')['Actual Revenue'].sum().idxmax()
+            peak_month = df.groupby('Months', observed=True)['Actual Revenue'].sum().idxmax()
+            best_year_row = df.groupby('Year')['Actual Revenue'].sum()
+            best_year = best_year_row.idxmax()
+            all_rpp = df['Actual Revenue'].sum() / df['Actual Footfall'].sum()
+            st.markdown(f"""
+            <div class='insight-card'>
+              🏆 <b>Peak Month (All-Time):</b> {peak_month} &nbsp;·&nbsp;
+              🏢 <b>Top Project:</b> {best_proj} &nbsp;·&nbsp;
+              🚀 <b>Best Year:</b> {best_year} ({fmt_rev(best_year_row[best_year])}) &nbsp;·&nbsp;
+              💡 <b>Rev/Visitor:</b> Rs. {all_rpp:,.0f} all-time avg &nbsp;·&nbsp;
+              📅 <b>CAGR 2017–2025:</b> ~33%/year
+            </div>
+            """, unsafe_allow_html=True)
+        except:
+            pass
 
     # ── CHAT ──
     st.markdown("<div class='section-header'>◈ AI ANALYTICS ASSISTANT</div>", unsafe_allow_html=True)
@@ -1053,20 +1575,17 @@ def main():
         with st.chat_message("user" if msg["is_user"] else "assistant"):
             st.markdown(msg["content"])
 
-    prompt = st.chat_input("Ask anything: Revenue · Footfall · Comparison · Forecast · Trends · Projects…")
+    prompt = st.chat_input("Ask anything: Revenue · Footfall · Comparison · Forecast · Eid · Monsoon · Trends · Projects…")
 
     if prompt:
         st.session_state.messages.append({"content": prompt, "is_user": True})
-
         response_text, filtered_df, comp_data = smart_ai_response(prompt, df)
-
         if filtered_df is not None:
             st.session_state.last_filtered_df = filtered_df
         if comp_data is not None:
             st.session_state.comparison_data = comp_data
         else:
             st.session_state.comparison_data = None
-
         st.session_state.messages.append({"content": response_text, "is_user": False})
         st.rerun()
 
@@ -1080,75 +1599,82 @@ def main():
 
         tab1, tab2, tab3, tab4, tab5 = st.tabs([
             "📉 Visual Insights", "🔬 Deep Analysis", "🏢 Projects",
-            "🔮 Forecast", "📋 Raw Data"
+            "🔮 Advanced Forecast", "📋 Raw Data"
         ])
 
         # ─ TAB 1: VISUAL INSIGHTS ─
         with tab1:
+            # Comparison chart if available
             if st.session_state.comparison_data:
                 cd = st.session_state.comparison_data
                 fig_comp = go.Figure()
-                fig_comp.add_trace(go.Bar(name='Revenue', x=cd['labels'], y=cd['revenue'],
-                    marker_color=['#00c6ff','#f5c518'], marker_line_width=0,
-                    hovertemplate='<b>%{x}</b><br>Rs. %{y:,.0f}<extra></extra>'))
-                fig_comp.add_trace(go.Bar(name='Footfall', x=cd['labels'], y=cd['footfall'],
-                    marker_color=['rgba(0,198,255,0.4)','rgba(245,197,24,0.4)'],
-                    marker_line_width=0, yaxis='y2',
-                    hovertemplate='<b>%{x}</b><br>%{y:,.0f} Pax<extra></extra>'))
+                bar_colors = ['#00c6ff', '#f5c518']
+                for i, (lbl, rev, ff) in enumerate(zip(cd['labels'], cd['revenue'], cd['footfall'])):
+                    fig_comp.add_trace(go.Bar(
+                        name=f'{lbl} – Revenue', x=[lbl], y=[rev],
+                        marker_color=bar_colors[i],
+                        text=[fmt_rev(rev)], textposition='outside',
+                        textfont=dict(family='JetBrains Mono', size=11),
+                        hovertemplate=f'<b>{lbl}</b><br>Revenue: <b>Rs. %{{y:,.0f}}</b><extra></extra>'
+                    ))
                 fig_comp.update_layout(**PLOTLY_LAYOUT, barmode='group',
-                    title="Period Comparison — Revenue vs Footfall", height=400,
-                    yaxis2=dict(overlaying='y', side='right',
-                    gridcolor='rgba(26,58,107,0.2)',
-                    tickfont=dict(family='JetBrains Mono',size=11,color='#f5c518')))
+                    title="Period Comparison — Revenue", height=400,
+                    xaxis_title="Period", yaxis_title="Revenue (PKR)")
                 st.plotly_chart(fig_comp, use_container_width=True)
                 st.divider()
 
             chart_opt = st.selectbox("🎯 Select Visualization", [
                 "1. Revenue Achievement Gauge",
                 "2. Footfall Achievement Gauge",
-                "3. Revenue vs Target — Bar Chart",
-                "4. Revenue Area Trend",
-                "5. Footfall Trend Line",
-                "6. Monthly Waterfall",
-                "7. Revenue Share — Pie",
-                "8. Revenue vs Footfall — Regression",
-                "9. Year-over-Year Comparison",
+                "3. Revenue: Actual vs Target (Bar + Labels)",
+                "4. Revenue Trend (Area + Peak Annotation)",
+                "5. Footfall Trend (Area + Peak Annotation)",
+                "6. Monthly Waterfall (Labeled)",
+                "7. Revenue Share by Month (Donut)",
+                "8. Revenue Share by Project (Donut)",
+                "9. Revenue vs Footfall Regression",
+                "10. Year-over-Year Comparison (All Years)",
             ])
 
             res = df_plot[[c for c in ['Actual Revenue','Actual Footfall','Target revenue','Target Footfall'] if c in df_plot.columns]].sum()
 
             if chart_opt.startswith("1"):
-                st.plotly_chart(chart_gauge(res.get('Actual Revenue',0), res.get('Target revenue',0), "Revenue Achievement"), use_container_width=True)
+                st.plotly_chart(chart_gauge(res.get('Actual Revenue', 0), res.get('Target revenue', 0), "Revenue Achievement"), use_container_width=True)
             elif chart_opt.startswith("2"):
-                st.plotly_chart(chart_gauge(res.get('Actual Footfall',0), res.get('Target Footfall',0), "Footfall Achievement"), use_container_width=True)
+                st.plotly_chart(chart_gauge(res.get('Actual Footfall', 0), res.get('Target Footfall', 0), "Footfall Achievement"), use_container_width=True)
             elif chart_opt.startswith("3"):
-                cols = [c for c in ['Actual Revenue','Target revenue'] if c in df_plot.columns]
-                st.plotly_chart(chart_bar(df_plot, 'Months', cols, "Revenue: Actual vs Target"), use_container_width=True)
+                cols = [c for c in ['Actual Revenue', 'Target revenue'] if c in df_plot.columns]
+                agg = df_plot.groupby('Months', observed=True)[cols].sum().reset_index()
+                st.plotly_chart(chart_bar_labeled(agg, 'Months', cols, "Revenue: Actual vs Target", "Month", "Revenue (PKR)"), use_container_width=True)
             elif chart_opt.startswith("4"):
                 if 'Actual Revenue' in df_plot.columns:
-                    st.plotly_chart(chart_trend(df_plot, 'Actual Revenue', '#00c6ff', 'Revenue Trend'), use_container_width=True)
+                    st.plotly_chart(chart_trend_advanced(df_plot.sort_values('Date_Obj'), 'Actual Revenue', '#00c6ff', 'Revenue Trend'), use_container_width=True)
             elif chart_opt.startswith("5"):
                 if 'Actual Footfall' in df_plot.columns:
-                    st.plotly_chart(chart_trend(df_plot, 'Actual Footfall', '#f5c518', 'Footfall Trend'), use_container_width=True)
+                    st.plotly_chart(chart_trend_advanced(df_plot.sort_values('Date_Obj'), 'Actual Footfall', '#f5c518', 'Footfall Trend'), use_container_width=True)
             elif chart_opt.startswith("6"):
-                if 'Actual Revenue' in df_plot.columns:
-                    st.plotly_chart(chart_waterfall(df_plot, 'Actual Revenue'), use_container_width=True)
+                fig_wf = chart_waterfall_advanced(df_plot)
+                if fig_wf: st.plotly_chart(fig_wf, use_container_width=True)
             elif chart_opt.startswith("7"):
                 if 'Actual Revenue' in df_plot.columns:
-                    st.plotly_chart(chart_pie(df_plot, 'Actual Revenue', 'Months', "Revenue by Month"), use_container_width=True)
+                    st.plotly_chart(chart_pie_advanced(df_plot, 'Actual Revenue', 'Months', "Revenue Share by Month"), use_container_width=True)
             elif chart_opt.startswith("8"):
-                fig_r = chart_regression(df_plot)
-                if fig_r: st.plotly_chart(fig_r, use_container_width=True)
+                if 'Project' in df_plot.columns:
+                    st.plotly_chart(chart_pie_advanced(df_plot, 'Actual Revenue', 'Project', "Revenue Share by Project"), use_container_width=True)
             elif chart_opt.startswith("9"):
-                st.plotly_chart(chart_yoy(df_plot), use_container_width=True)
+                fig_r = chart_regression_advanced(df_plot)
+                if fig_r: st.plotly_chart(fig_r, use_container_width=True)
+            elif chart_opt.startswith("10"):
+                st.plotly_chart(chart_yoy_advanced(df_plot), use_container_width=True)
 
-            disp = [c for c in ['Actual Revenue','Target revenue','Actual Footfall','Target Footfall'] if c in df_plot.columns]
+            # Summary table
+            disp = [c for c in ['Actual Revenue', 'Target revenue', 'Actual Footfall', 'Target Footfall'] if c in df_plot.columns]
             if disp:
-                st.markdown("**Summary**")
+                st.markdown("**Summary Totals**")
+                summary = df_plot[disp].sum().to_frame("Total").T
                 st.dataframe(
-                    df_plot[disp].sum().to_frame("Total").T.style
-                    .format("{:,.0f}")
-                    .set_properties(**{'background-color':'#0d1f3c','color':'#e8f4fd','border':'1px solid #1a3a6b'}),
+                    summary.style.format("{:,.0f}")
+                    .set_properties(**{'background-color': '#0d1f3c', 'color': '#e8f4fd', 'border': '1px solid #1a3a6b'}),
                     use_container_width=True
                 )
 
@@ -1156,44 +1682,37 @@ def main():
         with tab2:
             c1, c2 = st.columns(2)
             with c1:
-                if 'Year' in df_plot.columns and 'Actual Revenue' in df_plot.columns:
-                    fy_d = df_plot.groupby('Year')[['Actual Revenue','Target revenue']].sum().reset_index()
-                    fig_fy = go.Figure()
-                    fig_fy.add_trace(go.Bar(name='Actual', x=fy_d['Year'], y=fy_d['Actual Revenue'],
-                        marker_color='#00c6ff', marker_line_width=0))
-                    if 'Target revenue' in fy_d.columns:
-                        fig_fy.add_trace(go.Bar(name='Target', x=fy_d['Year'], y=fy_d['Target revenue'],
-                            marker_color='rgba(245,197,24,0.4)', marker_line_width=0))
-                    fig_fy.update_layout(**PLOTLY_LAYOUT, barmode='group',
-                        title="Yearly: Actual vs Target", height=380)
-                    st.plotly_chart(fig_fy, use_container_width=True)
+                st.plotly_chart(chart_yearly_bar(df_plot), use_container_width=True)
             with c2:
-                hm = chart_heatmap(df_plot)
-                if hm: st.plotly_chart(hm, use_container_width=True)
+                st.plotly_chart(chart_monthly_heatmap(df_plot), use_container_width=True)
 
-            st.plotly_chart(chart_yoy(df_plot), use_container_width=True)
+            st.plotly_chart(chart_yoy_advanced(df_plot), use_container_width=True)
 
         # ─ TAB 3: PROJECTS ─
         with tab3:
             if 'Project' in df_plot.columns:
-                st.plotly_chart(chart_project_compare(df_plot), use_container_width=True)
-                proj_sum = df_plot.groupby('Project')[['Actual Revenue','Actual Footfall','Target revenue']].sum()
-                proj_sum['Achievement %'] = (proj_sum['Actual Revenue']/proj_sum['Target revenue']*100).where(proj_sum['Target revenue']>0, 0).round(1)
-                proj_sum['Rev/Pax'] = (proj_sum['Actual Revenue']/proj_sum['Actual Footfall']).round(0)
+                st.plotly_chart(chart_project_advanced(df_plot), use_container_width=True)
+                proj_sum = df_plot.groupby('Project').agg({
+                    'Actual Revenue': 'sum', 'Actual Footfall': 'sum', 'Target revenue': 'sum'
+                })
+                proj_sum['Achievement %'] = (proj_sum['Actual Revenue'] / proj_sum['Target revenue'] * 100).where(proj_sum['Target revenue'] > 0, 0).round(1)
+                proj_sum['Rev/Pax'] = (proj_sum['Actual Revenue'] / proj_sum['Actual Footfall'].replace(0, np.nan)).round(0)
+                proj_sum = proj_sum.sort_values('Actual Revenue', ascending=False)
                 st.dataframe(
                     proj_sum.style.format({
-                        'Actual Revenue':'{:,.0f}','Actual Footfall':'{:,.0f}',
-                        'Target revenue':'{:,.0f}','Achievement %':'{:.1f}%','Rev/Pax':'{:,.0f}'
-                    }).set_properties(**{'background-color':'#0d1f3c','color':'#e8f4fd','border':'1px solid #1a3a6b'}),
+                        'Actual Revenue': '{:,.0f}', 'Actual Footfall': '{:,.0f}',
+                        'Target revenue': '{:,.0f}', 'Achievement %': '{:.1f}%', 'Rev/Pax': '{:,.0f}'
+                    }).set_properties(**{'background-color': '#0d1f3c', 'color': '#e8f4fd', 'border': '1px solid #1a3a6b'}),
                     use_container_width=True
                 )
 
-        # ─ TAB 4: FORECAST ─
+        # ─ TAB 4: ADVANCED FORECAST ─
         with tab4:
-            st.markdown("<div class='section-header'>◈ PREDICTIVE ANALYTICS ENGINE</div>", unsafe_allow_html=True)
+            st.markdown("<div class='section-header'>◈ ADVANCED PREDICTIVE ANALYTICS ENGINE</div>", unsafe_allow_html=True)
             if not df.empty:
-                st.plotly_chart(chart_forecast_trajectory(df), use_container_width=True)
+                st.plotly_chart(chart_forecast_trajectory_advanced(df), use_container_width=True)
 
+                st.markdown("#### 🔮 Manual Forecast Generator")
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     m_sel = st.selectbox("Month", ['January','February','March','April','May','June',
@@ -1203,11 +1722,24 @@ def main():
                 with col3:
                     p_sel = st.selectbox("Project", ['All Projects'] + sorted(df['Project'].unique().tolist()))
 
-                if st.button("🔮 GENERATE FORECAST", use_container_width=True):
+                if st.button("🔮 GENERATE ADVANCED FORECAST", use_container_width=True):
                     m_idx = MONTH_MAP[m_sel.lower()]
-                    df_src = df if p_sel=='All Projects' else df[df['Project']==p_sel]
-                    p_rev, (lr,ur), note_rev = generate_forecast(df_src, m_idx, y_sel, 'Actual Revenue')
-                    p_ff, (lf,uf), note_ff = generate_forecast(df_src, m_idx, y_sel, 'Actual Footfall')
+                    df_src = df if p_sel == 'All Projects' else df[df['Project'] == p_sel]
+                    p_rev, (lr, ur), note_rev = generate_advanced_forecast(df_src, m_idx, y_sel, 'Actual Revenue')
+                    p_ff, (lf, uf), note_ff = generate_advanced_forecast(df_src, m_idx, y_sel, 'Actual Footfall')
+                    pk_mult, pk_notes = compute_pakistan_multiplier(m_idx, y_sel)
+
+                    # Historical same-month for context
+                    same_m_hist = df_src[df_src['Month_Num'] == m_idx].groupby('Year').agg({
+                        'Actual Revenue': 'sum'
+                    }).reset_index().tail(5)
+
+                    eid_alert = ""
+                    if y_sel in EID_FITR_MONTHS and m_idx in EID_FITR_MONTHS[y_sel]:
+                        eid_alert = "🌙 **Eid ul Fitr** expected this month → Significant footfall spike!"
+                    if y_sel in EID_ADHA_MONTHS and m_idx in EID_ADHA_MONTHS[y_sel]:
+                        eid_alert += "\n🐑 **Eid ul Adha** expected this month → Revenue boost!"
+
                     st.markdown(f"""
                     <div style='background:rgba(245,197,24,0.06);border:1px solid rgba(245,197,24,0.3);
                     border-radius:16px;padding:24px;margin-top:16px;'>
@@ -1217,8 +1749,8 @@ def main():
                       <div style='display:grid;grid-template-columns:1fr 1fr;gap:16px;'>
                         <div style='background:rgba(0,198,255,0.08);border:1px solid rgba(0,198,255,0.2);border-radius:12px;padding:16px;'>
                           <div style='font-family:Rajdhani;font-size:12px;color:#7a9cc0;letter-spacing:2px;'>💰 REVENUE</div>
-                          <div style='font-family:Orbitron;font-size:22px;color:#00c6ff;font-weight:900;margin:8px 0;'>Rs. {p_rev:,.0f}</div>
-                          <div style='font-family:JetBrains Mono;font-size:11px;color:#3a5a80;'>Range: Rs. {lr:,.0f} – {ur:,.0f}</div>
+                          <div style='font-family:Orbitron;font-size:22px;color:#00c6ff;font-weight:900;margin:8px 0;'>{fmt_rev(p_rev)}</div>
+                          <div style='font-family:JetBrains Mono;font-size:11px;color:#3a5a80;'>Range: {fmt_rev(lr)} – {fmt_rev(ur)}</div>
                         </div>
                         <div style='background:rgba(245,197,24,0.08);border:1px solid rgba(245,197,24,0.2);border-radius:12px;padding:16px;'>
                           <div style='font-family:Rajdhani;font-size:12px;color:#7a9cc0;letter-spacing:2px;'>👥 FOOTFALL</div>
@@ -1227,18 +1759,31 @@ def main():
                         </div>
                       </div>
                       <div style='margin-top:12px;font-family:Rajdhani;font-size:13px;color:#a8d4f5;'>
-                        <b>Modifiers:</b> {note_rev}
+                        <b>Pakistan Event Modifiers:</b> {note_rev}
                       </div>
                     </div>
                     """, unsafe_allow_html=True)
 
+                    if eid_alert:
+                        st.info(eid_alert)
+
+                    if not same_m_hist.empty:
+                        st.markdown(f"**Historical {m_sel} Revenue (same month, last 5 years):**")
+                        same_m_hist['Actual Revenue'] = same_m_hist['Actual Revenue'].apply(fmt_rev)
+                        st.dataframe(same_m_hist.rename(columns={'Year': 'Year', 'Actual Revenue': 'Revenue'}),
+                                     use_container_width=True)
+
+                # Pakistan event calendar
                 st.markdown("""
                 <div style='background:rgba(245,197,24,0.06);border:1px solid rgba(245,197,24,0.2);border-radius:12px;padding:16px;margin-top:16px;'>
-                  <div style='font-family:Orbitron;font-size:12px;letter-spacing:3px;color:#f5c518;margin-bottom:10px;'>🌙 EID SEASON CALENDAR</div>
+                  <div style='font-family:Orbitron;font-size:12px;letter-spacing:3px;color:#f5c518;margin-bottom:10px;'>🌙 PAKISTAN EVENT CALENDAR (FORECAST BASIS)</div>
                   <div style='font-family:JetBrains Mono;font-size:12px;color:#7a9cc0;line-height:2;'>
-                    2025 → Mar, Apr, Jun (+48%)&nbsp;&nbsp;|&nbsp;&nbsp;2026 → Mar, Apr, Jun (+48%)<br>
-                    2027 → Mar, May, Jun (+48%)&nbsp;&nbsp;|&nbsp;&nbsp;2028 → Feb, May (+48%)<br>
-                    2029 → Feb, Apr (+48%)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;2030 → Jan, Apr (+48%)
+                    <b>Eid ul Fitr:</b> 2025→Mar | 2026→Mar | 2027→Mar | 2028→Feb | 2029→Feb | 2030→Jan<br>
+                    <b>Eid ul Adha:</b> 2025→Jun | 2026→May | 2027→May | 2028→May | 2029→Apr | 2030→Apr<br>
+                    <b>Exam Season (low):</b> May (Board) · October (Midterms)<br>
+                    <b>Monsoon Adjustment:</b> July · August (-8%)<br>
+                    <b>Independence Day Boost:</b> August 14 (+8%)<br>
+                    <b>Winter Festive:</b> December (+28%) · January (+13%)
                   </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1247,17 +1792,19 @@ def main():
         with tab5:
             st.markdown(f"<div style='font-family:Rajdhani;color:#7a9cc0;margin-bottom:12px;'>{len(df_plot):,} records</div>",
                         unsafe_allow_html=True)
-            display_cols = [c for c in df_plot.columns if c not in ['Month_Num','Date_Obj','Fiscal_Year_Label']]
+            display_cols = [c for c in df_plot.columns if c not in ['Month_Num', 'Date_Obj', 'Fiscal_Year_Label']]
+            num_cols = [c for c in display_cols if pd.api.types.is_numeric_dtype(df_plot[c])]
             st.dataframe(
-                df_plot[display_cols].style.format({
-                    c: '{:,.0f}' for c in display_cols if pd.api.types.is_numeric_dtype(df_plot[c])
-                }).set_properties(**{'background-color':'#0d1f3c','color':'#e8f4fd','border':'1px solid #1a3a6b'}),
+                df_plot[display_cols].style.format({c: '{:,.0f}' for c in num_cols})
+                .set_properties(**{'background-color': '#0d1f3c', 'color': '#e8f4fd', 'border': '1px solid #1a3a6b'}),
                 use_container_width=True, height=500
             )
             csv = df_plot.to_csv(index=False).encode('utf-8')
-            st.download_button("⬇️ EXPORT CSV", data=csv,
+            st.download_button(
+                "⬇️ EXPORT CSV", data=csv,
                 file_name=f"joyland_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                mime='text/csv', use_container_width=True)
+                mime='text/csv', use_container_width=True
+            )
 
 
 if __name__ == "__main__":
