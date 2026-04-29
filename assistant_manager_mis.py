@@ -124,6 +124,35 @@ def load_data():
         fiscal_order = ['July','August','September','October','November','December',
                         'January','February','March','April','May','June']
         df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
+
+        # ── FIX START ──
+        # Ensure Year column is integer
+        df['Year'] = pd.to_numeric(df['Year'], errors='coerce').fillna(0).astype(int)
+
+        # Auto-correct Year: agar Excel mein fiscal year start store hai
+        # (e.g. Jan-Jun 2026 ko 2025 likha hai), to calendar year pe fix karo
+        # Logic: agar Month Jan-Jun (1-6) hai aur Year se next year ka data ban raha hai,
+        # to check karo ke kya Year+1 correct calendar year hai
+        # Hum dono cases handle karte hain:
+        # Case A: Year column mein calendar year hai (2026) → kuch change nahi
+        # Case B: Year column mein fiscal year start hai (2025 for Jan-Jun 2026) → +1 karo
+
+        # Detection: agar koi row mein Month<=6 hai aur us row ka Year
+        # agle saal ke July-Dec rows ke Year se 1 kam hai → fiscal year convention
+        jul_dec_years = set(df.loc[df['Month_Num'] >= 7, 'Year'].unique())
+        jan_jun_years = set(df.loc[df['Month_Num'] <= 6, 'Year'].unique())
+
+        # Agar Jan-Jun rows mein Year values hain jo July-Dec rows mein bhi hain
+        # (e.g. Year=2025 for both Jul-Dec 2025 AND Jan-Jun 2025/2026),
+        # to fiscal year convention detect hoti hai
+        overlap = jan_jun_years & jul_dec_years
+        if overlap:
+            # Fiscal year convention: Jan-Jun ka Year = fiscal year start → +1 karo
+            mask_fix = df['Month_Num'] <= 6
+            df.loc[mask_fix, 'Year'] = df.loc[mask_fix, 'Year'] + 1
+
+        # ── FIX END ──
+
         df['Date_Obj'] = pd.to_datetime(
             df['Year'].astype(str) + '-' + df['Month_Num'].astype(str).str.zfill(2) + '-01'
         )
@@ -444,26 +473,37 @@ def detect_quarter(query_lower):
 
 def filter_df(query_lower, df):
     temp = df.copy()
+
     # Months
     months = [m.capitalize() for m in re.findall(MONTH_PATTERN, query_lower)]
+
     # Quarter
     quarter_months = detect_quarter(query_lower)
     if quarter_months:
         months = quarter_months
-    # Years
+
+    # ── FIX: Year detection — calendar year use karo directly ──
     years = [int(y) for y in re.findall(r'\b(20\d{2})\b', query_lower)]
-    # FY
+
+    # FY label match (e.g. "fy26" or "fy2026")
     fy_match = re.findall(r'fy\s*(\d{2,4})', query_lower)
+
     # Project
     project = detect_project(query_lower)
 
     if months:
         temp = temp[temp['Months'].isin(months)]
+
     if years:
+        # ── FIX: Sirf calendar year filter karo — Year column already corrected in load_data ──
         temp = temp[temp['Year'].isin(years)]
+
     if fy_match:
         for fy in fy_match:
-            temp = temp[temp['Fiscal_Year_Label'].str.contains(fy, na=False)]
+            # 2-digit ya 4-digit dono handle karo
+            fy_str = fy[-2:]  # last 2 digits lo
+            temp = temp[temp['Fiscal_Year_Label'].str.contains(fy_str, na=False)]
+
     if project:
         temp = temp[temp['Project'] == project]
 
@@ -655,7 +695,6 @@ def smart_ai_response(query, df):
                 msg += f"📉 Revenue shortfall: **Rs. {shortfall:,.0f}** below target.\n"
             return msg, filtered, None
         else:
-            # Fall through to general data query
             pass
 
     # ── COVID / SPECIFIC EVENT QUERIES ──
@@ -727,11 +766,10 @@ def smart_ai_response(query, df):
     # ── GENERAL DATA QUERY (Revenue / Footfall with filters) ──
     filtered, months, years, project = filter_df(q, df)
 
-    # Detect what metric is asked
     want_rev = any(k in q for k in ['revenue','rev','income','earning','sales','kamai'])
     want_ff = any(k in q for k in ['footfall','foot fall','visitors','pax','attendance','log','customers','guest'])
     want_target = any(k in q for k in ['target','goal','aim'])
-    want_both = not want_rev and not want_ff  # default: show both
+    want_both = not want_rev and not want_ff
 
     if filtered.empty:
         return (
@@ -782,7 +820,6 @@ def smart_ai_response(query, df):
     intro = lines[0]
     msg = intro + "\n" + header + "\n" + "\n".join(table_lines)
 
-    # Auto-insight
     if rev_ach:
         if rev_ach >= 100:
             msg += f"\n\n✅ **Target Exceeded** — Revenue achievement: **{rev_ach:.1f}%**"
@@ -1105,7 +1142,6 @@ def main():
             elif chart_opt.startswith("9"):
                 st.plotly_chart(chart_yoy(df_plot), use_container_width=True)
 
-            # Summary table
             disp = [c for c in ['Actual Revenue','Target revenue','Actual Footfall','Target Footfall'] if c in df_plot.columns]
             if disp:
                 st.markdown("**Summary**")
@@ -1141,7 +1177,6 @@ def main():
         with tab3:
             if 'Project' in df_plot.columns:
                 st.plotly_chart(chart_project_compare(df_plot), use_container_width=True)
-                # Project breakdown table
                 proj_sum = df_plot.groupby('Project')[['Actual Revenue','Actual Footfall','Target revenue']].sum()
                 proj_sum['Achievement %'] = (proj_sum['Actual Revenue']/proj_sum['Target revenue']*100).where(proj_sum['Target revenue']>0, 0).round(1)
                 proj_sum['Rev/Pax'] = (proj_sum['Actual Revenue']/proj_sum['Actual Footfall']).round(0)
