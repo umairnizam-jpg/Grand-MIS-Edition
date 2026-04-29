@@ -549,12 +549,12 @@ def chart_monthly_heatmap(df):
 
 
 def chart_project_advanced(df):
-    """Project comparison with revenue, footfall, and rev/pax."""
+    """Project comparison with revenue, footfall, and rev/."""
     d = df.groupby('Project').agg({
         'Actual Revenue': 'sum', 'Actual Footfall': 'sum'
     }).reset_index()
     d = d[d['Actual Revenue'] > 0]
-    d['Rev_Per_Pax'] = d['Actual Revenue'] / d['Actual Footfall'].replace(0, np.nan)
+    d['Rev_Per_'] = d['Actual Revenue'] / d['Actual Footfall'].replace(0, np.nan)
     d = d.sort_values('Actual Revenue', ascending=False)
 
     colors = [PROJECT_COLORS.get(p, '#00c6ff') for p in d['Project']]
@@ -577,17 +577,17 @@ def chart_project_advanced(df):
         textfont=dict(family='JetBrains Mono', size=10, color='#f5c518'),
         hovertemplate='<b>%{x}</b><br>Footfall: <b>%{y:,.0f}</b><extra></extra>'
     ))
-    # Rev/Pax line
+    # Rev/ line
     fig.add_trace(go.Scatter(
-        x=d['Project'], y=d['Rev_Per_Pax'],
-        name='Rev/Pax', yaxis='y3',
+        x=d['Project'], y=d['Rev_Per_'],
+        name='Rev/', yaxis='y3',
         mode='lines+markers+text',
         line=dict(color='#b660f5', width=2),
         marker=dict(size=10, color='#b660f5', symbol='diamond'),
-        text=[f"Rs.{v:,.0f}" for v in d['Rev_Per_Pax'].fillna(0)],
+        text=[f"Rs.{v:,.0f}" for v in d['Rev_Per_'].fillna(0)],
         textposition='top center',
         textfont=dict(family='JetBrains Mono', size=9, color='#b660f5'),
-        hovertemplate='Rev/Pax: <b>Rs. %{y:,.0f}</b><extra></extra>'
+        hovertemplate='Rev/: <b>Rs. %{y:,.0f}</b><extra></extra>'
     ))
     fig.update_layout(
         **PLOTLY_LAYOUT,
@@ -912,7 +912,7 @@ def smart_ai_response(query, df):
                 f"| Metric | Projection | Lower Bound | Upper Bound |\n"
                 f"|--------|------------|-------------|-------------|\n"
                 f"| 💰 Revenue | **{fmt_rev(p_rev)}** | {fmt_rev(lr)} | {fmt_rev(ur)} |\n"
-                f"| 👥 Footfall | **{p_ff:,.0f} Pax** | {lf:,.0f} | {uf:,.0f} |\n\n"
+                f"| 👥 Footfall | **{p_ff:,.0f} ** | {lf:,.0f} | {uf:,.0f} |\n\n"
                 f"**Pakistan Event Modifiers:** {note_rev}\n"
                 f"{eid_note}\n\n"
                 f"> *Model: Same-Month Trend (60%) + Polynomial Extrapolation (40%)*  \n"
@@ -965,7 +965,7 @@ def smart_ai_response(query, df):
                 f"|--------|------|------|--------|\n"
                 f"| 💰 Revenue | {fmt_rev(r1)} | {fmt_rev(r2)} | `{r_chg:+.1f}%` |\n"
                 f"| 👥 Footfall | {f1:,.0f} | {f2:,.0f} | `{f_chg:+.1f}%` |\n"
-                f"| 💡 Rev/Pax | Rs. {rpp1:,.0f} | Rs. {rpp2:,.0f} | `{rpp_chg:+.1f}%` |\n\n"
+                f"| 💡 Rev/ | Rs. {rpp1:,.0f} | Rs. {rpp2:,.0f} | `{rpp_chg:+.1f}%` |\n\n"
             )
             if r_chg > 0:
                 msg += f"✅ **{winner}** ne **{loser}** se `{margin:.1f}%` ziyada revenue generate kiya.\n"
@@ -1138,7 +1138,7 @@ def smart_ai_response(query, df):
             rows.append(f"| {r['Project']} | {fmt_rev(r['Actual Revenue'])} | {r['Actual Footfall']/1e3:.0f}K | {r['Ach']:.1f}% | Rs. {r['RPP']:,.0f} |")
         msg = (
             "### 🏢 All Projects — Performance Summary (2017–2026)\n\n"
-            "| Project | Total Revenue | Total Footfall | Achievement | Rev/Pax |\n"
+            "| Project | Total Revenue | Total Footfall | Achievement | Rev/ |\n"
             "|---------|---------------|----------------|-------------|----------|\n"
             + "\n".join(rows) + "\n\n"
             "**Highlights:**\n"
@@ -1166,7 +1166,7 @@ def smart_ai_response(query, df):
             rows.append(f"| {r['Months']} | {fmt_rev(r['Actual Revenue'])} | {r['Actual Footfall']/1e3:.0f}K | Rs. {r['RPP']:,.0f} |")
         msg = (
             "### 📅 Monthly Revenue Breakdown — All-Time Totals\n\n"
-            "| Month | Total Revenue | Total Footfall | Rev/Pax |\n"
+            "| Month | Total Revenue | Total Footfall | Rev/ |\n"
             "|-------|---------------|----------------|----------|\n"
             + "\n".join(rows) + "\n\n"
             "**Seasonal Insights:**\n"
@@ -1233,15 +1233,15 @@ def smart_ai_response(query, df):
                 f"| Metric | Value |\n"
                 f"|--------|-------|\n"
                 f"| 💰 Revenue | **{fmt_rev(act_rev)}** |\n"
-                f"| 👥 Footfall | **{act_ff:,.0f} Pax** |\n"
+                f"| 👥 Footfall | **{act_ff:,.0f} ** |\n"
                 f"| 🎯 Target Revenue | {fmt_rev(tgt_rev)} |\n"
                 f"| 📈 Achievement | **{ach:.1f}%** |\n"
-                f"| 💡 Rev/Pax | **Rs. {act_rev/act_ff:,.0f}** |" if act_ff > 0 else ""
+                f"| 💡 Rev/ | **Rs. {act_rev/act_ff:,.0f}** |" if act_ff > 0 else ""
             )
             return msg, filtered, None
 
-    # ── REVENUE PER PAX ──
-    rpp_kw = ['revenue per pax','per visitor','spend per','rev per','rpp','spending',
+    # ── REVENUE PER  ──
+    rpp_kw = ['revenue per ','per visitor','spend per','rev per','rpp','spending',
               'average spend','per customer','average revenue','per ticket']
     if any(k in q for k in rpp_kw):
         filtered, months, years, project = filter_df(q, df)
@@ -1257,8 +1257,8 @@ def smart_ai_response(query, df):
             f"| Metric | Value |\n"
             f"|--------|-------|\n"
             f"| 💰 Total Revenue | {fmt_rev(rev)} |\n"
-            f"| 👥 Total Footfall | {ff:,.0f} Pax |\n"
-            f"| 💡 Revenue per Pax | **Rs. {rpp:,.0f}** |\n"
+            f"| 👥 Total Footfall | {ff:,.0f}  |\n"
+            f"| 💡 Revenue per  | **Rs. {rpp:,.0f}** |\n"
             f"| 📊 All-Time Avg | Rs. {all_rpp:,.0f}/visitor |\n"
             f"| 📈 vs All-Time | `{(rpp-all_rpp)/all_rpp*100:+.1f}%` |"
         )
@@ -1268,7 +1268,7 @@ def smart_ai_response(query, df):
     filtered, months, years, project = filter_df(q, df)
 
     want_rev = any(k in q for k in ['revenue','rev','income','earning','sales','kamai','amdan'])
-    want_ff = any(k in q for k in ['footfall','foot fall','visitors','pax','attendance','log','customers','guest','visitors'])
+    want_ff = any(k in q for k in ['footfall','foot fall','visitors','','attendance','log','customers','guest','visitors'])
     want_both = not want_rev and not want_ff
 
     if filtered.empty:
@@ -1306,7 +1306,7 @@ def smart_ai_response(query, df):
             rows.append(f"| 🎯 Target Revenue | {fmt_rev(tgt_rev)} |")
             rows.append(f"| 📈 Achievement | **{rev_ach:.1f}%** |")
     if want_ff or want_both:
-        rows.append(f"| 👥 Actual Footfall | **{act_ff:,.0f} Pax** |")
+        rows.append(f"| 👥 Actual Footfall | **{act_ff:,.0f} ** |")
         if tgt_ff > 0:
             rows.append(f"| 🎯 Target Footfall | {tgt_ff:,.0f} |")
             if ff_ach: rows.append(f"| 📈 FF Achievement | **{ff_ach:.1f}%** |")
@@ -1350,7 +1350,7 @@ def _intro_message():
         "| 📈 Trends | `Revenue trend all years` |\n"
         "| 📅 Quarterly | `Q1 2024 revenue` |\n"
         "| 🏢 Projects | `All projects comparison` |\n"
-        "| 💡 Per Visitor | `Revenue per pax 2024` |\n"
+        "| 💡 Per Visitor | `Revenue per  2024` |\n"
         "| 🦠 Events | `COVID impact 2020` |\n"
         "| 🌙 Islamic | `Eid impact on revenue` |\n"
         "| 🌦️ Weather | `Monsoon effect on footfall` |\n"
@@ -1388,7 +1388,7 @@ def _help_message():
         "- `Best month` / `Worst month`\n"
         "- `Monthly breakdown`\n"
         "- `Achievement 2024`\n"
-        "- `Revenue per pax 2025`\n"
+        "- `Revenue per  2025`\n"
         "- `All projects comparison`\n"
     )
 
@@ -1448,7 +1448,7 @@ def render_sidebar(df, auth_obj=None):
             "August 2023 vs August 2024", "Forecast March 2027",
             "Revenue trend", "Q1 2024 Joyland Fortress",
             "Achievement 2025", "All projects comparison",
-            "Revenue per pax 2024", "COVID impact 2020",
+            "Revenue per  2024", "COVID impact 2020",
             "Eid impact on revenue", "Monsoon effect",
         ]
         st.markdown("""
@@ -1539,7 +1539,7 @@ def main():
 
             c1, c2, c3, c4, c5 = st.columns(5)
             c1.metric("💰 Lifetime Revenue", fmt_rev(total_rev), "2017–2026")
-            c2.metric("👥 Total Visitors", f"{total_ff/1e6:.2f}M Pax", "Cumulative")
+            c2.metric("👥 Total Visitors", f"{total_ff/1e6:.2f}M ", "Cumulative")
             c3.metric("🎯 Avg Achievement", f"{ach:.1f}%", "vs All Targets")
             c4.metric("💡 Rev / Visitor", f"Rs. {rpp:,.0f}", "Lifetime Avg")
             c5.metric("📈 YoY Growth", f"{yoy_g:+.1f}%", f"{max_yr-1}→{max_yr}")
@@ -1696,12 +1696,12 @@ def main():
                     'Actual Revenue': 'sum', 'Actual Footfall': 'sum', 'Target revenue': 'sum'
                 })
                 proj_sum['Achievement %'] = (proj_sum['Actual Revenue'] / proj_sum['Target revenue'] * 100).where(proj_sum['Target revenue'] > 0, 0).round(1)
-                proj_sum['Rev/Pax'] = (proj_sum['Actual Revenue'] / proj_sum['Actual Footfall'].replace(0, np.nan)).round(0)
+                proj_sum['Rev/'] = (proj_sum['Actual Revenue'] / proj_sum['Actual Footfall'].replace(0, np.nan)).round(0)
                 proj_sum = proj_sum.sort_values('Actual Revenue', ascending=False)
                 st.dataframe(
                     proj_sum.style.format({
                         'Actual Revenue': '{:,.0f}', 'Actual Footfall': '{:,.0f}',
-                        'Target revenue': '{:,.0f}', 'Achievement %': '{:.1f}%', 'Rev/Pax': '{:,.0f}'
+                        'Target revenue': '{:,.0f}', 'Achievement %': '{:.1f}%', 'Rev/': '{:,.0f}'
                     }).set_properties(**{'background-color': '#0d1f3c', 'color': '#e8f4fd', 'border': '1px solid #1a3a6b'}),
                     use_container_width=True
                 )
