@@ -1587,7 +1587,7 @@ def _intro_message():
     return (
         "### 👋 Welcome to **Joyland MIS v6.0 Ultra**!\n\n"
         "---\n"
-        "🤖 **I am the Joyland MIS AI Assistant** — a complete Business Intelligence Bot trained on **2017–2026 Joyland data** across **7 projects**.\n\n"
+        "🤖 **I am the Joyland MIS AI Assistant** — a complete Business Intelligence Bot trained on **2017–2026 Joyland data** across **8 projects**.\n\n"
         "Developed by **MIS Assistant Manager Umair Nizam** for smart, data-driven decisions.\n\n"
         "---\n"
         "### 🧠 What I Can Do:\n\n"
