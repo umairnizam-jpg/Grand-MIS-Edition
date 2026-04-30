@@ -1,3 +1,17 @@
+# app.py
+# Joyland MIS AI Assistant - Single File Expert Edition
+# Streamlit app with:
+# - Preserved login credentials exactly as requested
+# - Smart Excel ingestion
+# - Dark UI redesign
+# - KPI dashboard
+# - Advanced charts
+# - Forecasting with Pakistani / Islamic / weather / trend heuristics
+# - PDF / Excel / Word upload with immediate AI processing
+# - Export to PDF / Excel / Word
+# - Optional OpenAI integration for global search & comparison
+# - Retains AI insights, download buttons, project analysis, forecasting, raw data, etc.
+
 import os
 import re
 import io
