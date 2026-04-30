@@ -13,89 +13,692 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ═══════════════════════════════════════════════════════════════
-#  JOYLAND MIS ASSISTANT  ·  v5.0 PRO MAX ULTRA
-#  Architect: Umair Nizam  |  Scope: 2017 – 2030
-#  AI Engine: Advanced Seasonal Decomposition + Pakistan Events
+#  JOYLAND MIS ASSISTANT — v6.0 ULTRA THEME
+#  Replace your PAGE_THEME variable with this entire string.
+#  Every white-background issue is fixed.
+#  Architect: Umair Nizam
 # ═══════════════════════════════════════════════════════════════
 
 PAGE_THEME = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+/* ── ROOT VARIABLES ─────────────────────────────────────────── */
 :root {
-  --bg-primary:#050b18; --bg-secondary:#0a1628; --bg-card:#0d1f3c; --bg-card2:#091530;
-  --border:#1a3a6b; --border-glow:#00c6ff; --accent-blue:#00c6ff; --accent-gold:#f5c518;
-  --accent-green:#00ff9d; --accent-red:#ff4466; --accent-purple:#b660f5;
-  --text-primary:#e8f4fd; --text-secondary:#7a9cc0; --text-dim:#3a5a80;
-  --font-display:'Orbitron',monospace; --font-body:'Rajdhani',sans-serif; --font-mono:'JetBrains Mono',monospace;
+  --bg0: #02060f;
+  --bg1: #060d1e;
+  --bg2: #091428;
+  --bg3: #0c1b35;
+  --bg4: #101f3a;
+  --glass: rgba(9,20,40,0.92);
+  --border: rgba(0,180,255,0.10);
+  --border2: rgba(0,180,255,0.22);
+  --border3: rgba(0,180,255,0.38);
+  --cyan: #00c6ff;
+  --cyan-dim: rgba(0,198,255,0.15);
+  --gold: #f5c518;
+  --gold-dim: rgba(245,197,24,0.12);
+  --green: #00ff9d;
+  --green-dim: rgba(0,255,157,0.12);
+  --red: #ff3355;
+  --purple: #c084fc;
+  --orange: #ff9432;
+  --text1: #f0f8ff;
+  --text2: #8ab4d4;
+  --text3: #3d6080;
+  --font-display: 'Orbitron', monospace;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
-html,body,[class*="css"]{font-family:var(--font-body)!important;color:#e8f4fd!important;}
-p,span,div,label{color:#e8f4fd!important;}
-.stMarkdown p,.stMarkdown span,.stMarkdown li{color:#ddeeff!important;font-size:15px!important;font-weight:500!important;line-height:1.8!important;}
-.main,.stApp{background:var(--bg-primary)!important;}
-.main::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,198,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,198,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
-section[data-testid="stSidebar"]{background:linear-gradient(180deg,#050b18 0%,#071020 100%)!important;border-right:1px solid var(--border)!important;}
-section[data-testid="stSidebar"]::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent-blue),var(--accent-gold),transparent);animation:scanline 3s ease-in-out infinite;}
-@keyframes scanline{0%,100%{opacity:0.3;}50%{opacity:1;}}
-div[data-testid="stMetric"]{background:linear-gradient(135deg,#0f2544 0%,#0c1d38 100%)!important;border:1px solid #2a5a9b!important;border-radius:16px!important;padding:24px 20px!important;position:relative;overflow:hidden;transition:transform 0.3s ease,box-shadow 0.3s ease;}
-div[data-testid="stMetric"]:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,198,255,0.25)!important;border-color:#00c6ff!important;}
-div[data-testid="stMetric"]::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00c6ff,#f5c518);}
-div[data-testid="stMetricLabel"]>div{color:#a8d4f5!important;font-family:var(--font-body)!important;font-size:14px!important;letter-spacing:1.5px!important;text-transform:uppercase!important;font-weight:700!important;}
-div[data-testid="stMetricValue"]>div{color:#ffffff!important;font-family:var(--font-display)!important;font-size:26px!important;font-weight:900!important;text-shadow:0 0 20px rgba(0,198,255,0.5)!important;}
-div[data-testid="stMetricDelta"]>div{color:#00ff9d!important;font-family:var(--font-body)!important;font-size:13px!important;font-weight:700!important;background:rgba(0,255,157,0.15)!important;padding:3px 12px!important;border-radius:20px!important;border:1px solid rgba(0,255,157,0.4)!important;}
-.hero-banner{background:linear-gradient(135deg,#050b18 0%,#071428 50%,#050b18 100%);border:1px solid var(--border);border-radius:20px;padding:32px 40px;margin-bottom:28px;position:relative;overflow:hidden;text-align:center;}
-.hero-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(0,198,255,0.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 50%,rgba(245,197,24,0.06) 0%,transparent 60%);}
-.hero-title{font-family:var(--font-display)!important;font-size:42px!important;font-weight:900!important;letter-spacing:6px!important;background:linear-gradient(135deg,#00c6ff 0%,#f5c518 50%,#00ff9d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0 0 8px 0;}
-.hero-subtitle{font-family:var(--font-body)!important;color:#c8dff0!important;font-size:15px!important;letter-spacing:4px!important;text-transform:uppercase!important;font-weight:600!important;}
-.hero-badge{display:inline-block;background:rgba(0,198,255,0.18);border:1px solid rgba(0,198,255,0.5);border-radius:20px;padding:5px 18px;font-family:var(--font-mono);font-size:12px;color:#00e5ff;letter-spacing:2px;margin-top:12px;font-weight:700;}
-.section-header{font-family:var(--font-display)!important;font-size:18px!important;font-weight:700!important;letter-spacing:3px!important;color:#00e5ff!important;border-bottom:1px solid #1a3a6b;padding-bottom:10px;margin:24px 0 16px 0;text-transform:uppercase;text-shadow:0 0 15px rgba(0,229,255,0.4);}
-div[data-testid="stChatMessage"] p,div[data-testid="stChatMessage"] span,div[data-testid="stChatMessage"] li,div[data-testid="stChatMessage"] td{color:#e8f4fd!important;font-size:15px!important;font-weight:500!important;line-height:1.8!important;}
-div[data-testid="stChatMessage"] strong{color:#ffffff!important;font-weight:800!important;}
-div[data-testid="stChatMessage"] code{color:#00ff9d!important;background:rgba(0,255,157,0.1)!important;padding:2px 6px!important;border-radius:4px!important;}
-.stButton>button{background:linear-gradient(135deg,rgba(0,198,255,0.15),rgba(0,198,255,0.05))!important;border:1px solid rgba(0,198,255,0.4)!important;color:var(--accent-blue)!important;font-family:var(--font-body)!important;font-weight:600!important;letter-spacing:1.5px!important;border-radius:10px!important;transition:all 0.3s ease!important;text-transform:uppercase!important;font-size:12px!important;}
-.stButton>button:hover{background:rgba(0,198,255,0.25)!important;box-shadow:0 0 20px rgba(0,198,255,0.3)!important;transform:translateY(-2px)!important;}
-div[data-baseweb="tab-list"]{background:var(--bg-card2)!important;border-radius:12px!important;padding:4px!important;border:1px solid var(--border)!important;gap:4px!important;}
-div[data-baseweb="tab"]{font-family:var(--font-body)!important;font-weight:700!important;font-size:14px!important;letter-spacing:1px!important;border-radius:10px!important;color:#a8d4f5!important;}
-div[aria-selected="true"]{background:rgba(0,198,255,0.2)!important;color:#00e5ff!important;}
-div[data-baseweb="select"]>div{background:#091530!important;border:1px solid #1a3a6b!important;border-radius:10px!important;color:#e8f4fd!important;}
-div[data-baseweb="select"] span,div[data-baseweb="select"] div[class*="singleValue"],div[data-baseweb="select"] div[class*="placeholder"]{color:#e8f4fd!important;font-family:'Rajdhani',sans-serif!important;font-weight:600!important;}
-div[data-testid="stChatInput"]{background:#0f2544!important;border:1.5px solid #2a5a9b!important;border-radius:16px!important;}
-div[data-testid="stChatInput"] textarea{background:#0f2544!important;border:none!important;color:#ffffff!important;font-family:var(--font-body)!important;font-size:15px!important;caret-color:#00c6ff!important;}
-div[data-testid="stChatInput"] textarea::placeholder{color:#6a9abf!important;font-style:italic!important;}
-div[data-testid="stChatInput"]:focus-within{border-color:#00c6ff!important;box-shadow:0 0 0 2px rgba(0,198,255,0.2),0 0 20px rgba(0,198,255,0.1)!important;}
-div[data-testid="stChatInput"] button{background:linear-gradient(135deg,#00c6ff,#0090cc)!important;border-radius:10px!important;border:none!important;color:#ffffff!important;}
-div[data-testid="stBottom"]{background:#050b18!important;border-top:1px solid #1a3a6b!important;}
-div[data-testid="stBottom"]>div{background:#050b18!important;}
-.stChatFloatingInputContainer{background:#050b18!important;border-top:1px solid #1a3a6b!important;}
-footer,footer *{background:#050b18!important;color:#3a5a80!important;}
-section.main>div,.block-container{background:#050b18!important;}
-body{background:#050b18!important;}html{background:#050b18!important;}
-hr{border-color:var(--border)!important;}
-table{background:var(--bg-card2)!important;border-radius:12px!important;overflow:hidden!important;}
-th{background:rgba(0,198,255,0.1)!important;color:var(--accent-blue)!important;font-family:var(--font-body)!important;letter-spacing:1px!important;text-transform:uppercase!important;font-size:12px!important;}
-td{color:var(--text-primary)!important;font-size:13px!important;}
-div[data-baseweb="popover"],div[data-baseweb="popover"]>div,ul[role="listbox"],div[role="listbox"],[data-baseweb="menu"],[data-baseweb="menu"] ul,[data-baseweb="menu"]>div{background:#091530!important;border:1px solid #1a3a6b!important;border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,0.7)!important;}
-li[role="option"],div[role="option"],[data-baseweb="menu"] li{background:#091530!important;color:#e8f4fd!important;font-family:'Rajdhani',sans-serif!important;font-size:14px!important;font-weight:600!important;}
-li[role="option"]:hover,div[role="option"]:hover,li[aria-selected="true"]{background:rgba(0,198,255,0.15)!important;color:#00e5ff!important;}
-div[data-testid="stPlotlyChart"],div[data-testid="stPlotlyChart"]>div,.js-plotly-plot,.js-plotly-plot .plotly{background:transparent!important;}
-div[data-testid="stDataFrame"],div[data-testid="stDataFrame"]>div{background:#0d1f3c!important;border:1px solid #1a3a6b!important;border-radius:12px!important;}
-div[data-testid="stTable"]{background:#091530!important;border-radius:12px!important;overflow:hidden!important;}
-div[data-testid="stExpander"],details[data-testid="stExpander"]{background:#091530!important;border:1px solid #1a3a6b!important;border-radius:12px!important;}
-div[data-baseweb="tab-panel"],div[role="tabpanel"],div[role="tabpanel"]>div{background:#050b18!important;padding-top:16px!important;}
-div[data-testid="stAlert"]{background:rgba(0,198,255,0.06)!important;border:1px solid rgba(0,198,255,0.2)!important;border-radius:12px!important;}
-::-webkit-scrollbar{width:6px;height:6px;}
-::-webkit-scrollbar-track{background:var(--bg-primary);}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-::-webkit-scrollbar-thumb:hover{background:var(--accent-blue);}
-.insight-card{background:linear-gradient(135deg,rgba(182,96,245,0.12),rgba(0,198,255,0.08));border:1px solid rgba(182,96,245,0.4);border-radius:16px;padding:20px 24px;margin:12px 0;font-family:var(--font-body);font-size:15px;font-weight:600;color:#ddeeff!important;line-height:1.7;position:relative;overflow:hidden;}
-.insight-card::before{content:'◈ AI INSIGHT';font-family:var(--font-mono);font-size:11px;color:#c890ff;letter-spacing:3px;display:block;margin-bottom:10px;font-weight:700;}
-.status-live{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;color:var(--accent-green);letter-spacing:2px;}
-.pulse-dot{width:8px;height:8px;background:var(--accent-green);border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(0,255,157,0.4);}50%{opacity:0.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(0,255,157,0);}}
-.forecast-tag{background:linear-gradient(135deg,rgba(245,197,24,0.15),rgba(245,197,24,0.05));border:1px solid rgba(245,197,24,0.3);border-radius:8px;padding:2px 12px;font-family:var(--font-mono);font-size:11px;color:var(--accent-gold);letter-spacing:2px;display:inline-block;margin-right:8px;}
-[style*="background: white"],[style*="background-color: white"],[style*="background: rgb(255, 255, 255)"],[style*="background-color: rgb(255, 255, 255)"]{background:#091530!important;background-color:#091530!important;}
+
+/* ── GLOBAL RESET / BASE ────────────────────────────────────── */
+html, body,
+.stApp, .main,
+[class*="css"],
+section.main > div,
+.block-container {
+  background: var(--bg0) !important;
+  color: var(--text1) !important;
+  font-family: var(--font-body) !important;
+}
+
+/* Kill ALL white backgrounds anywhere in the page */
+[style*="background: white"],
+[style*="background-color: white"],
+[style*="background: rgb(255, 255, 255)"],
+[style*="background-color: rgb(255, 255, 255)"],
+[style*="background: #fff"],
+[style*="background-color: #fff"],
+[style*="background: #ffffff"],
+[style*="background-color: #ffffff"],
+[style*="background:#fff"],
+[style*="background:#ffffff"],
+[style*="background-color:#fff"],
+[style*="background-color:#ffffff"],
+.css-1aehpvj, .css-6qob1r,
+[data-testid="stAppViewContainer"],
+[data-testid="stHeader"] {
+  background: var(--bg0) !important;
+  background-color: var(--bg0) !important;
+}
+
+/* Grid background texture */
+.main::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,198,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,198,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ── TEXT ───────────────────────────────────────────────────── */
+p, span, div, label, li, td, th, a {
+  color: var(--text1) !important;
+}
+.stMarkdown p,
+.stMarkdown span,
+.stMarkdown li {
+  color: #ddeeff !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  line-height: 1.8 !important;
+}
+h1, h2, h3 { color: var(--text1) !important; }
+
+/* ── SIDEBAR ────────────────────────────────────────────────── */
+section[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, #020912 0%, #050d1c 100%) !important;
+  border-right: 1px solid var(--border2) !important;
+}
+section[data-testid="stSidebar"] * {
+  background-color: transparent !important;
+}
+section[data-testid="stSidebar"]::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  animation: scanline 3s ease-in-out infinite;
+}
+@keyframes scanline {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* ── METRIC CARDS (st.metric) ───────────────────────────────── */
+div[data-testid="stMetric"] {
+  background: linear-gradient(135deg, var(--bg3) 0%, var(--bg2) 100%) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: 18px !important;
+  padding: 22px 18px !important;
+  position: relative; overflow: hidden;
+  transition: transform .3s, box-shadow .3s, border-color .3s !important;
+}
+div[data-testid="stMetric"]:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 20px 60px rgba(0,198,255,0.18) !important;
+  border-color: var(--border3) !important;
+}
+div[data-testid="stMetric"]::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  border-radius: 18px 18px 0 0;
+}
+div[data-testid="stMetric"]::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 20% 0%, rgba(0,198,255,0.06) 0%, transparent 60%);
+}
+div[data-testid="stMetricLabel"] > div {
+  color: var(--text2) !important;
+  font-family: var(--font-body) !important;
+  font-size: 11px !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+}
+div[data-testid="stMetricValue"] > div {
+  color: #ffffff !important;
+  font-family: var(--font-display) !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  text-shadow: 0 0 24px rgba(0,198,255,0.45) !important;
+}
+div[data-testid="stMetricDelta"] > div {
+  color: var(--green) !important;
+  font-family: var(--font-body) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  background: var(--green-dim) !important;
+  padding: 3px 10px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(0,255,157,0.3) !important;
+}
+
+/* ── BUTTONS ────────────────────────────────────────────────── */
+.stButton > button {
+  background: linear-gradient(135deg, rgba(0,198,255,0.12), rgba(0,198,255,0.04)) !important;
+  border: 1px solid rgba(0,198,255,0.35) !important;
+  color: var(--cyan) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  border-radius: 10px !important;
+  text-transform: uppercase !important;
+  font-size: 11px !important;
+  transition: all .3s ease !important;
+}
+.stButton > button:hover {
+  background: rgba(0,198,255,0.22) !important;
+  box-shadow: 0 0 24px rgba(0,198,255,0.25), inset 0 0 24px rgba(0,198,255,0.04) !important;
+  transform: translateY(-2px) !important;
+  border-color: var(--cyan) !important;
+}
+
+/* ── TABS ───────────────────────────────────────────────────── */
+div[data-baseweb="tab-list"] {
+  background: var(--bg2) !important;
+  border-radius: 14px !important;
+  padding: 4px !important;
+  border: 1px solid var(--border) !important;
+  gap: 3px !important;
+}
+div[data-baseweb="tab"] {
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  letter-spacing: 1px !important;
+  border-radius: 10px !important;
+  color: var(--text2) !important;
+  transition: all .2s !important;
+  background: transparent !important;
+}
+div[aria-selected="true"] {
+  background: rgba(0,198,255,0.18) !important;
+  color: var(--cyan) !important;
+  box-shadow: 0 0 16px rgba(0,198,255,0.15) !important;
+}
+div[role="tabpanel"],
+div[role="tabpanel"] > div,
+div[data-baseweb="tab-panel"] {
+  background: var(--bg0) !important;
+  padding-top: 16px !important;
+}
+
+/* ── SELECTBOX / DROPDOWN ───────────────────────────────────── */
+div[data-baseweb="select"] > div,
+div[data-baseweb="select"] > div > div {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: 10px !important;
+  color: var(--text1) !important;
+}
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div[class*="singleValue"],
+div[data-baseweb="select"] div[class*="placeholder"],
+div[data-baseweb="select"] svg {
+  color: var(--text1) !important;
+  fill: var(--text2) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+}
+/* Dropdown menu */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] > div,
+ul[role="listbox"],
+div[role="listbox"],
+[data-baseweb="menu"],
+[data-baseweb="menu"] ul,
+[data-baseweb="menu"] > div {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.8) !important;
+}
+li[role="option"],
+div[role="option"],
+[data-baseweb="menu"] li {
+  background: var(--bg2) !important;
+  color: var(--text1) !important;
+  font-family: var(--font-body) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+li[role="option"]:hover,
+div[role="option"]:hover,
+li[aria-selected="true"] {
+  background: rgba(0,198,255,0.12) !important;
+  color: var(--cyan) !important;
+}
+
+/* ── CHAT INPUT ─────────────────────────────────────────────── */
+div[data-testid="stChatInput"] {
+  background: var(--bg2) !important;
+  border: 1.5px solid var(--border2) !important;
+  border-radius: 16px !important;
+}
+div[data-testid="stChatInput"] textarea {
+  background: var(--bg2) !important;
+  border: none !important;
+  color: var(--text1) !important;
+  font-family: var(--font-body) !important;
+  font-size: 15px !important;
+  caret-color: var(--cyan) !important;
+}
+div[data-testid="stChatInput"] textarea::placeholder {
+  color: var(--text3) !important;
+  font-style: italic !important;
+}
+div[data-testid="stChatInput"]:focus-within {
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 0 3px rgba(0,198,255,0.12), 0 0 32px rgba(0,198,255,0.08) !important;
+}
+div[data-testid="stChatInput"] button {
+  background: linear-gradient(135deg, var(--cyan), #0090cc) !important;
+  border-radius: 10px !important;
+  border: none !important;
+}
+div[data-testid="stBottom"],
+div[data-testid="stBottom"] > div,
+.stChatFloatingInputContainer {
+  background: var(--bg0) !important;
+  border-top: 1px solid var(--border) !important;
+}
+footer, footer * {
+  background: var(--bg0) !important;
+  color: var(--text3) !important;
+}
+
+/* ── CHAT MESSAGES ──────────────────────────────────────────── */
+div[data-testid="stChatMessage"] {
+  background: transparent !important;
+  border: none !important;
+}
+div[data-testid="stChatMessage"] > div {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+}
+div[data-testid="stChatMessage"][data-testid*="user"] > div {
+  background: rgba(0,198,255,0.05) !important;
+  border-color: rgba(0,198,255,0.15) !important;
+}
+div[data-testid="stChatMessage"] p,
+div[data-testid="stChatMessage"] span,
+div[data-testid="stChatMessage"] li,
+div[data-testid="stChatMessage"] td {
+  color: var(--text1) !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  line-height: 1.8 !important;
+}
+div[data-testid="stChatMessage"] strong {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+div[data-testid="stChatMessage"] code {
+  color: var(--green) !important;
+  background: rgba(0,255,157,0.08) !important;
+  padding: 2px 7px !important;
+  border-radius: 5px !important;
+  font-family: var(--font-mono) !important;
+  border: 1px solid rgba(0,255,157,0.2) !important;
+}
+
+/* ── PLOTLY CHARTS — Force dark bg, kill white ──────────────── */
+div[data-testid="stPlotlyChart"],
+div[data-testid="stPlotlyChart"] > div,
+.js-plotly-plot,
+.js-plotly-plot .plotly,
+.js-plotly-plot .plotly .main-svg,
+.plot-container,
+.plot-container > svg,
+.svg-container,
+.svg-container svg {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+/* Plotly modebar */
+.modebar, .modebar-container, .modebar-group {
+  background: var(--bg2) !important;
+  border-radius: 8px !important;
+}
+.modebar-btn svg path { fill: var(--text2) !important; }
+.modebar-btn:hover svg path { fill: var(--cyan) !important; }
+/* Plotly tooltip */
+.plotly .hoverlayer .hovertext {
+  background: var(--bg3) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: 10px !important;
+}
+.plotly .hoverlayer .hovertext text { fill: var(--text1) !important; }
+
+/* ── DATAFRAME / TABLES ─────────────────────────────────────── */
+div[data-testid="stDataFrame"],
+div[data-testid="stDataFrame"] > div,
+div[data-testid="stDataFrame"] iframe,
+.stDataFrame,
+.stDataFrame > div {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+/* Force the inner table iframe bg */
+div[data-testid="stDataFrame"] iframe {
+  color-scheme: dark !important;
+  background: var(--bg2) !important;
+}
+div[data-testid="stTable"] {
+  background: var(--bg2) !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--border) !important;
+}
+table {
+  background: var(--bg2) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+thead, thead tr { background: rgba(0,198,255,0.07) !important; }
+th {
+  background: rgba(0,198,255,0.07) !important;
+  color: var(--cyan) !important;
+  font-family: var(--font-body) !important;
+  font-size: 11px !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  padding: 12px 14px !important;
+  border-bottom: 1px solid var(--border2) !important;
+}
+td {
+  color: var(--text1) !important;
+  background: transparent !important;
+  font-size: 13px !important;
+  padding: 9px 14px !important;
+  border-bottom: 1px solid rgba(0,198,255,0.04) !important;
+}
+tr:hover td { background: rgba(0,198,255,0.03) !important; }
+tr:last-child td { border-bottom: none !important; }
+
+/* Pandas styled dataframe cells */
+.col_heading, .row_heading {
+  background: rgba(0,198,255,0.07) !important;
+  color: var(--cyan) !important;
+}
+.data { color: var(--text1) !important; background: transparent !important; }
+.dataframe { background: var(--bg2) !important; }
+
+/* ── EXPANDER ───────────────────────────────────────────────── */
+div[data-testid="stExpander"],
+details[data-testid="stExpander"] {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+}
+details[data-testid="stExpander"] summary {
+  color: var(--cyan) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+}
+
+/* ── ALERT / INFO ───────────────────────────────────────────── */
+div[data-testid="stAlert"] {
+  background: rgba(0,198,255,0.05) !important;
+  border: 1px solid rgba(0,198,255,0.2) !important;
+  border-radius: 12px !important;
+  color: var(--text1) !important;
+}
+div[data-testid="stAlert"] p { color: var(--text1) !important; }
+div[data-testid="stInfo"] {
+  background: rgba(0,198,255,0.06) !important;
+  border-color: rgba(0,198,255,0.25) !important;
+}
+div[data-testid="stSuccess"] {
+  background: rgba(0,255,157,0.06) !important;
+  border-color: rgba(0,255,157,0.25) !important;
+}
+div[data-testid="stWarning"] {
+  background: rgba(245,197,24,0.06) !important;
+  border-color: rgba(245,197,24,0.25) !important;
+}
+div[data-testid="stError"] {
+  background: rgba(255,51,85,0.06) !important;
+  border-color: rgba(255,51,85,0.25) !important;
+}
+
+/* ── DOWNLOAD BUTTON ────────────────────────────────────────── */
+div[data-testid="stDownloadButton"] button {
+  background: linear-gradient(135deg, rgba(0,255,157,0.1), rgba(0,255,157,0.04)) !important;
+  border: 1px solid rgba(0,255,157,0.3) !important;
+  color: var(--green) !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  border-radius: 10px !important;
+  text-transform: uppercase !important;
+}
+div[data-testid="stDownloadButton"] button:hover {
+  background: rgba(0,255,157,0.18) !important;
+  box-shadow: 0 0 20px rgba(0,255,157,0.2) !important;
+}
+
+/* ── PROGRESS / SPINNER ─────────────────────────────────────── */
+.stProgress > div > div { background: var(--cyan) !important; }
+div[data-testid="stSpinner"] { color: var(--cyan) !important; }
+
+/* ── SCROLLBAR ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg0); }
+::-webkit-scrollbar-thumb { background: rgba(0,198,255,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,198,255,0.45); }
+
+/* ── DIVIDER ────────────────────────────────────────────────── */
+hr { border-color: var(--border) !important; }
+
+/* ── INPUT WIDGETS ──────────────────────────────────────────── */
+div[data-baseweb="input"] > div,
+input[type="text"], input[type="number"], textarea {
+  background: var(--bg2) !important;
+  border-color: var(--border2) !important;
+  color: var(--text1) !important;
+  border-radius: 10px !important;
+}
+div[data-baseweb="slider"] > div > div { background: var(--border2) !important; }
+div[data-baseweb="slider"] [role="slider"] { background: var(--cyan) !important; }
+
+/* ── CUSTOM COMPONENTS ──────────────────────────────────────── */
+
+/* Hero banner */
+.hero-banner {
+  background: linear-gradient(135deg, var(--bg0) 0%, #07122a 50%, var(--bg0) 100%);
+  border: 1px solid var(--border2);
+  border-radius: 22px;
+  padding: 34px 40px;
+  margin-bottom: 28px;
+  position: relative; overflow: hidden; text-align: center;
+}
+.hero-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 50%, rgba(0,198,255,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 50%, rgba(245,197,24,0.05) 0%, transparent 55%);
+}
+.hero-banner::after {
+  content: '';
+  position: absolute; top: -1px; left: 15%; right: 15%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  border-radius: 2px;
+}
+.hero-title {
+  font-family: var(--font-display) !important;
+  font-size: 40px !important;
+  font-weight: 900 !important;
+  letter-spacing: 7px !important;
+  background: linear-gradient(135deg, #00d4ff 0%, #f5c518 48%, #00ff9d 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin: 0 0 8px 0;
+  position: relative;
+}
+.hero-subtitle {
+  font-family: var(--font-body) !important;
+  color: #aac8e0 !important;
+  font-size: 13px !important;
+  letter-spacing: 5px !important;
+  text-transform: uppercase !important;
+  font-weight: 600 !important;
+  position: relative;
+}
+.hero-badge {
+  display: inline-block;
+  background: rgba(0,198,255,0.10);
+  border: 1px solid rgba(0,198,255,0.30);
+  border-radius: 20px; padding: 5px 20px;
+  font-family: var(--font-mono);
+  font-size: 11px; color: #00e5ff;
+  letter-spacing: 2px; margin-top: 14px;
+  font-weight: 700; position: relative;
+}
+
+/* Section headers */
+.section-header {
+  font-family: var(--font-display) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 3px !important;
+  color: var(--cyan) !important;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px; margin: 24px 0 16px;
+  text-transform: uppercase;
+  text-shadow: 0 0 16px rgba(0,198,255,0.35);
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* AI Insight card */
+.insight-card {
+  background: linear-gradient(135deg, rgba(192,132,252,0.10), rgba(0,198,255,0.06));
+  border: 1px solid rgba(192,132,252,0.30);
+  border-radius: 18px; padding: 18px 24px; margin: 12px 0;
+  font-family: var(--font-body); font-size: 14px;
+  font-weight: 600; color: #ddeeff !important;
+  line-height: 1.7; position: relative; overflow: hidden;
+}
+.insight-card::before {
+  content: '◈  AI INSIGHT';
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--purple); letter-spacing: 3px;
+  display: block; margin-bottom: 10px; font-weight: 700;
+}
+.insight-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--purple), transparent);
+}
+
+/* Status live dot */
+.status-live {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--green); letter-spacing: 2px;
+}
+.pulse-dot {
+  width: 8px; height: 8px; background: var(--green);
+  border-radius: 50%; display: inline-block;
+  animation: pulsate 1.5s infinite;
+}
+@keyframes pulsate {
+  0%, 100% { opacity:1; transform:scale(1); box-shadow: 0 0 0 0 rgba(0,255,157,0.5); }
+  50% { opacity:.8; transform:scale(1.15); box-shadow: 0 0 0 7px rgba(0,255,157,0); }
+}
+
+/* Forecast tag */
+.forecast-tag {
+  background: linear-gradient(135deg, rgba(245,197,24,0.14), rgba(245,197,24,0.04));
+  border: 1px solid rgba(245,197,24,0.28);
+  border-radius: 8px; padding: 3px 12px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--gold); letter-spacing: 2px;
+  display: inline-block; margin-right: 8px;
+}
 </style>
 """
 
+
+# ═══════════════════════════════════════════════════════════════
+#  ALSO REPLACE YOUR PLOTLY LAYOUT WITH THIS:
+# ═══════════════════════════════════════════════════════════════
+
+PLOTLY_LAYOUT = dict(
+    template="plotly_dark",
+    paper_bgcolor='rgba(0,0,0,0)',
+    plot_bgcolor='rgba(9,20,40,0.6)',
+    font=dict(family='Rajdhani, sans-serif', color='#e8f4fd', size=13),
+    title_font=dict(family='Orbitron, monospace', size=15, color='#00c6ff'),
+    legend=dict(
+        bgcolor='rgba(6,13,30,0.9)',
+        bordercolor='rgba(0,180,255,0.2)',
+        borderwidth=1,
+        font=dict(size=13, color='#e8f4fd')
+    ),
+    xaxis=dict(
+        gridcolor='rgba(0,180,255,0.08)',
+        linecolor='rgba(0,180,255,0.15)',
+        zerolinecolor='rgba(0,180,255,0.12)',
+        tickfont=dict(family='JetBrains Mono', size=11, color='#8ab4d4'),
+        title_font=dict(family='Rajdhani', size=13, color='#5a88aa')
+    ),
+    yaxis=dict(
+        gridcolor='rgba(0,180,255,0.08)',
+        linecolor='rgba(0,180,255,0.15)',
+        zerolinecolor='rgba(0,180,255,0.12)',
+        tickfont=dict(family='JetBrains Mono', size=11, color='#8ab4d4'),
+        title_font=dict(family='Rajdhani', size=13, color='#5a88aa')
+    ),
+    margin=dict(l=60, r=40, t=70, b=60),
+    hoverlabel=dict(
+        bgcolor='rgba(9,20,40,0.95)',
+        bordercolor='rgba(0,198,255,0.3)',
+        font=dict(family='JetBrains Mono', size=12, color='#e8f4fd')
+    )
+)
+
+
+# ═══════════════════════════════════════════════════════════════
+#  ALSO ADD THIS TO YOUR main() — after st.set_page_config():
+#  Inject extra CSS that forces the Streamlit dataframe
+#  component (which uses a shadow DOM / iframe) to dark mode.
+# ═══════════════════════════════════════════════════════════════
+
+DATAFRAME_FIX = """
+<style>
+/* Streamlit 1.28+ uses glide-data-grid; force dark */
+[data-testid="stDataFrame"] canvas { filter: invert(1) hue-rotate(180deg); }
+[data-testid="stDataFrame"] > div > div {
+  background: #091428 !important;
+  border-radius: 14px !important;
+}
+/* The column header row */
+[data-testid="stDataFrame"] [role="columnheader"] {
+  background: rgba(0,198,255,0.07) !important;
+  color: #00c6ff !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+}
+/* Cell rows */
+[data-testid="stDataFrame"] [role="gridcell"] {
+  background: #091428 !important;
+  color: #e8f4fd !important;
+  border-color: rgba(0,180,255,0.06) !important;
+}
+</style>
+"""
+
+# Usage in main():
+# st.markdown(PAGE_THEME, unsafe_allow_html=True)
+# st.markdown(DATAFRAME_FIX, unsafe_allow_html=True)   # <-- add this line
 # ═══════════════════════════════════════════════════════════════
 #  DATA LOADING
 # ═══════════════════════════════════════════════════════════════
