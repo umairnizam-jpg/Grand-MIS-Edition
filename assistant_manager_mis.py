@@ -13,10 +13,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ═══════════════════════════════════════════════════════════════
-#  JOYLAND MIS ASSISTANT — v6.0 ULTRA THEME
-#  Replace your PAGE_THEME variable with this entire string.
-#  Every white-background issue is fixed.
-#  Architect: Umair Nizam
+#  JOYLAND MIS ASSISTANT  ·  v6.0 ULTRA
+#  Architect: Umair Nizam  |  Scope: 2017 – 2030
+#  AI Engine: Advanced Seasonal Decomposition + Pakistan Events
 # ═══════════════════════════════════════════════════════════════
 
 PAGE_THEME = """
@@ -243,7 +242,6 @@ div[data-baseweb="select"] svg {
   font-family: var(--font-body) !important;
   font-weight: 600 !important;
 }
-/* Dropdown menu */
 div[data-baseweb="popover"],
 div[data-baseweb="popover"] > div,
 ul[role="listbox"],
@@ -359,14 +357,12 @@ div[data-testid="stPlotlyChart"] > div,
   background: transparent !important;
   background-color: transparent !important;
 }
-/* Plotly modebar */
 .modebar, .modebar-container, .modebar-group {
   background: var(--bg2) !important;
   border-radius: 8px !important;
 }
 .modebar-btn svg path { fill: var(--text2) !important; }
 .modebar-btn:hover svg path { fill: var(--cyan) !important; }
-/* Plotly tooltip */
 .plotly .hoverlayer .hovertext {
   background: var(--bg3) !important;
   border: 1px solid var(--border2) !important;
@@ -385,10 +381,26 @@ div[data-testid="stDataFrame"] iframe,
   border-radius: 14px !important;
   overflow: hidden !important;
 }
-/* Force the inner table iframe bg */
 div[data-testid="stDataFrame"] iframe {
   color-scheme: dark !important;
   background: var(--bg2) !important;
+}
+/* Streamlit 1.28+ glide-data-grid dark mode */
+[data-testid="stDataFrame"] canvas { filter: invert(1) hue-rotate(180deg); }
+[data-testid="stDataFrame"] > div > div {
+  background: #091428 !important;
+  border-radius: 14px !important;
+}
+[data-testid="stDataFrame"] [role="columnheader"] {
+  background: rgba(0,198,255,0.07) !important;
+  color: #00c6ff !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+}
+[data-testid="stDataFrame"] [role="gridcell"] {
+  background: #091428 !important;
+  color: #e8f4fd !important;
+  border-color: rgba(0,180,255,0.06) !important;
 }
 div[data-testid="stTable"] {
   background: var(--bg2) !important;
@@ -422,8 +434,6 @@ td {
 }
 tr:hover td { background: rgba(0,198,255,0.03) !important; }
 tr:last-child td { border-bottom: none !important; }
-
-/* Pandas styled dataframe cells */
 .col_heading, .row_heading {
   background: rgba(0,198,255,0.07) !important;
   color: var(--cyan) !important;
@@ -626,11 +636,183 @@ div[data-baseweb="slider"] [role="slider"] { background: var(--cyan) !important;
 </style>
 """
 
+# ─── Additional dataframe dark-mode fix (glide-data-grid) ────────────────────
+DATAFRAME_FIX = """
+<style>
+[data-testid="stDataFrame"] canvas { filter: invert(1) hue-rotate(180deg); }
+[data-testid="stDataFrame"] > div > div {
+  background: #091428 !important;
+  border-radius: 14px !important;
+}
+[data-testid="stDataFrame"] [role="columnheader"] {
+  background: rgba(0,198,255,0.07) !important;
+  color: #00c6ff !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+}
+[data-testid="stDataFrame"] [role="gridcell"] {
+  background: #091428 !important;
+  color: #e8f4fd !important;
+  border-color: rgba(0,180,255,0.06) !important;
+}
+</style>
+"""
 
 # ═══════════════════════════════════════════════════════════════
-#  ALSO REPLACE YOUR PLOTLY LAYOUT WITH THIS:
+#  DATA LOADING
+# ═══════════════════════════════════════════════════════════════
+@st.cache_data
+def load_data():
+    file_options = [
+        "RAW DATA.xlsx", "RAW_DATA.xlsx",
+        os.path.join(os.path.dirname(__file__), "RAW DATA.xlsx"),
+        os.path.join(os.path.dirname(__file__), "RAW_DATA.xlsx"),
+        r"Z:\data\RAW DATA.xlsx"
+    ]
+    file_path = next((p for p in file_options if os.path.exists(p)), None)
+    if not file_path:
+        return pd.DataFrame()
+    try:
+        df = pd.read_excel(file_path, engine='openpyxl')
+        df.columns = [str(c).strip() for c in df.columns]
+        df.rename(columns={'Projetcs': 'Project'}, inplace=True)
+
+        month_map = {
+            'July':7,'August':8,'September':9,'October':10,'November':11,'December':12,
+            'January':1,'February':2,'March':3,'April':4,'May':5,'June':6
+        }
+        df['Month_Num'] = df['Months'].map(month_map)
+        fiscal_order = ['July','August','September','October','November','December',
+                        'January','February','March','April','May','June']
+        df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
+        df['Year'] = pd.to_numeric(df['Year'], errors='coerce').fillna(0).astype(int)
+
+        jul_dec_years = set(df.loc[df['Month_Num'] >= 7, 'Year'].unique())
+        jan_jun_years = set(df.loc[df['Month_Num'] <= 6, 'Year'].unique())
+        overlap = jan_jun_years & jul_dec_years
+        if overlap:
+            mask_fix = df['Month_Num'] <= 6
+            df.loc[mask_fix, 'Year'] = df.loc[mask_fix, 'Year'] + 1
+
+        df['Date_Obj'] = pd.to_datetime(
+            df['Year'].astype(str) + '-' + df['Month_Num'].astype(str).str.zfill(2) + '-01'
+        )
+        df['Fiscal_Year_Label'] = df.apply(
+            lambda x: f"FY {x['Year'] if x['Month_Num'] >= 7 else x['Year']-1}-{str(x['Year'] if x['Month_Num'] <= 6 else x['Year']+1)[-2:]}",
+            axis=1
+        )
+        for col in ['Actual Revenue','Actual Footfall','Target revenue','Target Footfall']:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
+        return df.sort_values('Date_Obj').reset_index(drop=True)
+    except Exception as e:
+        st.sidebar.error(f"Data load error: {e}")
+        return pd.DataFrame()
+
+
+# ═══════════════════════════════════════════════════════════════
+#  PAKISTAN EVENTS & SEASONAL INTELLIGENCE ENGINE
 # ═══════════════════════════════════════════════════════════════
 
+EID_FITR_MONTHS = {
+    2020: [5], 2021: [5], 2022: [5], 2023: [4], 2024: [4],
+    2025: [3], 2026: [3], 2027: [3], 2028: [2], 2029: [2], 2030: [1]
+}
+EID_ADHA_MONTHS = {
+    2020: [7], 2021: [7], 2022: [7], 2023: [6], 2024: [6],
+    2025: [6], 2026: [5], 2027: [5], 2028: [5], 2029: [4], 2030: [4]
+}
+EXAM_MONTHS = [5, 10]
+MONSOON_MONTHS = [7, 8]
+SUMMER_HOLIDAY = [6, 7, 8]
+WINTER_FESTIVE = [12, 1]
+PSL_MONTHS = [2, 3, 4]
+
+SEASONAL_FACTORS = {
+    1: 1.08, 2: 0.95, 3: 1.05, 4: 1.12, 5: 0.72, 6: 1.25,
+    7: 1.35, 8: 1.15, 9: 0.85, 10: 0.92, 11: 1.05, 12: 1.28,
+}
+
+def compute_pakistan_multiplier(month_num, year):
+    mult = SEASONAL_FACTORS.get(month_num, 1.0)
+    notes = []
+    if year in EID_FITR_MONTHS and month_num in EID_FITR_MONTHS[year]:
+        mult *= 1.45
+        notes.append("🌙 Eid ul Fitr +45%")
+    if year in EID_ADHA_MONTHS and month_num in EID_ADHA_MONTHS[year]:
+        mult *= 1.38
+        notes.append("🐑 Eid ul Adha +38%")
+    if month_num in EXAM_MONTHS:
+        mult *= 0.88
+        notes.append("📚 Exam Season -12%")
+    if month_num in MONSOON_MONTHS:
+        mult *= 0.92
+        notes.append("🌧️ Monsoon -8%")
+    if month_num == 8:
+        mult *= 1.08
+        notes.append("🇵🇰 Independence Day +8%")
+    if month_num == 12:
+        mult *= 1.10
+        notes.append("🎆 Year-End Holidays +10%")
+    if month_num == 1:
+        mult *= 1.05
+        notes.append("🎊 New Year +5%")
+    return mult, " | ".join(notes) if notes else "📈 Standard Season"
+
+
+def generate_advanced_forecast(df, m_num, y_num, metric_col, project=None):
+    src = df if project is None else df[df['Project'] == project]
+    src = src[src[metric_col] > 100].dropna(subset=[metric_col, 'Date_Obj']).copy()
+    if len(src) < 6:
+        return 0, (0, 0), "Insufficient historical data"
+
+    same_month = src[src['Month_Num'] == m_num].copy()
+    base_same = 0
+    if len(same_month) >= 3:
+        same_month = same_month.sort_values('Date_Obj')
+        X_sm = np.arange(len(same_month)).reshape(-1, 1)
+        y_sm = same_month[metric_col].values
+        model_sm = LinearRegression()
+        model_sm.fit(X_sm, y_sm)
+        last_yr_same = same_month['Year'].max()
+        steps_ahead = y_num - last_yr_same
+        pred_idx = len(same_month) - 1 + steps_ahead
+        base_same = max(0, model_sm.predict([[pred_idx]])[0])
+
+    src_sorted = src.sort_values('Date_Obj')
+    X_all = np.arange(len(src_sorted)).reshape(-1, 1)
+    y_all = src_sorted[metric_col].values
+    poly = make_pipeline(PolynomialFeatures(2), LinearRegression())
+    poly.fit(X_all, y_all)
+    start_date = src_sorted['Date_Obj'].min()
+    target_date = pd.Timestamp(f"{y_num}-{m_num:02d}-01")
+    months_diff = (target_date.year - start_date.year) * 12 + (target_date.month - start_date.month)
+    base_poly = max(0, poly.predict([[months_diff]])[0])
+
+    if base_same > 0:
+        base = 0.60 * base_same + 0.40 * base_poly
+    else:
+        base = base_poly
+
+    pk_mult, notes = compute_pakistan_multiplier(m_num, y_num)
+    avg_seasonal = SEASONAL_FACTORS.get(m_num, 1.0)
+    final = (base / avg_seasonal) * pk_mult
+
+    if len(same_month) >= 3:
+        cv = np.std(same_month[metric_col].values) / np.mean(same_month[metric_col].values)
+        ci_pct = min(max(cv, 0.08), 0.20)
+    else:
+        ci_pct = 0.15
+
+    lower = final * (1 - ci_pct)
+    upper = final * (1 + ci_pct)
+    return final, (lower, upper), notes
+
+
+# ═══════════════════════════════════════════════════════════════
+#  PLOTLY CONFIG  —  v6.0 Updated
+# ═══════════════════════════════════════════════════════════════
 PLOTLY_LAYOUT = dict(
     template="plotly_dark",
     paper_bgcolor='rgba(0,0,0,0)',
@@ -665,266 +847,6 @@ PLOTLY_LAYOUT = dict(
     )
 )
 
-
-# ═══════════════════════════════════════════════════════════════
-#  ALSO ADD THIS TO YOUR main() — after st.set_page_config():
-#  Inject extra CSS that forces the Streamlit dataframe
-#  component (which uses a shadow DOM / iframe) to dark mode.
-# ═══════════════════════════════════════════════════════════════
-
-DATAFRAME_FIX = """
-<style>
-/* Streamlit 1.28+ uses glide-data-grid; force dark */
-[data-testid="stDataFrame"] canvas { filter: invert(1) hue-rotate(180deg); }
-[data-testid="stDataFrame"] > div > div {
-  background: #091428 !important;
-  border-radius: 14px !important;
-}
-/* The column header row */
-[data-testid="stDataFrame"] [role="columnheader"] {
-  background: rgba(0,198,255,0.07) !important;
-  color: #00c6ff !important;
-  font-family: 'JetBrains Mono', monospace !important;
-  font-size: 11px !important;
-}
-/* Cell rows */
-[data-testid="stDataFrame"] [role="gridcell"] {
-  background: #091428 !important;
-  color: #e8f4fd !important;
-  border-color: rgba(0,180,255,0.06) !important;
-}
-</style>
-"""
-
-# Usage in main():
-# st.markdown(PAGE_THEME, unsafe_allow_html=True)
-# st.markdown(DATAFRAME_FIX, unsafe_allow_html=True)   # <-- add this line
-# ═══════════════════════════════════════════════════════════════
-#  DATA LOADING
-# ═══════════════════════════════════════════════════════════════
-@st.cache_data
-def load_data():
-    file_options = [
-        "RAW DATA.xlsx", "RAW_DATA.xlsx",
-        os.path.join(os.path.dirname(__file__), "RAW DATA.xlsx"),
-        os.path.join(os.path.dirname(__file__), "RAW_DATA.xlsx"),
-        r"Z:\data\RAW DATA.xlsx"
-    ]
-    file_path = next((p for p in file_options if os.path.exists(p)), None)
-    if not file_path:
-        return pd.DataFrame()
-    try:
-        df = pd.read_excel(file_path, engine='openpyxl')
-        df.columns = [str(c).strip() for c in df.columns]
-        df.rename(columns={'Projetcs': 'Project'}, inplace=True)
-
-        month_map = {
-            'July':7,'August':8,'September':9,'October':10,'November':11,'December':12,
-            'January':1,'February':2,'March':3,'April':4,'May':5,'June':6
-        }
-        df['Month_Num'] = df['Months'].map(month_map)
-        fiscal_order = ['July','August','September','October','November','December',
-                        'January','February','March','April','May','June']
-        df['Months'] = pd.Categorical(df['Months'], categories=fiscal_order, ordered=True)
-        df['Year'] = pd.to_numeric(df['Year'], errors='coerce').fillna(0).astype(int)
-
-        # Fix fiscal year vs calendar year
-        jul_dec_years = set(df.loc[df['Month_Num'] >= 7, 'Year'].unique())
-        jan_jun_years = set(df.loc[df['Month_Num'] <= 6, 'Year'].unique())
-        overlap = jan_jun_years & jul_dec_years
-        if overlap:
-            mask_fix = df['Month_Num'] <= 6
-            df.loc[mask_fix, 'Year'] = df.loc[mask_fix, 'Year'] + 1
-
-        df['Date_Obj'] = pd.to_datetime(
-            df['Year'].astype(str) + '-' + df['Month_Num'].astype(str).str.zfill(2) + '-01'
-        )
-        df['Fiscal_Year_Label'] = df.apply(
-            lambda x: f"FY {x['Year'] if x['Month_Num'] >= 7 else x['Year']-1}-{str(x['Year'] if x['Month_Num'] <= 6 else x['Year']+1)[-2:]}",
-            axis=1
-        )
-        for col in ['Actual Revenue','Actual Footfall','Target revenue','Target Footfall']:
-            if col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-
-        return df.sort_values('Date_Obj').reset_index(drop=True)
-    except Exception as e:
-        st.sidebar.error(f"Data load error: {e}")
-        return pd.DataFrame()
-
-
-# ═══════════════════════════════════════════════════════════════
-#  PAKISTAN EVENTS & SEASONAL INTELLIGENCE ENGINE
-# ═══════════════════════════════════════════════════════════════
-
-# Accurate Eid ul Fitr months (Pakistan local moon sighting based)
-EID_FITR_MONTHS = {
-    2020: [5], 2021: [5], 2022: [5], 2023: [4], 2024: [4],
-    2025: [3], 2026: [3], 2027: [3], 2028: [2], 2029: [2], 2030: [1]
-}
-# Eid ul Adha months
-EID_ADHA_MONTHS = {
-    2020: [7], 2021: [7], 2022: [7], 2023: [6], 2024: [6],
-    2025: [6], 2026: [5], 2027: [5], 2028: [5], 2029: [4], 2030: [4]
-}
-# Pakistan school exam months (low footfall)
-EXAM_MONTHS = [5, 10]  # May = Board exams, October = Midterms
-# Monsoon impact (Lahore - lower outdoor footfall)
-MONSOON_MONTHS = [7, 8]
-# Summer holiday peak
-SUMMER_HOLIDAY = [6, 7, 8]
-# Winter festive
-WINTER_FESTIVE = [12, 1]
-# PSL season (more competition, slightly lower footfall)
-PSL_MONTHS = [2, 3, 4]
-
-# Historical seasonal multipliers derived from actual data
-SEASONAL_FACTORS = {
-    1: 1.08,   # January - winter holidays ending
-    2: 0.95,   # February - school, PSL
-    3: 1.05,   # March - spring, potential Eid
-    4: 1.12,   # April - Eid season usually
-    5: 0.72,   # May - exams, pre-summer slow
-    6: 1.25,   # June - summer holidays start
-    7: 1.35,   # July - peak summer
-    8: 1.15,   # August - summer + Azadi
-    9: 0.85,   # September - back to school
-    10: 0.92,  # October - normal
-    11: 1.05,  # November - winter start
-    12: 1.28,  # December - winter festive peak
-}
-
-def compute_pakistan_multiplier(month_num, year):
-    """Advanced Pakistan-specific event multiplier."""
-    mult = SEASONAL_FACTORS.get(month_num, 1.0)
-    notes = []
-
-    # Eid ul Fitr boost
-    if year in EID_FITR_MONTHS and month_num in EID_FITR_MONTHS[year]:
-        mult *= 1.45
-        notes.append("🌙 Eid ul Fitr +45%")
-
-    # Eid ul Adha boost
-    if year in EID_ADHA_MONTHS and month_num in EID_ADHA_MONTHS[year]:
-        mult *= 1.38
-        notes.append("🐑 Eid ul Adha +38%")
-
-    # School exam penalty
-    if month_num in EXAM_MONTHS:
-        mult *= 0.88
-        notes.append("📚 Exam Season -12%")
-
-    # Monsoon adjustment
-    if month_num in MONSOON_MONTHS:
-        mult *= 0.92
-        notes.append("🌧️ Monsoon -8%")
-
-    # August 14 - Independence Day boost
-    if month_num == 8:
-        mult *= 1.08
-        notes.append("🇵🇰 Independence Day +8%")
-
-    # December bonus (year-end school holidays)
-    if month_num == 12:
-        mult *= 1.10
-        notes.append("🎆 Year-End Holidays +10%")
-
-    # January bonus (New Year + winter break)
-    if month_num == 1:
-        mult *= 1.05
-        notes.append("🎊 New Year +5%")
-
-    return mult, " | ".join(notes) if notes else "📈 Standard Season"
-
-
-def generate_advanced_forecast(df, m_num, y_num, metric_col, project=None):
-    """
-    Advanced forecasting:
-    1. Filter to same month across all years
-    2. Use linear trend on same-month data
-    3. Also use 12-month rolling seasonal trend
-    4. Apply Pakistan event multipliers
-    5. Apply confidence interval based on historical variance
-    """
-    src = df if project is None else df[df['Project'] == project]
-    src = src[src[metric_col] > 100].dropna(subset=[metric_col, 'Date_Obj']).copy()
-
-    if len(src) < 6:
-        return 0, (0, 0), "Insufficient historical data"
-
-    # Method 1: Same-month trend (most accurate for seasonal data)
-    same_month = src[src['Month_Num'] == m_num].copy()
-    base_same = 0
-    if len(same_month) >= 3:
-        same_month = same_month.sort_values('Date_Obj')
-        X_sm = np.arange(len(same_month)).reshape(-1, 1)
-        y_sm = same_month[metric_col].values
-        # Use polynomial degree 1 for stability (less overfitting)
-        model_sm = LinearRegression()
-        model_sm.fit(X_sm, y_sm)
-        # How many steps ahead from last same-month data?
-        last_yr_same = same_month['Year'].max()
-        steps_ahead = y_num - last_yr_same
-        pred_idx = len(same_month) - 1 + steps_ahead
-        base_same = max(0, model_sm.predict([[pred_idx]])[0])
-
-    # Method 2: Overall trend extrapolation
-    src_sorted = src.sort_values('Date_Obj')
-    X_all = np.arange(len(src_sorted)).reshape(-1, 1)
-    y_all = src_sorted[metric_col].values
-    poly = make_pipeline(PolynomialFeatures(2), LinearRegression())
-    poly.fit(X_all, y_all)
-    start_date = src_sorted['Date_Obj'].min()
-    target_date = pd.Timestamp(f"{y_num}-{m_num:02d}-01")
-    months_diff = (target_date.year - start_date.year) * 12 + (target_date.month - start_date.month)
-    base_poly = max(0, poly.predict([[months_diff]])[0])
-
-    # Weighted blend: 60% same-month, 40% overall poly
-    if base_same > 0:
-        base = 0.60 * base_same + 0.40 * base_poly
-    else:
-        base = base_poly
-
-    # Pakistan seasonal multiplier
-    pk_mult, notes = compute_pakistan_multiplier(m_num, y_num)
-
-    # Apply multiplier (already includes baseline seasonal factor)
-    # Normalize: divide out the same-month's average seasonal factor then re-apply
-    avg_seasonal = SEASONAL_FACTORS.get(m_num, 1.0)
-    # Adjust base back to "neutral" then apply full PK multiplier
-    final = (base / avg_seasonal) * pk_mult
-
-    # Confidence interval: based on historical same-month variance
-    if len(same_month) >= 3:
-        cv = np.std(same_month[metric_col].values) / np.mean(same_month[metric_col].values)
-        ci_pct = min(max(cv, 0.08), 0.20)  # 8% to 20%
-    else:
-        ci_pct = 0.15
-
-    lower = final * (1 - ci_pct)
-    upper = final * (1 + ci_pct)
-
-    return final, (lower, upper), notes
-
-
-# ═══════════════════════════════════════════════════════════════
-#  PLOTLY CONFIG
-# ═══════════════════════════════════════════════════════════════
-PLOTLY_LAYOUT = dict(
-    template="plotly_dark", paper_bgcolor='rgba(5,11,24,0)',
-    plot_bgcolor='rgba(10,22,40,0.5)',
-    font=dict(family='Rajdhani, sans-serif', color='#e8f4fd', size=13),
-    title_font=dict(family='Orbitron, monospace', size=16, color='#00c6ff'),
-    legend=dict(bgcolor='rgba(13,31,60,0.8)', bordercolor='#1a3a6b', borderwidth=1,
-                font=dict(size=13, color='#e8f4fd')),
-    xaxis=dict(gridcolor='rgba(26,58,107,0.4)', linecolor='#1a3a6b',
-               tickfont=dict(family='JetBrains Mono', size=12, color='#a8d4f5'),
-               title_font=dict(family='Rajdhani', size=13, color='#7a9cc0')),
-    yaxis=dict(gridcolor='rgba(26,58,107,0.4)', linecolor='#1a3a6b',
-               tickfont=dict(family='JetBrains Mono', size=12, color='#a8d4f5'),
-               title_font=dict(family='Rajdhani', size=13, color='#7a9cc0')),
-    margin=dict(l=60, r=40, t=70, b=60)
-)
 COLORS = ['#00c6ff','#f5c518','#00ff9d','#ff4466','#b660f5','#ff8c42','#4ecdc4']
 PROJECT_COLORS = {
     'Joyland Fortress': '#00c6ff',
@@ -937,13 +859,12 @@ PROJECT_COLORS = {
 }
 
 def fmt_rev(v):
-    """Format revenue nicely."""
     if v >= 1e9: return f"Rs. {v/1e9:.2f}B"
     if v >= 1e6: return f"Rs. {v/1e6:.1f}M"
     return f"Rs. {v:,.0f}"
 
 # ═══════════════════════════════════════════════════════════════
-#  CHARTS — ADVANCED WITH LABELS & ANNOTATIONS
+#  CHARTS
 # ═══════════════════════════════════════════════════════════════
 def chart_gauge(actual, target, title="Revenue Achievement"):
     pct = min((actual/target*100) if target > 0 else 0, 150)
@@ -967,7 +888,6 @@ def chart_gauge(actual, target, title="Revenue Achievement"):
             ]
         }
     ))
-    # Add actual and target annotation
     fig.add_annotation(
         text=f"Actual: {fmt_rev(actual)}<br>Target: {fmt_rev(target)}",
         x=0.5, y=0.15, xref='paper', yref='paper',
@@ -979,13 +899,9 @@ def chart_gauge(actual, target, title="Revenue Achievement"):
 
 
 def chart_trend_advanced(df, col, color, title, show_annotations=True):
-    """Advanced trend chart with data labels on key points."""
     df = df.sort_values('Date_Obj')
     df_valid = df[df[col] > 0].dropna(subset=[col])
-
     fig = go.Figure()
-
-    # Fill area
     r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
     fig.add_trace(go.Scatter(
         x=df_valid['Date_Obj'], y=df_valid[col],
@@ -995,14 +911,8 @@ def chart_trend_advanced(df, col, color, title, show_annotations=True):
         name=col,
         mode='lines+markers',
         marker=dict(size=6, color=color, line=dict(color='white', width=1)),
-        hovertemplate=(
-            '<b>%{x|%B %Y}</b><br>'
-            + col + ': <b>%{y:,.0f}</b><br>'
-            '<extra></extra>'
-        )
+        hovertemplate='<b>%{x|%B %Y}</b><br>' + col + ': <b>%{y:,.0f}</b><br><extra></extra>'
     ))
-
-    # 3-month moving average
     if len(df_valid) >= 6:
         ma = df_valid[col].rolling(3, min_periods=1).mean()
         fig.add_trace(go.Scatter(
@@ -1011,14 +921,11 @@ def chart_trend_advanced(df, col, color, title, show_annotations=True):
             name='3M Avg',
             hovertemplate='3M Avg: <b>%{y:,.0f}</b><extra></extra>'
         ))
-
-    # Annotate max and min points
     if show_annotations and len(df_valid) > 0:
         max_idx = df_valid[col].idxmax()
         min_idx = df_valid[col].idxmin()
         max_row = df_valid.loc[max_idx]
         min_row = df_valid.loc[min_idx]
-
         fig.add_annotation(
             x=max_row['Date_Obj'], y=max_row[col],
             text=f"🏆 Peak<br>{fmt_rev(max_row[col])}<br>{max_row['Date_Obj'].strftime('%b %Y')}",
@@ -1035,20 +942,17 @@ def chart_trend_advanced(df, col, color, title, show_annotations=True):
             font=dict(family='JetBrains Mono', size=10, color='#ff4466'),
             ax=0, ay=50
         )
-
     fig.update_layout(**PLOTLY_LAYOUT, title=title, height=420,
                       xaxis_title="Date", yaxis_title=col)
     return fig
 
 
 def chart_bar_labeled(df, x_col, y_cols, title, x_label="", y_label=""):
-    """Bar chart with value labels on top of each bar."""
     fig = go.Figure()
     for i, c in enumerate(y_cols):
         if c not in df.columns:
             continue
         color = COLORS[i % len(COLORS)]
-        r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
         fig.add_trace(go.Bar(
             x=df[x_col], y=df[c], name=c,
             marker_color=color,
@@ -1065,23 +969,17 @@ def chart_bar_labeled(df, x_col, y_cols, title, x_label="", y_label=""):
 
 
 def chart_yearly_bar(df):
-    """Yearly revenue bar chart with labels, project breakdown, and YoY line."""
     yearly = df.groupby('Year').agg({'Actual Revenue': 'sum', 'Target revenue': 'sum'}).reset_index()
     yearly = yearly[yearly['Year'] > 2015]
-
     fig = go.Figure()
-    # Actual bars
     fig.add_trace(go.Bar(
         x=yearly['Year'].astype(str), y=yearly['Actual Revenue'],
-        name='Actual Revenue',
-        marker_color='#00c6ff',
-        marker_line_width=0,
+        name='Actual Revenue', marker_color='#00c6ff', marker_line_width=0,
         text=[fmt_rev(v) for v in yearly['Actual Revenue']],
         textposition='outside',
         textfont=dict(family='JetBrains Mono', size=10, color='#00c6ff'),
         hovertemplate='<b>Year %{x}</b><br>Revenue: <b>%{y:,.0f}</b><extra></extra>'
     ))
-    # Target bars
     fig.add_trace(go.Bar(
         x=yearly['Year'].astype(str), y=yearly['Target revenue'],
         name='Target Revenue',
@@ -1089,13 +987,11 @@ def chart_yearly_bar(df):
         marker_line=dict(color='#f5c518', width=1),
         hovertemplate='<b>Year %{x}</b><br>Target: <b>%{y:,.0f}</b><extra></extra>'
     ))
-    # Achievement % line
     yearly['ach'] = np.where(yearly['Target revenue'] > 0,
                               yearly['Actual Revenue'] / yearly['Target revenue'] * 100, 0)
     fig.add_trace(go.Scatter(
         x=yearly['Year'].astype(str), y=yearly['ach'],
-        name='Achievement %',
-        yaxis='y2',
+        name='Achievement %', yaxis='y2',
         line=dict(color='#00ff9d', width=2.5, dash='dot'),
         mode='lines+markers+text',
         marker=dict(size=8, color='#00ff9d'),
@@ -1104,18 +1000,12 @@ def chart_yearly_bar(df):
         textfont=dict(family='JetBrains Mono', size=10, color='#00ff9d'),
         hovertemplate='Achievement: <b>%{y:.1f}%</b><extra></extra>'
     ))
-
     fig.update_layout(
-        **PLOTLY_LAYOUT,
-        barmode='group',
+        **PLOTLY_LAYOUT, barmode='group',
         title="Annual Revenue: Actual vs Target + Achievement %",
-        height=480,
-        xaxis_title="Year",
-        yaxis_title="Revenue (PKR)",
+        height=480, xaxis_title="Year", yaxis_title="Revenue (PKR)",
         yaxis2=dict(overlaying='y', side='right', title='Achievement %',
-                    gridcolor='rgba(26,58,107,0.2)',
-                    tickformat='.0f',
-                    ticksuffix='%',
+                    gridcolor='rgba(26,58,107,0.2)', tickformat='.0f', ticksuffix='%',
                     tickfont=dict(family='JetBrains Mono', size=11, color='#00ff9d'),
                     title_font=dict(family='Rajdhani', size=13, color='#00ff9d'))
     )
@@ -1123,20 +1013,14 @@ def chart_yearly_bar(df):
 
 
 def chart_monthly_heatmap(df):
-    """Revenue heatmap by Year × Month with actual values shown."""
     pivot = df.pivot_table(
         values='Actual Revenue', index='Year',
         columns='Months', aggfunc='sum', observed=True
     )
-    # Format text
     text_vals = [[fmt_rev(v) if pd.notna(v) and v > 0 else '' for v in row] for row in pivot.values]
-
     fig = go.Figure(go.Heatmap(
-        z=pivot.values,
-        x=pivot.columns.tolist(),
-        y=pivot.index.tolist(),
-        text=text_vals,
-        texttemplate='%{text}',
+        z=pivot.values, x=pivot.columns.tolist(), y=pivot.index.tolist(),
+        text=text_vals, texttemplate='%{text}',
         textfont=dict(family='JetBrains Mono', size=9, color='white'),
         colorscale=[[0, '#050b18'], [0.3, '#0a3060'], [0.6, '#0060b0'], [1, '#00c6ff']],
         hovertemplate='<b>%{y} – %{x}</b><br>Revenue: <b>Rs. %{z:,.0f}</b><extra></extra>',
@@ -1146,22 +1030,19 @@ def chart_monthly_heatmap(df):
             tickfont=dict(family='JetBrains Mono', size=10, color='#7a9cc0')
         )
     ))
-    fig.update_layout(**PLOTLY_LAYOUT, title="Revenue Heatmap: Year × Month (Values Shown)", height=420,
-                      xaxis_title="Month", yaxis_title="Year")
+    fig.update_layout(**PLOTLY_LAYOUT, title="Revenue Heatmap: Year × Month (Values Shown)",
+                      height=420, xaxis_title="Month", yaxis_title="Year")
     return fig
 
 
 def chart_project_advanced(df):
-    """Project comparison with revenue, footfall, and rev/."""
     d = df.groupby('Project').agg({
         'Actual Revenue': 'sum', 'Actual Footfall': 'sum'
     }).reset_index()
     d = d[d['Actual Revenue'] > 0]
     d['Rev_Per_'] = d['Actual Revenue'] / d['Actual Footfall'].replace(0, np.nan)
     d = d.sort_values('Actual Revenue', ascending=False)
-
     colors = [PROJECT_COLORS.get(p, '#00c6ff') for p in d['Project']]
-
     fig = go.Figure()
     fig.add_trace(go.Bar(
         name='Revenue', x=d['Project'], y=d['Actual Revenue'],
@@ -1180,7 +1061,6 @@ def chart_project_advanced(df):
         textfont=dict(family='JetBrains Mono', size=10, color='#f5c518'),
         hovertemplate='<b>%{x}</b><br>Footfall: <b>%{y:,.0f}</b><extra></extra>'
     ))
-    # Rev/ line
     fig.add_trace(go.Scatter(
         x=d['Project'], y=d['Rev_Per_'],
         name='Rev/', yaxis='y3',
@@ -1193,12 +1073,9 @@ def chart_project_advanced(df):
         hovertemplate='Rev/: <b>Rs. %{y:,.0f}</b><extra></extra>'
     ))
     fig.update_layout(
-        **PLOTLY_LAYOUT,
-        barmode='group',
+        **PLOTLY_LAYOUT, barmode='group',
         title="Project Intelligence: Revenue · Footfall · Revenue per Visitor",
-        height=480,
-        xaxis_title="Project",
-        yaxis_title="Revenue (PKR)",
+        height=480, xaxis_title="Project", yaxis_title="Revenue (PKR)",
         yaxis2=dict(overlaying='y', side='right', showgrid=False,
                     tickfont=dict(family='JetBrains Mono', size=11, color='#f5c518')),
         yaxis3=dict(overlaying='y', side='right', showgrid=False, anchor='free', position=0.98,
@@ -1208,7 +1085,6 @@ def chart_project_advanced(df):
 
 
 def chart_yoy_advanced(df):
-    """Year-over-year monthly comparison with all years visible."""
     years = sorted(df['Year'].dropna().unique())
     fiscal_order = ['July','August','September','October','November','December',
                     'January','February','March','April','May','June']
@@ -1222,25 +1098,21 @@ def chart_yoy_advanced(df):
             continue
         color = COLORS[i % len(COLORS)]
         fig.add_trace(go.Scatter(
-            x=monthly['Months'].astype(str),
-            y=monthly['Actual Revenue'],
+            x=monthly['Months'].astype(str), y=monthly['Actual Revenue'],
             name=str(int(yr)),
             line=dict(color=color, width=2.5),
             mode='lines+markers',
             marker=dict(size=7, color=color, line=dict(color='white', width=1)),
             hovertemplate=f'<b>{int(yr)} – %{{x}}</b><br>Revenue: <b>Rs. %{{y:,.0f}}</b><extra></extra>'
         ))
-    fig.update_layout(**PLOTLY_LAYOUT, title="Year-over-Year Monthly Revenue Comparison", height=460,
-                      xaxis_title="Month (Fiscal Order: Jul→Jun)", yaxis_title="Revenue (PKR)")
+    fig.update_layout(**PLOTLY_LAYOUT, title="Year-over-Year Monthly Revenue Comparison",
+                      height=460, xaxis_title="Month (Fiscal Order: Jul→Jun)", yaxis_title="Revenue (PKR)")
     return fig
 
 
 def chart_forecast_trajectory_advanced(df):
-    """Advanced forecast trajectory chart with Pakistan events marked."""
     hist = df[df['Actual Revenue'] > 0].dropna(subset=['Actual Revenue']).sort_values('Date_Obj')
     fig = go.Figure()
-
-    # Historical
     fig.add_trace(go.Scatter(
         x=hist['Date_Obj'], y=hist['Actual Revenue'],
         name='Actual Revenue', fill='tozeroy',
@@ -1250,8 +1122,6 @@ def chart_forecast_trajectory_advanced(df):
         marker=dict(size=4, color='#00c6ff'),
         hovertemplate='<b>%{x|%B %Y}</b><br>Actual: <b>Rs. %{y:,.0f}</b><extra></extra>'
     ))
-
-    # Target line
     tgt = df[df['Target revenue'] > 0].groupby('Date_Obj')['Target revenue'].sum().reset_index()
     if not tgt.empty:
         fig.add_trace(go.Scatter(
@@ -1259,8 +1129,6 @@ def chart_forecast_trajectory_advanced(df):
             name='Target', line=dict(color='rgba(245,197,24,0.5)', width=1, dash='dot'),
             hovertemplate='<b>%{x|%B %Y}</b><br>Target: <b>Rs. %{y:,.0f}</b><extra></extra>'
         ))
-
-    # Advanced forecast
     if len(hist) >= 8:
         future_months = 36
         last_date = hist['Date_Obj'].max()
@@ -1269,7 +1137,6 @@ def chart_forecast_trajectory_advanced(df):
         for fd in future_dates:
             fv, (fl, fu), _ = generate_advanced_forecast(df, fd.month, fd.year, 'Actual Revenue')
             forecast_vals.append(fv)
-
         fig.add_trace(go.Scatter(
             x=future_dates, y=forecast_vals,
             name='AI Forecast (2025–2028)',
@@ -1278,8 +1145,6 @@ def chart_forecast_trajectory_advanced(df):
             marker=dict(size=5, symbol='diamond', color='#f5c518'),
             hovertemplate='<b>%{x|%B %Y}</b><br>Forecast: <b>Rs. %{y:,.0f}</b><extra></extra>'
         ))
-
-        # Confidence band
         ci_vals_upper = [v * 1.15 for v in forecast_vals]
         ci_vals_lower = [max(0, v * 0.85) for v in forecast_vals]
         fig.add_trace(go.Scatter(
@@ -1290,8 +1155,6 @@ def chart_forecast_trajectory_advanced(df):
             name='Confidence Band (±15%)',
             showlegend=True
         ))
-
-    # Mark COVID period
     fig.add_vrect(
         x0="2020-03-01", x1="2021-07-01",
         fillcolor="rgba(255,68,102,0.06)",
@@ -1299,7 +1162,6 @@ def chart_forecast_trajectory_advanced(df):
         annotation_font=dict(color='#ff4466', size=11, family='JetBrains Mono'),
         line_width=0
     )
-
     fig.update_layout(**PLOTLY_LAYOUT,
                       title="Revenue Trajectory 2017–2028 (AI Forecast + Pakistan Events)",
                       height=500, xaxis_title="Date", yaxis_title="Revenue (PKR)")
@@ -1307,7 +1169,6 @@ def chart_forecast_trajectory_advanced(df):
 
 
 def chart_waterfall_advanced(df, metric='Actual Revenue'):
-    """Waterfall chart with values labeled."""
     d = df.groupby('Months', observed=True)[metric].sum().reset_index()
     d = d[d[metric] > 0]
     if d.empty:
@@ -1331,11 +1192,9 @@ def chart_waterfall_advanced(df, metric='Actual Revenue'):
 
 
 def chart_regression_advanced(df):
-    """Revenue vs Footfall scatter with regression + project coloring."""
     d = df[(df['Actual Revenue'] > 0) & (df['Actual Footfall'] > 0)].dropna()
     if len(d) < 5:
         return None
-
     projects = d['Project'].unique()
     fig = go.Figure()
     for proj in projects:
@@ -1346,14 +1205,10 @@ def chart_regression_advanced(df):
             mode='markers', name=proj,
             marker=dict(color=color, size=8, opacity=0.7, line=dict(color='white', width=0.5)),
             hovertemplate=(
-                f'<b>{proj}</b><br>'
-                'Footfall: <b>%{x:,.0f}</b><br>'
-                'Revenue: <b>Rs. %{y:,.0f}</b><br>'
-                '<extra></extra>'
+                f'<b>{proj}</b><br>Footfall: <b>%{{x:,.0f}}</b><br>'
+                'Revenue: <b>Rs. %{y:,.0f}</b><br><extra></extra>'
             )
         ))
-
-    # Overall regression line
     X = d['Actual Footfall'].values.reshape(-1, 1)
     y = d['Actual Revenue'].values
     m = LinearRegression().fit(X, y)
@@ -1380,14 +1235,12 @@ def chart_regression_advanced(df):
 
 
 def chart_pie_advanced(df, val_col, name_col, title):
-    """Donut chart with value labels."""
     d = df.groupby(name_col)[val_col].sum().reset_index()
     d = d[d[val_col] > 0].sort_values(val_col, ascending=False)
     colors = [PROJECT_COLORS.get(n, COLORS[i % len(COLORS)]) for i, n in enumerate(d[name_col])]
     fig = go.Figure(go.Pie(
         values=d[val_col], labels=d[name_col],
-        hole=0.45,
-        marker_colors=colors,
+        hole=0.45, marker_colors=colors,
         textinfo='label+percent+value',
         texttemplate='%{label}<br>%{percent}<br>Rs. %{value:,.0f}',
         textfont=dict(family='Rajdhani', size=11),
@@ -1398,13 +1251,13 @@ def chart_pie_advanced(df, val_col, name_col, title):
 
 
 # ═══════════════════════════════════════════════════════════════
-#  AI QUERY ENGINE — DEEP NLP
+#  AI QUERY ENGINE
 # ═══════════════════════════════════════════════════════════════
 MONTH_MAP = {
     'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
     'july':7,'august':8,'september':9,'october':10,'november':11,'december':12,
     'jan':1,'feb':2,'mar':3,'apr':4,'jun':6,'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12,
-    'janvari':1,'febrvari':2,'march':3,'april':4,'maii':5,'jon':6,
+    'janvari':1,'febrvari':2,'maii':5,'jon':6,
     'julai':7,'agast':8,'sitambar':9,'aktoobar':10,'navambar':11,'disambar':12
 }
 MONTH_NAMES = {v: k.capitalize() for k, v in MONTH_MAP.items() if len(k) > 3}
@@ -1415,7 +1268,7 @@ PROJECT_ALIASES = {
     'jap': 'JAP-OD', 'jap-od': 'JAP-OD', 'outdoor': 'JAP-OD', 'od': 'JAP-OD', 'japod': 'JAP-OD',
     'ss-pkg': 'SS-PKG', 'sspkg': 'SS-PKG', 'ss pkg': 'SS-PKG', 'pkg': 'SS-PKG',
     'ss-fsm': 'SS-FSM', 'ssfsm': 'SS-FSM', 'fsm': 'SS-FSM',
-    'ss-jap': 'SS-JAP', 'ssjap': 'SS-JAP', 'ssjap': 'SS-JAP',
+    'ss-jap': 'SS-JAP', 'ssjap': 'SS-JAP',
     'b-pkg': 'B-PKG', 'bpkg': 'B-PKG', 'bounce pkg': 'B-PKG', 'bounce package': 'B-PKG',
     'b-emp': 'B-EMP', 'bemp': 'B-EMP', 'bounce emp': 'B-EMP', 'emp': 'B-EMP', 'bounce': 'B-EMP',
 }
@@ -1476,18 +1329,15 @@ def filter_df(q, df):
 def smart_ai_response(query, df):
     q = query.lower().strip()
 
-    # ── GREETING ──
     greet_words = ['hi','hello','hey','salam','assalam','helo','hii','who are you','introduce',
                    'aap kaun','your name','about you','what are you','tell me about yourself',
                    'kya hai','mujhe batao apny bare mein']
     if any(q == g or q.startswith(g) for g in greet_words):
         return _intro_message(), None, None
 
-    # ── HELP ──
     if q in ['help','?','commands','what can you do','guide'] or q.startswith('help'):
         return _help_message(), None, None
 
-    # ── FORECAST / PREDICT ──
     forecast_kw = ['forecast','predict','projection','estimate','expected',
                    'agle','next year','agla','future','prediction','btao future',
                    'kitna hoga','kya hoga','anticipate','project']
@@ -1502,24 +1352,20 @@ def smart_ai_response(query, df):
             p_ff, (lf, uf), note_ff = generate_advanced_forecast(df_src, m_idx, y_val, 'Actual Footfall')
             proj_str = f" ({project})" if project else " (All Projects)"
             month_name = MONTH_NAMES.get(m_idx, found_m_str.capitalize())
-
-            # Check for Eid
             eid_note = ""
             if y_val in EID_FITR_MONTHS and m_idx in EID_FITR_MONTHS[y_val]:
                 eid_note = "\n> 🌙 **Eid ul Fitr** is expected this month — expect 45% above-average footfall"
             if y_val in EID_ADHA_MONTHS and m_idx in EID_ADHA_MONTHS[y_val]:
                 eid_note += "\n> 🐑 **Eid ul Adha** is expected this month — significant revenue boost expected"
-
             msg = (
                 f"### 🔮 Advanced AI Forecast — {month_name} {y_val}{proj_str}\n\n"
                 f"| Metric | Projection | Lower Bound | Upper Bound |\n"
                 f"|--------|------------|-------------|-------------|\n"
                 f"| 💰 Revenue | **{fmt_rev(p_rev)}** | {fmt_rev(lr)} | {fmt_rev(ur)} |\n"
-                f"| 👥 Footfall | **{p_ff:,.0f} ** | {lf:,.0f} | {uf:,.0f} |\n\n"
+                f"| 👥 Footfall | **{p_ff:,.0f}** | {lf:,.0f} | {uf:,.0f} |\n\n"
                 f"**Pakistan Event Modifiers:** {note_rev}\n"
                 f"{eid_note}\n\n"
                 f"> *Model: Same-Month Trend (60%) + Polynomial Extrapolation (40%)*  \n"
-                f"> *Pakistan Events: Eid ul Fitr/Adha, School Exams, Monsoon, Independence Day*  \n"
                 f"> *Confidence Band based on historical monthly variance*"
             )
             return msg, None, None
@@ -1530,7 +1376,6 @@ def smart_ai_response(query, df):
                 "**Available years:** 2025, 2026, 2027, 2028, 2029, 2030"
             ), None, None
 
-    # ── COMPARISON ──
     if ' vs ' in q or ' versus ' in q or ' compare ' in q:
         sep = ' vs ' if ' vs ' in q else ' versus ' if ' versus ' in q else ' compare '
         parts = q.split(sep, 1)
@@ -1548,7 +1393,6 @@ def smart_ai_response(query, df):
 
         v1, l1 = get_part(parts[0])
         v2, l2 = get_part(parts[1])
-
         if not v1.empty and not v2.empty:
             r1, r2 = v1['Actual Revenue'].sum(), v2['Actual Revenue'].sum()
             f1, f2 = v1['Actual Footfall'].sum(), v2['Actual Footfall'].sum()
@@ -1557,11 +1401,9 @@ def smart_ai_response(query, df):
             rpp1 = r1 / f1 if f1 > 0 else 0
             rpp2 = r2 / f2 if f2 > 0 else 0
             rpp_chg = (rpp2 - rpp1) / rpp1 * 100 if rpp1 > 0 else 0
-
             winner = l2 if r_chg > 0 else l1
             loser = l1 if r_chg > 0 else l2
             margin = abs(r_chg)
-
             msg = (
                 f"### 📊 Comparison: **{l1}** vs **{l2}**\n\n"
                 f"| Metric | {l1} | {l2} | Change |\n"
@@ -1574,16 +1416,13 @@ def smart_ai_response(query, df):
                 msg += f"✅ **{winner}** ne **{loser}** se `{margin:.1f}%` ziyada revenue generate kiya.\n"
             else:
                 msg += f"⚠️ **{winner}** ka revenue **{loser}** se `{margin:.1f}%` kam raha.\n"
-
             if abs(f_chg) > 5:
                 msg += f"\n👥 Footfall bhi `{f_chg:+.1f}%` {'zyada' if f_chg > 0 else 'kam'} raha."
-
             comp_data = {"labels": [l1, l2], "revenue": [r1, r2], "footfall": [f1, f2]}
             return msg, None, comp_data
         else:
             return "⚠️ Dono periods ka data nahi mila. Month/Year check karein.", None, None
 
-    # ── COVID / SPECIFIC EVENTS ──
     if 'covid' in q or ('2020' in q and any(k in q for k in ['lockdown','impact','why','closed','band'])):
         msg = (
             "### 🦠 COVID-19 Impact Analysis — 2020\n\n"
@@ -1597,14 +1436,12 @@ def smart_ai_response(query, df):
             "**Key Facts:**\n"
             "- April, May, June, July 2020: **Zero revenue** — all parks completely closed\n"
             "- Full year 2020 achievement: **49.2%** of target\n"
-            "- 2019 revenue: Rs. 779.9M → 2020: Rs. 467.2M (**−40% YoY**)\n"
-            "- 2021 recovery: Rs. 657M (+40.5% YoY) — steady comeback\n"
-            "- **Full recovery**: 2022 → Rs. 1.65B (new record at that time)\n"
-            "- **Lesson**: Single event wipe out 6 months revenue — risk in seasonal businesses\n"
+            "- 2019 → 2020: Rs. 779.9M → Rs. 467.2M (**−40% YoY**)\n"
+            "- 2021 recovery: Rs. 657M (+40.5% YoY)\n"
+            "- **Full recovery**: 2022 → Rs. 1.65B (new record)\n"
         )
         return msg, df[df['Year'].isin([2019, 2020, 2021])], None
 
-    # ── PSL / CRICKET QUERY ──
     if any(k in q for k in ['psl','cricket','ipl','match']):
         msg = (
             "### 🏏 PSL / Cricket Season Impact\n\n"
@@ -1618,7 +1455,6 @@ def smart_ai_response(query, df):
         )
         return msg, None, None
 
-    # ── EID / ISLAMIC EVENTS ──
     if any(k in q for k in ['eid','ramadan','ramazan','eid ul fitr','eid ul adha','islamic']):
         msg = (
             "### 🌙 Islamic Events & Joyland Revenue\n\n"
@@ -1630,35 +1466,26 @@ def smart_ai_response(query, df):
             "| 2025 | March | Expected +45% |\n"
             "| 2026 | March | Expected +45% |\n\n"
             "**Eid ul Adha** — second major boost (~38% above average):\n"
-            "| Year | Month |\n"
-            "|------|-------|\n"
-            "| 2024 | June |\n"
-            "| 2025 | June |\n"
-            "| 2026 | May |\n\n"
+            "| Year | Month |\n|------|-------|\n"
+            "| 2024 | June |\n| 2025 | June |\n| 2026 | May |\n\n"
             "**Ramadan Impact:**\n"
-            "- Early Ramadan: footfall drops 15-20% (evening restricted)\n"
+            "- Early Ramadan: footfall drops 15-20%\n"
             "- Last 10 days: near-zero footfall\n"
-            "- But Chand Raat → first 3 days Eid = massive spike\n\n"
-            "*Our AI forecasting model in Eid months +45% (Fitr) ya +38% (Adha) multiplier use karta hai.*"
+            "- Chand Raat → first 3 days Eid = massive spike\n\n"
+            "*Our AI: Eid months +45% (Fitr) ya +38% (Adha) multiplier use karta hai.*"
         )
         return msg, None, None
 
-    # ── MONSOON / WEATHER ──
     if any(k in q for k in ['monsoon','barish','rain','weather','summer']):
         msg = (
             "### 🌦️ Weather & Seasonal Impact on Joyland\n\n"
             "**Summer (Jun–Aug):** Peak season — school holidays + long evenings\n"
             "- July = highest revenue month historically\n"
-            "- Monsoon (Jul–Aug) causes some wet days but overall footfall still high\n"
-            "- Our model: Monsoon -8% adjustment + Summer Holiday +35%\n\n"
-            "**Winter (Nov–Feb):** Second peak season\n"
-            "- December = festive + school winter break\n"
-            "- January = moderate due to cold (Lahore gets cold)\n"
-            "- Our model: Winter Festive +28% for December\n\n"
+            "- Monsoon (Jul–Aug) causes some wet days but overall footfall still high\n\n"
+            "**Winter (Nov–Feb):** Second peak\n"
+            "- December = festive + school winter break\n\n"
             "**Spring (Mar–May):** Mixed\n"
-            "- March/April: Eid can make it peak\n"
             "- May: board exams = worst month typically\n\n"
-            "**September:** Back to school — lowest non-COVID revenue month\n\n"
             "| Season | Factor | Months |\n"
             "|--------|--------|--------|\n"
             "| 🌞 Summer Peak | +35% | Jun, Jul, Aug |\n"
@@ -1668,7 +1495,6 @@ def smart_ai_response(query, df):
         )
         return msg, None, None
 
-    # ── TREND ANALYSIS ──
     trend_kw = ['trend','growth','decline','pattern','yoy','year over year','yearly trend',
                 'annual','historical','sabse','best year','worst year','cagr','saal']
     if any(k in q for k in trend_kw):
@@ -1693,15 +1519,14 @@ def smart_ai_response(query, df):
             "|------|---------|----------|-------------|------------|\n"
             + "\n".join(rows) + "\n\n"
             "**Key Milestones:**\n"
-            "- 🦠 2020: COVID-19 → 49.2% achievement, parks closed Apr–Jul\n"
-            "- 🚀 2022: Breakthrough year → first Rs. 1.6B+ revenue\n"
-            "- 🏆 2023: Rs. 2.1B → highest achievement % (98.3%)\n"
-            "- 📊 2024: Rs. 2.5B → highest absolute revenue so far\n"
-            "- ⭐ 2025: Rs. 2.96B → CAGR from 2017–2025: **~33% per year**\n"
+            "- 🦠 2020: COVID-19 → 49.2% achievement\n"
+            "- 🚀 2022: Rs. 1.6B+ first time\n"
+            "- 🏆 2023: Rs. 2.1B → highest achievement %\n"
+            "- 📊 2024: Rs. 2.5B → highest absolute revenue\n"
+            "- ⭐ 2025: Rs. 2.96B → CAGR 2017–2025: **~33%/year**\n"
         )
         return msg, df, None
 
-    # ── BEST/WORST ──
     if any(k in q for k in ['best','worst','highest','lowest','top','bottom','peak','sabse ziyada','sabse kam']):
         if any(k in q for k in ['month','mahina']):
             monthly = df.groupby('Months', observed=True)['Actual Revenue'].sum().reset_index()
@@ -1728,7 +1553,6 @@ def smart_ai_response(query, df):
             )
             return msg, None, None
 
-    # ── PROJECT ANALYSIS ──
     proj_kw = ['project','projects','all projects','which project','best project',
                'top project','compare project','sab projects']
     if any(k in q for k in proj_kw):
@@ -1745,14 +1569,12 @@ def smart_ai_response(query, df):
             "|---------|---------------|----------------|-------------|----------|\n"
             + "\n".join(rows) + "\n\n"
             "**Highlights:**\n"
-            "- 🥇 **Joyland Fortress** — flagship, largest revenue generator\n"
+            "- 🥇 **Joyland Fortress** — flagship, largest revenue\n"
             "- 🥈 **JAP-OD** — strong #2, outdoor attraction\n"
-            "- 💡 **B-EMP** — highest revenue per visitor (premium positioning)\n"
-            "- 📈 **SS-FSM & B-PKG** — growing consistently year on year\n"
+            "- 💡 **B-EMP** — highest revenue per visitor\n"
         )
         return msg, df, None
 
-    # ── MONTHLY OVERVIEW ──
     month_kw = ['monthly','month','best month','worst month','seasonal','season',
                 'which month','monthly trend','har month']
     if any(k in q for k in month_kw) and not re.findall(r'\b(20\d{2})\b', q) and not re.findall(MONTH_PATTERN, q):
@@ -1776,12 +1598,10 @@ def smart_ai_response(query, df):
             "- 🏆 **July** — peak summer, highest revenue\n"
             "- 🎆 **December** — winter festive, strong #2\n"
             "- 😴 **May** — slowest month (board exam season)\n"
-            "- 🌙 **Eid months** — 40–50% above-average revenue boost\n"
-            "- 🌧️ **September** — back to school, lowest non-COVID month\n"
+            "- 🌙 **Eid months** — 40–50% above-average boost\n"
         )
         return msg, None, None
 
-    # ── ACHIEVEMENT / TARGET ──
     ach_kw = ['achievement','achieve','target','vs target','kya achieve','reached','met',
               'goal','performance','kitna achieve','kitna target','progress']
     if any(k in q for k in ach_kw):
@@ -1814,7 +1634,6 @@ def smart_ai_response(query, df):
             )
             return msg, filtered, None
 
-    # ── QUARTERLY ──
     q_months, q_name = detect_quarter(q)
     if q_months:
         years = [int(y) for y in re.findall(r'\b(20\d{2})\b', q)]
@@ -1836,15 +1655,15 @@ def smart_ai_response(query, df):
                 f"| Metric | Value |\n"
                 f"|--------|-------|\n"
                 f"| 💰 Revenue | **{fmt_rev(act_rev)}** |\n"
-                f"| 👥 Footfall | **{act_ff:,.0f} ** |\n"
+                f"| 👥 Footfall | **{act_ff:,.0f}** |\n"
                 f"| 🎯 Target Revenue | {fmt_rev(tgt_rev)} |\n"
                 f"| 📈 Achievement | **{ach:.1f}%** |\n"
-                f"| 💡 Rev/ | **Rs. {act_rev/act_ff:,.0f}** |" if act_ff > 0 else ""
             )
+            if act_ff > 0:
+                msg += f"| 💡 Rev/ | **Rs. {act_rev/act_ff:,.0f}** |"
             return msg, filtered, None
 
-    # ── REVENUE PER  ──
-    rpp_kw = ['revenue per ','per visitor','spend per','rev per','rpp','spending',
+    rpp_kw = ['revenue per','per visitor','spend per','rev per','rpp','spending',
               'average spend','per customer','average revenue','per ticket']
     if any(k in q for k in rpp_kw):
         filtered, months, years, project = filter_df(q, df)
@@ -1860,18 +1679,17 @@ def smart_ai_response(query, df):
             f"| Metric | Value |\n"
             f"|--------|-------|\n"
             f"| 💰 Total Revenue | {fmt_rev(rev)} |\n"
-            f"| 👥 Total Footfall | {ff:,.0f}  |\n"
-            f"| 💡 Revenue per  | **Rs. {rpp:,.0f}** |\n"
+            f"| 👥 Total Footfall | {ff:,.0f} |\n"
+            f"| 💡 Revenue per Visitor | **Rs. {rpp:,.0f}** |\n"
             f"| 📊 All-Time Avg | Rs. {all_rpp:,.0f}/visitor |\n"
             f"| 📈 vs All-Time | `{(rpp-all_rpp)/all_rpp*100:+.1f}%` |"
         )
         return msg, filtered if not filtered.empty else None, None
 
-    # ── GENERAL DATA QUERY ──
     filtered, months, years, project = filter_df(q, df)
 
     want_rev = any(k in q for k in ['revenue','rev','income','earning','sales','kamai','amdan'])
-    want_ff = any(k in q for k in ['footfall','foot fall','visitors','','attendance','log','customers','guest','visitors'])
+    want_ff = any(k in q for k in ['footfall','foot fall','visitors','attendance','log','customers','guest'])
     want_both = not want_rev and not want_ff
 
     if filtered.empty:
@@ -1909,7 +1727,7 @@ def smart_ai_response(query, df):
             rows.append(f"| 🎯 Target Revenue | {fmt_rev(tgt_rev)} |")
             rows.append(f"| 📈 Achievement | **{rev_ach:.1f}%** |")
     if want_ff or want_both:
-        rows.append(f"| 👥 Actual Footfall | **{act_ff:,.0f} ** |")
+        rows.append(f"| 👥 Actual Footfall | **{act_ff:,.0f}** |")
         if tgt_ff > 0:
             rows.append(f"| 🎯 Target Footfall | {tgt_ff:,.0f} |")
             if ff_ach: rows.append(f"| 📈 FF Achievement | **{ff_ach:.1f}%** |")
@@ -1937,7 +1755,7 @@ def smart_ai_response(query, df):
 # ═══════════════════════════════════════════════════════════════
 def _intro_message():
     return (
-        "### 👋 Assalam o Alaikum! Welcome to **Joyland MIS v5.0 Pro Max**\n\n"
+        "### 👋 Assalam o Alaikum! Welcome to **Joyland MIS v6.0 Ultra**\n\n"
         "---\n"
         "🤖 **Main Joyland MIS AI Assistant hoon** — Complete Business Intelligence Bot trained on **2017–2026 Joyland data** across **7 projects**.\n\n"
         "Developed by **MIS Assistant Manager Umair Nizam** for smart, data-driven decisions.\n\n"
@@ -1953,7 +1771,7 @@ def _intro_message():
         "| 📈 Trends | `Revenue trend all years` |\n"
         "| 📅 Quarterly | `Q1 2024 revenue` |\n"
         "| 🏢 Projects | `All projects comparison` |\n"
-        "| 💡 Per Visitor | `Revenue per  2024` |\n"
+        "| 💡 Per Visitor | `Revenue per visitor 2024` |\n"
         "| 🦠 Events | `COVID impact 2020` |\n"
         "| 🌙 Islamic | `Eid impact on revenue` |\n"
         "| 🌦️ Weather | `Monsoon effect on footfall` |\n"
@@ -1991,7 +1809,7 @@ def _help_message():
         "- `Best month` / `Worst month`\n"
         "- `Monthly breakdown`\n"
         "- `Achievement 2024`\n"
-        "- `Revenue per  2025`\n"
+        "- `Revenue per visitor 2025`\n"
         "- `All projects comparison`\n"
     )
 
@@ -2005,9 +1823,9 @@ def render_sidebar(df, auth_obj=None):
         <div style='text-align:center;padding:16px 0 8px;'>
           <div style='font-family:Orbitron,monospace;font-size:11px;letter-spacing:4px;color:#7a9cc0;'>JOYLAND MIS</div>
           <div style='font-family:Orbitron,monospace;font-size:20px;font-weight:900;color:#00c6ff;margin:4px 0;'>CONTROL</div>
-          <div style='font-family:Orbitron,monospace;font-size:9px;letter-spacing:3px;color:#3a5a80;'>INTELLIGENCE CENTER v5.0</div>
+          <div style='font-family:Orbitron,monospace;font-size:9px;letter-spacing:3px;color:#3a5a80;'>INTELLIGENCE CENTER v6.0 ULTRA</div>
         </div>
-        <div style='border-bottom:1px solid #1a3a6b;margin:8px 0 16px;'></div>
+        <div style='border-bottom:1px solid rgba(0,180,255,0.2);margin:8px 0 16px;'></div>
         """, unsafe_allow_html=True)
 
         analyst_name = st.session_state.get('name', 'Analyst')
@@ -2028,7 +1846,7 @@ def render_sidebar(df, auth_obj=None):
         if auth_obj:
             auth_obj.logout('⏻  LOGOUT', 'sidebar')
 
-        st.markdown("""<div style='border-bottom:1px solid #1a3a6b;margin:16px 0;'></div>""",
+        st.markdown("""<div style='border-bottom:1px solid rgba(0,180,255,0.1);margin:16px 0;'></div>""",
                     unsafe_allow_html=True)
 
         if not df.empty:
@@ -2037,12 +1855,12 @@ def render_sidebar(df, auth_obj=None):
             min_yr = int(df['Year'].min()) if 'Year' in df.columns else 2017
             max_yr = int(df['Year'].max()) if 'Year' in df.columns else 2026
             st.markdown(f"""
-            <div style='background:rgba(13,31,60,0.8);border:1px solid #1a3a6b;border-radius:12px;padding:14px;margin-bottom:12px;'>
-              <div style='font-family:Rajdhani;font-size:11px;letter-spacing:2px;color:#a8d4f5;text-transform:uppercase;margin-bottom:8px;font-weight:700;'>DATA SCOPE</div>
-              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>📅 {min_yr} – {max_yr}</div>
-              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>📊 {records:,} Records</div>
-              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>🏢 {projects} Projects</div>
-              <div style='font-family:JetBrains Mono;font-size:13px;color:#e8f4fd;margin:5px 0;'>🤖 AI: Seasonal + Trend + PK Events</div>
+            <div style='background:rgba(12,27,53,0.8);border:1px solid rgba(0,180,255,0.15);border-radius:12px;padding:14px;margin-bottom:12px;'>
+              <div style='font-family:Rajdhani;font-size:11px;letter-spacing:2px;color:#8ab4d4;text-transform:uppercase;margin-bottom:8px;font-weight:700;'>DATA SCOPE</div>
+              <div style='font-family:JetBrains Mono;font-size:13px;color:#f0f8ff;margin:5px 0;'>📅 {min_yr} – {max_yr}</div>
+              <div style='font-family:JetBrains Mono;font-size:13px;color:#f0f8ff;margin:5px 0;'>📊 {records:,} Records</div>
+              <div style='font-family:JetBrains Mono;font-size:13px;color:#f0f8ff;margin:5px 0;'>🏢 {projects} Projects</div>
+              <div style='font-family:JetBrains Mono;font-size:13px;color:#f0f8ff;margin:5px 0;'>🤖 AI: Seasonal + Trend + PK Events</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -2051,21 +1869,21 @@ def render_sidebar(df, auth_obj=None):
             "August 2023 vs August 2024", "Forecast March 2027",
             "Revenue trend", "Q1 2024 Joyland Fortress",
             "Achievement 2025", "All projects comparison",
-            "Revenue per  2024", "COVID impact 2020",
+            "Revenue per visitor 2024", "COVID impact 2020",
             "Eid impact on revenue", "Monsoon effect",
         ]
         st.markdown("""
-        <div style='background:rgba(13,31,60,0.8);border:1px solid #1a3a6b;border-radius:12px;padding:14px;'>
-          <div style='font-family:Rajdhani;font-size:11px;letter-spacing:2px;color:#a8d4f5;text-transform:uppercase;margin-bottom:8px;font-weight:700;'>QUICK QUERIES</div>
+        <div style='background:rgba(12,27,53,0.8);border:1px solid rgba(0,180,255,0.15);border-radius:12px;padding:14px;'>
+          <div style='font-family:Rajdhani;font-size:11px;letter-spacing:2px;color:#8ab4d4;text-transform:uppercase;margin-bottom:8px;font-weight:700;'>QUICK QUERIES</div>
         """, unsafe_allow_html=True)
         for qk in quick:
             st.markdown(f"<div style='font-family:JetBrains Mono;font-size:11px;color:#c8dff0;margin:4px 0;'>› {qk}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("""
-        <div style='text-align:center;padding:12px;font-family:Rajdhani;font-size:11px;color:#3a5a80;letter-spacing:1px;margin-top:16px;'>
+        <div style='text-align:center;padding:12px;font-family:Rajdhani;font-size:11px;color:#3d6080;letter-spacing:1px;margin-top:16px;'>
           ARCHITECT: <span style='color:#f5c518;font-weight:700;'>UMAIR NIZAM</span><br>
-          <span style='color:#1a3a6b;'>v5.0 PRO MAX ULTRA · 2017–2030</span>
+          <span style='color:#1a3a6b;'>v6.0 ULTRA · 2017–2030</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -2075,11 +1893,12 @@ def render_sidebar(df, auth_obj=None):
 # ═══════════════════════════════════════════════════════════════
 def main():
     st.set_page_config(
-        page_title="Joyland MIS Assistant · v5.0 Pro Max",
+        page_title="Joyland MIS Assistant · v6.0 Ultra",
         layout="wide", page_icon="🎢",
         initial_sidebar_state="expanded"
     )
     st.markdown(PAGE_THEME, unsafe_allow_html=True)
+    st.markdown(DATAFRAME_FIX, unsafe_allow_html=True)  # Extra dataframe dark mode fix
 
     for k, v in {
         'messages': [], 'last_filtered_df': None, 'comparison_data': None
@@ -2093,7 +1912,7 @@ def main():
     credentials = {"usernames": {"admin": {"name": "Admin", "password": "MIS2024@secure"}}}
     try:
         from streamlit_authenticator import Authenticate
-        auth = Authenticate(credentials, "joyland_mis", "auth_key_v5", cookie_expiry_days=30)
+        auth = Authenticate(credentials, "joyland_mis", "auth_key_v6", cookie_expiry_days=30)
         auth.login(location='main')
         is_auth = st.session_state.get("authentication_status")
     except ImportError:
@@ -2110,7 +1929,7 @@ def main():
             JOYLAND MIS ASSISTANT
           </div>
           <div style='font-family:Rajdhani;font-size:13px;letter-spacing:3px;color:#7a9cc0;margin-bottom:32px;'>
-            INTELLIGENCE PLATFORM · v5.0 PRO MAX
+            INTELLIGENCE PLATFORM · v6.0 ULTRA
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -2123,7 +1942,7 @@ def main():
     <div class='hero-banner'>
       <div class='hero-title'>JOYLAND  MIS  ASSISTANT</div>
       <div class='hero-subtitle'>Advanced Business Intelligence & Predictive Analytics Platform</div>
-      <div class='hero-badge'>⬡ AI-POWERED · DATA 2017–2026 · FORECAST 2030 · v5.0 PRO MAX ULTRA</div>
+      <div class='hero-badge'>⬡ AI-POWERED · DATA 2017–2026 · FORECAST 2030 · v6.0 ULTRA</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2142,7 +1961,7 @@ def main():
 
             c1, c2, c3, c4, c5 = st.columns(5)
             c1.metric("💰 Lifetime Revenue", fmt_rev(total_rev), "2017–2026")
-            c2.metric("👥 Total Visitors", f"{total_ff/1e6:.2f}M ", "Cumulative")
+            c2.metric("👥 Total Visitors", f"{total_ff/1e6:.2f}M", "Cumulative")
             c3.metric("🎯 Avg Achievement", f"{ach:.1f}%", "vs All Targets")
             c4.metric("💡 Rev / Visitor", f"Rs. {rpp:,.0f}", "Lifetime Avg")
             c5.metric("📈 YoY Growth", f"{yoy_g:+.1f}%", f"{max_yr-1}→{max_yr}")
@@ -2205,9 +2024,7 @@ def main():
             "🔮 Advanced Forecast", "📋 Raw Data"
         ])
 
-        # ─ TAB 1: VISUAL INSIGHTS ─
         with tab1:
-            # Comparison chart if available
             if st.session_state.comparison_data:
                 cd = st.session_state.comparison_data
                 fig_comp = go.Figure()
@@ -2270,28 +2087,24 @@ def main():
             elif chart_opt.startswith("10"):
                 st.plotly_chart(chart_yoy_advanced(df_plot), use_container_width=True)
 
-            # Summary table
             disp = [c for c in ['Actual Revenue', 'Target revenue', 'Actual Footfall', 'Target Footfall'] if c in df_plot.columns]
             if disp:
                 st.markdown("**Summary Totals**")
                 summary = df_plot[disp].sum().to_frame("Total").T
                 st.dataframe(
                     summary.style.format("{:,.0f}")
-                    .set_properties(**{'background-color': '#0d1f3c', 'color': '#e8f4fd', 'border': '1px solid #1a3a6b'}),
+                    .set_properties(**{'background-color': '#091428', 'color': '#f0f8ff', 'border': '1px solid rgba(0,180,255,0.15)'}),
                     use_container_width=True
                 )
 
-        # ─ TAB 2: DEEP ANALYSIS ─
         with tab2:
             c1, c2 = st.columns(2)
             with c1:
                 st.plotly_chart(chart_yearly_bar(df_plot), use_container_width=True)
             with c2:
                 st.plotly_chart(chart_monthly_heatmap(df_plot), use_container_width=True)
-
             st.plotly_chart(chart_yoy_advanced(df_plot), use_container_width=True)
 
-        # ─ TAB 3: PROJECTS ─
         with tab3:
             if 'Project' in df_plot.columns:
                 st.plotly_chart(chart_project_advanced(df_plot), use_container_width=True)
@@ -2299,17 +2112,16 @@ def main():
                     'Actual Revenue': 'sum', 'Actual Footfall': 'sum', 'Target revenue': 'sum'
                 })
                 proj_sum['Achievement %'] = (proj_sum['Actual Revenue'] / proj_sum['Target revenue'] * 100).where(proj_sum['Target revenue'] > 0, 0).round(1)
-                proj_sum['Rev/'] = (proj_sum['Actual Revenue'] / proj_sum['Actual Footfall'].replace(0, np.nan)).round(0)
+                proj_sum['Rev/Visitor'] = (proj_sum['Actual Revenue'] / proj_sum['Actual Footfall'].replace(0, np.nan)).round(0)
                 proj_sum = proj_sum.sort_values('Actual Revenue', ascending=False)
                 st.dataframe(
                     proj_sum.style.format({
                         'Actual Revenue': '{:,.0f}', 'Actual Footfall': '{:,.0f}',
-                        'Target revenue': '{:,.0f}', 'Achievement %': '{:.1f}%', 'Rev/': '{:,.0f}'
-                    }).set_properties(**{'background-color': '#0d1f3c', 'color': '#e8f4fd', 'border': '1px solid #1a3a6b'}),
+                        'Target revenue': '{:,.0f}', 'Achievement %': '{:.1f}%', 'Rev/Visitor': '{:,.0f}'
+                    }).set_properties(**{'background-color': '#091428', 'color': '#f0f8ff', 'border': '1px solid rgba(0,180,255,0.15)'}),
                     use_container_width=True
                 )
 
-        # ─ TAB 4: ADVANCED FORECAST ─
         with tab4:
             st.markdown("<div class='section-header'>◈ ADVANCED PREDICTIVE ANALYTICS ENGINE</div>", unsafe_allow_html=True)
             if not df.empty:
@@ -2332,7 +2144,6 @@ def main():
                     p_ff, (lf, uf), note_ff = generate_advanced_forecast(df_src, m_idx, y_sel, 'Actual Footfall')
                     pk_mult, pk_notes = compute_pakistan_multiplier(m_idx, y_sel)
 
-                    # Historical same-month for context
                     same_m_hist = df_src[df_src['Month_Num'] == m_idx].groupby('Year').agg({
                         'Actual Revenue': 'sum'
                     }).reset_index().tail(5)
@@ -2353,15 +2164,15 @@ def main():
                         <div style='background:rgba(0,198,255,0.08);border:1px solid rgba(0,198,255,0.2);border-radius:12px;padding:16px;'>
                           <div style='font-family:Rajdhani;font-size:12px;color:#7a9cc0;letter-spacing:2px;'>💰 REVENUE</div>
                           <div style='font-family:Orbitron;font-size:22px;color:#00c6ff;font-weight:900;margin:8px 0;'>{fmt_rev(p_rev)}</div>
-                          <div style='font-family:JetBrains Mono;font-size:11px;color:#3a5a80;'>Range: {fmt_rev(lr)} – {fmt_rev(ur)}</div>
+                          <div style='font-family:JetBrains Mono;font-size:11px;color:#3d6080;'>Range: {fmt_rev(lr)} – {fmt_rev(ur)}</div>
                         </div>
                         <div style='background:rgba(245,197,24,0.08);border:1px solid rgba(245,197,24,0.2);border-radius:12px;padding:16px;'>
                           <div style='font-family:Rajdhani;font-size:12px;color:#7a9cc0;letter-spacing:2px;'>👥 FOOTFALL</div>
                           <div style='font-family:Orbitron;font-size:22px;color:#f5c518;font-weight:900;margin:8px 0;'>{p_ff:,.0f}</div>
-                          <div style='font-family:JetBrains Mono;font-size:11px;color:#3a5a80;'>Range: {lf:,.0f} – {uf:,.0f}</div>
+                          <div style='font-family:JetBrains Mono;font-size:11px;color:#3d6080;'>Range: {lf:,.0f} – {uf:,.0f}</div>
                         </div>
                       </div>
-                      <div style='margin-top:12px;font-family:Rajdhani;font-size:13px;color:#a8d4f5;'>
+                      <div style='margin-top:12px;font-family:Rajdhani;font-size:13px;color:#8ab4d4;'>
                         <b>Pakistan Event Modifiers:</b> {note_rev}
                       </div>
                     </div>
@@ -2376,7 +2187,6 @@ def main():
                         st.dataframe(same_m_hist.rename(columns={'Year': 'Year', 'Actual Revenue': 'Revenue'}),
                                      use_container_width=True)
 
-                # Pakistan event calendar
                 st.markdown("""
                 <div style='background:rgba(245,197,24,0.06);border:1px solid rgba(245,197,24,0.2);border-radius:12px;padding:16px;margin-top:16px;'>
                   <div style='font-family:Orbitron;font-size:12px;letter-spacing:3px;color:#f5c518;margin-bottom:10px;'>🌙 PAKISTAN EVENT CALENDAR (FORECAST BASIS)</div>
@@ -2391,7 +2201,6 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
 
-        # ─ TAB 5: RAW DATA ─
         with tab5:
             st.markdown(f"<div style='font-family:Rajdhani;color:#7a9cc0;margin-bottom:12px;'>{len(df_plot):,} records</div>",
                         unsafe_allow_html=True)
@@ -2399,7 +2208,7 @@ def main():
             num_cols = [c for c in display_cols if pd.api.types.is_numeric_dtype(df_plot[c])]
             st.dataframe(
                 df_plot[display_cols].style.format({c: '{:,.0f}' for c in num_cols})
-                .set_properties(**{'background-color': '#0d1f3c', 'color': '#e8f4fd', 'border': '1px solid #1a3a6b'}),
+                .set_properties(**{'background-color': '#091428', 'color': '#f0f8ff', 'border': '1px solid rgba(0,180,255,0.15)'}),
                 use_container_width=True, height=500
             )
             csv = df_plot.to_csv(index=False).encode('utf-8')
