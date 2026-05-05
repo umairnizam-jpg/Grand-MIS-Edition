@@ -664,9 +664,9 @@ def compute_pakistan_multiplier(month_num, year):
     mult = SEASONAL_FACTORS.get(month_num, 1.0)
     notes = []
     if year in EID_FITR_MONTHS and month_num in EID_FITR_MONTHS[year]:
-        mult *= 1.45; notes.append("🌙 Eid ul Fitr +45%")
+        mult *= 1.45; notes.append("🌙 Eid ul Fitr +20%")
     if year in EID_ADHA_MONTHS and month_num in EID_ADHA_MONTHS[year]:
-        mult *= 1.38; notes.append("🐑 Eid ul Adha +38%")
+        mult *= 1.38; notes.append("🐑 Eid ul Adha +15%")
     if month_num in [5,10]: mult *= 0.88; notes.append("📚 Exam Season -12%")
     if month_num in [7,8]:  mult *= 0.92; notes.append("🌧️ Monsoon -8%")
     if month_num == 8:  mult *= 1.08; notes.append("🇵🇰 Independence Day +8%")
