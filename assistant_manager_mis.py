@@ -13,85 +13,42 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ═══════════════════════════════════════════════════════════════
-#  JOYLAND MIS ASSISTANT  ·  v7.0 APEX
+#  JOYLAND MIS ASSISTANT  ·  v6.0 ULTRA
 #  Architect: Umair Nizam  |  Scope: 2017 – 2030
 #  AI Engine: Advanced Seasonal Decomposition + Pakistan Events
-#  Design: Ultra-Premium Financial Terminal Aesthetic
+#  Interface: Matched to joyland_mis_theme_preview.html
 # ═══════════════════════════════════════════════════════════════
 
 PAGE_THEME = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
 /* ── ROOT VARIABLES ─────────────────────────────────────────── */
 :root {
-  /* Primary Backgrounds */
-  --bg-void: #080c14;
-  --bg-base: #0d1321;
-  --bg-raised: #111827;
-  --bg-surface: #162032;
-  --bg-overlay: #1c2a3f;
-  --bg-hover: #1f3050;
-
-  /* Accent System */
-  --accent-primary: #3b82f6;
-  --accent-glow: rgba(59,130,246,0.35);
-  --accent-subtle: rgba(59,130,246,0.08);
-  --accent-border: rgba(59,130,246,0.20);
-  --accent-border-strong: rgba(59,130,246,0.45);
-
-  /* Gold System */
-  --gold: #f59e0b;
-  --gold-glow: rgba(245,158,11,0.30);
-  --gold-subtle: rgba(245,158,11,0.07);
-  --gold-border: rgba(245,158,11,0.22);
-
-  /* Emerald System */
-  --emerald: #10b981;
-  --emerald-glow: rgba(16,185,129,0.30);
-  --emerald-subtle: rgba(16,185,129,0.07);
-  --emerald-border: rgba(16,185,129,0.22);
-
-  /* Rose System */
-  --rose: #f43f5e;
-  --rose-glow: rgba(244,63,94,0.30);
-  --rose-subtle: rgba(244,63,94,0.07);
-
-  /* Violet System */
-  --violet: #8b5cf6;
-  --violet-glow: rgba(139,92,246,0.30);
-  --violet-subtle: rgba(139,92,246,0.07);
-
-  /* Amber */
-  --amber: #f97316;
-
-  /* Text */
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #475569;
-  --text-faint: #2d3f55;
-
-  /* Typography */
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'Space Grotesk', sans-serif;
-  --font-mono: 'DM Mono', monospace;
-
-  /* Borders */
-  --border-subtle: rgba(148,163,184,0.06);
-  --border-default: rgba(148,163,184,0.10);
-  --border-strong: rgba(148,163,184,0.18);
-
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.5);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
-  --shadow-xl: 0 20px 60px rgba(0,0,0,0.7);
-
-  /* Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --bg0: #02060f;
+  --bg1: #060d1e;
+  --bg2: #091428;
+  --bg3: #0c1b35;
+  --bg4: #101f3a;
+  --glass: rgba(9,20,40,0.92);
+  --border: rgba(0,180,255,0.12);
+  --border2: rgba(0,180,255,0.25);
+  --border3: rgba(0,180,255,0.40);
+  --cyan: #00c6ff;
+  --cyan-dim: rgba(0,198,255,0.15);
+  --gold: #f5c518;
+  --gold-dim: rgba(245,197,24,0.12);
+  --green: #00ff9d;
+  --green-dim: rgba(0,255,157,0.12);
+  --red: #ff3355;
+  --purple: #c084fc;
+  --orange: #ff9432;
+  --text1: #f0f8ff;
+  --text2: #8ab4d4;
+  --text3: #3d6080;
+  --font-display: 'Orbitron', monospace;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 /* ── GLOBAL RESET / BASE ────────────────────────────────────── */
@@ -100,8 +57,8 @@ html, body,
 [class*="css"],
 section.main > div,
 .block-container {
-  background: var(--bg-void) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg0) !important;
+  color: var(--text1) !important;
   font-family: var(--font-body) !important;
 }
 
@@ -109,210 +66,194 @@ section.main > div,
 [style*="background: rgb(255, 255, 255)"],[style*="background-color: rgb(255, 255, 255)"],
 [style*="background: #fff"],[style*="background-color: #fff"],
 [style*="background: #ffffff"],[style*="background-color: #ffffff"],
+[style*="background:#fff"],[style*="background:#ffffff"],
+[style*="background-color:#fff"],[style*="background-color:#ffffff"],
+.css-1aehpvj, .css-6qob1r,
 [data-testid="stAppViewContainer"],
 [data-testid="stHeader"] {
-  background: var(--bg-void) !important;
-  background-color: var(--bg-void) !important;
+  background: var(--bg0) !important;
+  background-color: var(--bg0) !important;
 }
 
-/* Subtle noise grain overlay */
+/* Grid background texture */
 .main::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  opacity: 0.4;
-}
-
-/* Subtle grid */
-.main::after {
-  content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image:
-    linear-gradient(rgba(59,130,246,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59,130,246,0.015) 1px, transparent 1px);
-  background-size: 64px 64px;
+    linear-gradient(rgba(0,198,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,198,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 /* ── TEXT ───────────────────────────────────────────────────── */
-p, span, div, label, li, td, th, a { color: var(--text-primary) !important; }
+p, span, div, label, li, td, th, a { color: var(--text1) !important; }
 .stMarkdown p, .stMarkdown span, .stMarkdown li {
-  color: var(--text-secondary) !important; font-size: 14px !important;
-  font-weight: 400 !important; line-height: 1.75 !important;
-  font-family: var(--font-body) !important;
+  color: #ddeeff !important; font-size: 15px !important;
+  font-weight: 500 !important; line-height: 1.8 !important;
 }
-h1, h2, h3 { color: var(--text-primary) !important; font-family: var(--font-display) !important; }
+h1, h2, h3 { color: var(--text1) !important; }
 
 /* ── SIDEBAR ────────────────────────────────────────────────── */
 section[data-testid="stSidebar"] {
-  background: var(--bg-base) !important;
-  border-right: 1px solid var(--border-default) !important;
+  background: linear-gradient(180deg, #020912 0%, #050d1c 100%) !important;
+  border-right: 1px solid var(--border2) !important;
 }
 section[data-testid="stSidebar"] * { background-color: transparent !important; }
-section[data-testid="stSidebar"]::after {
+section[data-testid="stSidebar"]::before {
   content: '';
-  position: absolute; top: 0; left: 0; width: 1px; height: 100%;
-  background: linear-gradient(180deg, transparent 0%, var(--accent-primary) 30%, var(--gold) 70%, transparent 100%);
-  opacity: 0.3;
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  animation: scanline 3s ease-in-out infinite;
+}
+@keyframes scanline {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }
 
 /* ── METRIC CARDS ───────────────────────────────────────────── */
 div[data-testid="stMetric"] {
-  background: var(--bg-raised) !important;
-  border: 1px solid var(--border-default) !important;
-  border-radius: var(--radius-lg) !important;
-  padding: 20px 18px !important;
+  background: linear-gradient(135deg, var(--bg3) 0%, var(--bg2) 100%) !important;
+  border: 1px solid var(--border2) !important;
+  border-radius: 18px !important;
+  padding: 22px 18px !important;
   position: relative; overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-shadow: var(--shadow-sm) !important;
+  transition: transform .3s, box-shadow .3s, border-color .3s !important;
 }
 div[data-testid="stMetric"]:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 12px 40px rgba(59,130,246,0.15), var(--shadow-md) !important;
-  border-color: var(--accent-border-strong) !important;
-  background: var(--bg-surface) !important;
+  transform: translateY(-5px) !important;
+  box-shadow: 0 20px 60px rgba(0,198,255,0.18) !important;
+  border-color: var(--border3) !important;
 }
 div[data-testid="stMetric"]::before {
   content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--accent-primary) 50%, transparent 100%);
-  opacity: 0.6;
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  border-radius: 18px 18px 0 0;
 }
 div[data-testid="stMetricLabel"] > div {
-  color: var(--text-muted) !important; font-family: var(--font-mono) !important;
-  font-size: 10px !important; letter-spacing: 1.5px !important;
-  text-transform: uppercase !important; font-weight: 500 !important;
+  color: var(--text2) !important; font-family: var(--font-body) !important;
+  font-size: 11px !important; letter-spacing: 2px !important;
+  text-transform: uppercase !important; font-weight: 700 !important;
 }
 div[data-testid="stMetricValue"] > div {
-  color: var(--text-primary) !important; font-family: var(--font-display) !important;
-  font-size: 26px !important; font-weight: 800 !important;
-  letter-spacing: -0.5px !important;
+  color: #ffffff !important; font-family: var(--font-display) !important;
+  font-size: 22px !important; font-weight: 900 !important;
+  text-shadow: 0 0 24px rgba(0,198,255,0.45) !important;
 }
 div[data-testid="stMetricDelta"] > div {
-  color: var(--emerald) !important; font-family: var(--font-mono) !important;
-  font-size: 11px !important; font-weight: 500 !important;
-  background: var(--emerald-subtle) !important; padding: 2px 8px !important;
-  border-radius: 20px !important; border: 1px solid var(--emerald-border) !important;
+  color: var(--green) !important; font-family: var(--font-body) !important;
+  font-size: 12px !important; font-weight: 700 !important;
+  background: var(--green-dim) !important; padding: 3px 10px !important;
+  border-radius: 20px !important; border: 1px solid rgba(0,255,157,0.3) !important;
 }
 
 /* ── BUTTONS ────────────────────────────────────────────────── */
 .stButton > button {
-  background: var(--bg-surface) !important;
-  border: 1px solid var(--border-strong) !important;
-  color: var(--text-secondary) !important; font-family: var(--font-body) !important;
-  font-weight: 600 !important; letter-spacing: 0.5px !important;
-  border-radius: var(--radius-md) !important;
-  font-size: 12px !important; transition: all 0.2s ease !important;
-  padding: 8px 16px !important;
+  background: linear-gradient(135deg, rgba(0,198,255,0.12), rgba(0,198,255,0.04)) !important;
+  border: 1px solid rgba(0,198,255,0.35) !important;
+  color: var(--cyan) !important; font-family: var(--font-body) !important;
+  font-weight: 700 !important; letter-spacing: 2px !important;
+  border-radius: 10px !important; text-transform: uppercase !important;
+  font-size: 11px !important; transition: all .3s ease !important;
 }
 .stButton > button:hover {
-  background: var(--bg-hover) !important;
-  border-color: var(--accent-border-strong) !important;
-  color: var(--text-primary) !important;
-  box-shadow: 0 0 20px var(--accent-glow) !important;
-  transform: translateY(-1px) !important;
-}
-
-/* Primary action button */
-.stButton > button[kind="primary"], .stButton > button:first-child {
-  background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
-  border-color: transparent !important;
-  color: white !important;
-}
-.stButton > button[kind="primary"]:hover {
-  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
-  box-shadow: 0 4px 20px rgba(59,130,246,0.4) !important;
+  background: rgba(0,198,255,0.22) !important;
+  box-shadow: 0 0 24px rgba(0,198,255,0.25), inset 0 0 24px rgba(0,198,255,0.04) !important;
+  transform: translateY(-2px) !important; border-color: var(--cyan) !important;
 }
 
 /* ── TABS ───────────────────────────────────────────────────── */
 div[data-baseweb="tab-list"] {
-  background: var(--bg-raised) !important; border-radius: var(--radius-md) !important;
-  padding: 4px !important; border: 1px solid var(--border-default) !important; gap: 2px !important;
+  background: var(--bg2) !important; border-radius: 12px !important;
+  padding: 4px !important; border: 1px solid var(--border) !important; gap: 3px !important;
 }
 div[data-baseweb="tab"] {
-  font-family: var(--font-body) !important; font-weight: 600 !important;
-  font-size: 11px !important; letter-spacing: 0.5px !important;
-  border-radius: var(--radius-sm) !important; color: var(--text-muted) !important;
-  transition: all 0.15s !important; background: transparent !important;
-  text-transform: uppercase !important; padding: 8px 16px !important;
+  font-family: var(--font-body) !important; font-weight: 700 !important;
+  font-size: 12px !important; letter-spacing: 1px !important;
+  border-radius: 8px !important; color: var(--text2) !important;
+  transition: all .2s !important; background: transparent !important;
+  text-transform: uppercase !important;
 }
 div[aria-selected="true"] {
-  background: var(--bg-surface) !important; color: var(--text-primary) !important;
-  box-shadow: var(--shadow-sm) !important; border: 1px solid var(--border-strong) !important;
+  background: rgba(0,198,255,0.15) !important; color: var(--cyan) !important;
+  box-shadow: 0 0 16px rgba(0,198,255,0.12) !important;
 }
 div[role="tabpanel"], div[role="tabpanel"] > div, div[data-baseweb="tab-panel"] {
-  background: var(--bg-void) !important; padding-top: 16px !important;
+  background: var(--bg0) !important; padding-top: 16px !important;
 }
 
 /* ── SELECTBOX / DROPDOWN ───────────────────────────────────── */
 div[data-baseweb="select"] > div, div[data-baseweb="select"] > div > div {
-  background: var(--bg-raised) !important; border: 1px solid var(--border-default) !important;
-  border-radius: var(--radius-md) !important; color: var(--text-primary) !important;
+  background: var(--bg2) !important; border: 1px solid var(--border2) !important;
+  border-radius: 10px !important; color: var(--text1) !important;
 }
 div[data-baseweb="select"] span,
 div[data-baseweb="select"] div[class*="singleValue"],
 div[data-baseweb="select"] div[class*="placeholder"],
 div[data-baseweb="select"] svg {
-  color: var(--text-primary) !important; fill: var(--text-muted) !important;
-  font-family: var(--font-body) !important; font-weight: 500 !important;
+  color: var(--text1) !important; fill: var(--text2) !important;
+  font-family: var(--font-body) !important; font-weight: 600 !important;
 }
 div[data-baseweb="popover"], div[data-baseweb="popover"] > div,
 ul[role="listbox"], div[role="listbox"], [data-baseweb="menu"],
 [data-baseweb="menu"] ul, [data-baseweb="menu"] > div {
-  background: var(--bg-raised) !important; border: 1px solid var(--border-strong) !important;
-  border-radius: var(--radius-lg) !important; box-shadow: var(--shadow-xl) !important;
+  background: var(--bg2) !important; border: 1px solid var(--border2) !important;
+  border-radius: 14px !important; box-shadow: 0 12px 48px rgba(0,0,0,0.8) !important;
 }
 li[role="option"], div[role="option"], [data-baseweb="menu"] li {
-  background: var(--bg-raised) !important; color: var(--text-secondary) !important;
-  font-family: var(--font-body) !important; font-size: 13px !important; font-weight: 500 !important;
+  background: var(--bg2) !important; color: var(--text1) !important;
+  font-family: var(--font-body) !important; font-size: 14px !important; font-weight: 600 !important;
 }
 li[role="option"]:hover, div[role="option"]:hover, li[aria-selected="true"] {
-  background: var(--accent-subtle) !important; color: var(--text-primary) !important;
+  background: rgba(0,198,255,0.12) !important; color: var(--cyan) !important;
 }
 
 /* ── CHAT INPUT ─────────────────────────────────────────────── */
 div[data-testid="stChatInput"] {
-  background: var(--bg-raised) !important; border: 1px solid var(--border-strong) !important;
-  border-radius: var(--radius-lg) !important;
+  background: var(--bg2) !important; border: 1.5px solid var(--border2) !important;
+  border-radius: 14px !important;
 }
 div[data-testid="stChatInput"] textarea {
-  background: transparent !important; border: none !important;
-  color: var(--text-primary) !important; font-family: var(--font-body) !important;
-  font-size: 14px !important; caret-color: var(--accent-primary) !important;
+  background: var(--bg2) !important; border: none !important;
+  color: var(--text1) !important; font-family: var(--font-body) !important;
+  font-size: 14px !important; caret-color: var(--cyan) !important;
 }
 div[data-testid="stChatInput"] textarea::placeholder {
-  color: var(--text-muted) !important; font-style: italic !important;
+  color: var(--text3) !important; font-style: italic !important;
 }
 div[data-testid="stChatInput"]:focus-within {
-  border-color: var(--accent-border-strong) !important;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.10), 0 0 30px rgba(59,130,246,0.06) !important;
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 0 3px rgba(0,198,255,0.12), 0 0 32px rgba(0,198,255,0.08) !important;
 }
 div[data-testid="stChatInput"] button {
-  background: var(--accent-primary) !important;
-  border-radius: var(--radius-sm) !important; border: none !important;
+  background: linear-gradient(135deg, var(--cyan), #0090cc) !important;
+  border-radius: 10px !important; border: none !important;
 }
 div[data-testid="stBottom"], div[data-testid="stBottom"] > div,
 .stChatFloatingInputContainer {
-  background: var(--bg-void) !important; border-top: 1px solid var(--border-subtle) !important;
+  background: var(--bg0) !important; border-top: 1px solid var(--border) !important;
 }
-footer, footer * { background: var(--bg-void) !important; color: var(--text-faint) !important; }
+footer, footer * { background: var(--bg0) !important; color: var(--text3) !important; }
 
 /* ── CHAT MESSAGES ──────────────────────────────────────────── */
 div[data-testid="stChatMessage"] { background: transparent !important; border: none !important; }
 div[data-testid="stChatMessage"] > div {
-  background: var(--bg-raised) !important; border: 1px solid var(--border-default) !important;
-  border-radius: var(--radius-lg) !important;
+  background: var(--bg2) !important; border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+}
+div[data-testid="stChatMessage"][data-testid*="user"] > div {
+  background: rgba(0,198,255,0.05) !important; border-color: rgba(0,198,255,0.15) !important;
 }
 div[data-testid="stChatMessage"] p, div[data-testid="stChatMessage"] span,
 div[data-testid="stChatMessage"] li, div[data-testid="stChatMessage"] td {
-  color: var(--text-secondary) !important; font-size: 13.5px !important;
-  font-weight: 400 !important; line-height: 1.75 !important;
+  color: var(--text1) !important; font-size: 14px !important;
+  font-weight: 500 !important; line-height: 1.8 !important;
 }
-div[data-testid="stChatMessage"] strong { color: var(--text-primary) !important; font-weight: 700 !important; }
+div[data-testid="stChatMessage"] strong { color: #ffffff !important; font-weight: 800 !important; }
 div[data-testid="stChatMessage"] code {
-  color: var(--emerald) !important; background: var(--emerald-subtle) !important;
-  padding: 2px 6px !important; border-radius: 4px !important;
-  font-family: var(--font-mono) !important; font-size: 12px !important;
-  border: 1px solid var(--emerald-border) !important;
+  color: var(--green) !important; background: rgba(0,255,157,0.08) !important;
+  padding: 2px 7px !important; border-radius: 5px !important;
+  font-family: var(--font-mono) !important; border: 1px solid rgba(0,255,157,0.2) !important;
 }
 
 /* ── PLOTLY CHARTS ──────────────────────────────────────────── */
@@ -321,414 +262,330 @@ div[data-testid="stPlotlyChart"], div[data-testid="stPlotlyChart"] > div,
 .plot-container, .plot-container > svg, .svg-container, .svg-container svg {
   background: transparent !important; background-color: transparent !important;
 }
-.modebar, .modebar-container, .modebar-group {
-  background: var(--bg-raised) !important; border-radius: var(--radius-sm) !important;
-  border: 1px solid var(--border-default) !important;
-}
-.modebar-btn svg path { fill: var(--text-muted) !important; }
-.modebar-btn:hover svg path { fill: var(--text-primary) !important; }
+.modebar, .modebar-container, .modebar-group { background: var(--bg2) !important; border-radius: 8px !important; }
+.modebar-btn svg path { fill: var(--text2) !important; }
+.modebar-btn:hover svg path { fill: var(--cyan) !important; }
 
 /* ── DATAFRAME / TABLES ─────────────────────────────────────── */
 div[data-testid="stDataFrame"], div[data-testid="stDataFrame"] > div,
 .stDataFrame, .stDataFrame > div {
-  background: var(--bg-raised) !important; border: 1px solid var(--border-default) !important;
-  border-radius: var(--radius-lg) !important; overflow: hidden !important;
+  background: var(--bg2) !important; border: 1px solid var(--border) !important;
+  border-radius: 14px !important; overflow: hidden !important;
 }
 [data-testid="stDataFrame"] canvas { filter: invert(1) hue-rotate(180deg); }
-[data-testid="stDataFrame"] > div > div { background: var(--bg-raised) !important; border-radius: var(--radius-lg) !important; }
+[data-testid="stDataFrame"] > div > div { background: #091428 !important; border-radius: 14px !important; }
 [data-testid="stDataFrame"] [role="columnheader"] {
-  background: var(--bg-surface) !important; color: var(--text-muted) !important;
-  font-family: var(--font-mono) !important; font-size: 10px !important;
-  letter-spacing: 1px !important; text-transform: uppercase !important;
+  background: rgba(0,198,255,0.07) !important; color: #00c6ff !important;
+  font-family: 'JetBrains Mono', monospace !important; font-size: 11px !important;
 }
 [data-testid="stDataFrame"] [role="gridcell"] {
-  background: var(--bg-raised) !important; color: var(--text-secondary) !important;
-  border-color: var(--border-subtle) !important;
+  background: #091428 !important; color: #e8f4fd !important;
+  border-color: rgba(0,180,255,0.06) !important;
 }
-table { background: var(--bg-raised) !important; border-radius: var(--radius-lg) !important; width: 100% !important; }
-thead, thead tr { background: var(--bg-surface) !important; }
+table { background: var(--bg2) !important; border-radius: 12px !important; width: 100% !important; }
+thead, thead tr { background: rgba(0,198,255,0.07) !important; }
 th {
-  background: var(--bg-surface) !important; color: var(--text-muted) !important;
-  font-family: var(--font-mono) !important; font-size: 10px !important;
-  letter-spacing: 1.5px !important; text-transform: uppercase !important;
-  padding: 12px 16px !important; border-bottom: 1px solid var(--border-default) !important;
-  font-weight: 500 !important;
+  background: rgba(0,198,255,0.07) !important; color: var(--cyan) !important;
+  font-family: var(--font-body) !important; font-size: 11px !important;
+  letter-spacing: 2px !important; text-transform: uppercase !important;
+  padding: 12px 14px !important; border-bottom: 1px solid var(--border2) !important;
 }
 td {
-  color: var(--text-secondary) !important; background: transparent !important;
-  font-size: 13px !important; padding: 10px 16px !important;
-  border-bottom: 1px solid var(--border-subtle) !important;
-  font-family: var(--font-body) !important;
+  color: var(--text1) !important; background: transparent !important;
+  font-size: 13px !important; padding: 9px 14px !important;
+  border-bottom: 1px solid rgba(0,198,255,0.04) !important;
 }
-tr:hover td { background: rgba(59,130,246,0.03) !important; }
+tr:hover td { background: rgba(0,198,255,0.03) !important; }
 tr:last-child td { border-bottom: none !important; }
 
 /* ── EXPANDER ───────────────────────────────────────────────── */
 div[data-testid="stExpander"], details[data-testid="stExpander"] {
-  background: var(--bg-raised) !important; border: 1px solid var(--border-default) !important;
-  border-radius: var(--radius-md) !important;
+  background: var(--bg2) !important; border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
 }
 details[data-testid="stExpander"] summary {
-  color: var(--text-secondary) !important; font-family: var(--font-body) !important; font-weight: 600 !important;
+  color: var(--cyan) !important; font-family: var(--font-body) !important; font-weight: 700 !important;
 }
 
 /* ── ALERTS ─────────────────────────────────────────────────── */
 div[data-testid="stAlert"] {
-  background: var(--accent-subtle) !important; border: 1px solid var(--accent-border) !important;
-  border-radius: var(--radius-md) !important; color: var(--text-secondary) !important;
+  background: rgba(0,198,255,0.05) !important; border: 1px solid rgba(0,198,255,0.2) !important;
+  border-radius: 12px !important; color: var(--text1) !important;
 }
-div[data-testid="stSuccess"] { background: var(--emerald-subtle) !important; border-color: var(--emerald-border) !important; }
-div[data-testid="stWarning"] { background: var(--gold-subtle) !important; border-color: var(--gold-border) !important; }
-div[data-testid="stError"] { background: var(--rose-subtle) !important; border-color: rgba(244,63,94,0.25) !important; }
+div[data-testid="stSuccess"] { background: rgba(0,255,157,0.06) !important; border-color: rgba(0,255,157,0.25) !important; }
+div[data-testid="stWarning"] { background: rgba(245,197,24,0.06) !important; border-color: rgba(245,197,24,0.25) !important; }
+div[data-testid="stError"] { background: rgba(255,51,85,0.06) !important; border-color: rgba(255,51,85,0.25) !important; }
 
 /* ── DOWNLOAD BUTTON ────────────────────────────────────────── */
 div[data-testid="stDownloadButton"] button {
-  background: var(--emerald-subtle) !important;
-  border: 1px solid var(--emerald-border) !important; color: var(--emerald) !important;
-  font-family: var(--font-body) !important; font-weight: 600 !important;
-  letter-spacing: 0.5px !important; border-radius: var(--radius-md) !important;
-  text-transform: uppercase !important; font-size: 11px !important;
+  background: linear-gradient(135deg, rgba(0,255,157,0.1), rgba(0,255,157,0.04)) !important;
+  border: 1px solid rgba(0,255,157,0.3) !important; color: var(--green) !important;
+  font-family: var(--font-body) !important; font-weight: 700 !important;
+  letter-spacing: 2px !important; border-radius: 10px !important; text-transform: uppercase !important;
 }
 div[data-testid="stDownloadButton"] button:hover {
-  background: rgba(16,185,129,0.14) !important;
-  box-shadow: 0 4px 16px var(--emerald-glow) !important;
+  background: rgba(0,255,157,0.18) !important; box-shadow: 0 0 20px rgba(0,255,157,0.2) !important;
 }
+
+/* ── PROGRESS / SPINNER ─────────────────────────────────────── */
+.stProgress > div > div { background: var(--cyan) !important; }
+div[data-testid="stSpinner"] { color: var(--cyan) !important; }
 
 /* ── SCROLLBAR ──────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar-track { background: var(--bg0); }
+::-webkit-scrollbar-thumb { background: rgba(0,198,255,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,198,255,0.45); }
 
 /* ── DIVIDER ────────────────────────────────────────────────── */
-hr { border-color: var(--border-subtle) !important; }
+hr { border-color: var(--border) !important; }
 
 /* ── INPUT WIDGETS ──────────────────────────────────────────── */
 div[data-baseweb="input"] > div, input[type="text"], input[type="number"], textarea {
-  background: var(--bg-raised) !important; border-color: var(--border-default) !important;
-  color: var(--text-primary) !important; border-radius: var(--radius-md) !important;
-  font-family: var(--font-body) !important;
+  background: var(--bg2) !important; border-color: var(--border2) !important;
+  color: var(--text1) !important; border-radius: 10px !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CUSTOM PREMIUM COMPONENTS
+   CUSTOM COMPONENTS — Matched to joyland_mis_theme_preview.html
    ═══════════════════════════════════════════════════════════════ */
 
-/* Hero Banner */
+/* Hero banner */
 .hero-banner {
   position: relative;
-  background: var(--bg-base);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  padding: 40px 48px;
-  margin-bottom: 28px;
+  background: linear-gradient(135deg, #02060f 0%, #080f20 50%, #02060f 100%);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 32px 40px;
+  margin-bottom: 24px;
+  text-align: center;
   overflow: hidden;
 }
 .hero-banner::before {
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 80% 50% at -10% 0%, rgba(59,130,246,0.10) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 80% at 110% 100%, rgba(245,158,11,0.07) 0%, transparent 60%);
+    radial-gradient(ellipse 60% 40% at 20% 0%, rgba(0,198,255,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(245,197,24,0.06) 0%, transparent 70%);
 }
-.hero-banner-inner {
-  position: relative; z-index: 1;
-  display: flex; align-items: center; justify-content: space-between; gap: 24px;
-}
-.hero-left {}
-.hero-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10px; letter-spacing: 3px; color: var(--accent-primary);
-  text-transform: uppercase; font-weight: 500; margin-bottom: 10px;
-  display: flex; align-items: center; gap: 8px;
-}
-.hero-eyebrow::before {
+.hero-banner::after {
   content: '';
-  display: inline-block; width: 20px; height: 1px;
-  background: var(--accent-primary); opacity: 0.7;
+  position: absolute; top: -1px; left: 20%; right: 20%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  border-radius: 2px;
 }
 .hero-title {
   font-family: var(--font-display) !important;
-  font-size: 38px !important; font-weight: 800 !important;
-  letter-spacing: -1px !important;
-  color: var(--text-primary) !important;
-  line-height: 1 !important; margin: 0 0 10px !important;
-}
-.hero-title span {
-  background: linear-gradient(135deg, #60a5fa 0%, #f59e0b 100%);
+  font-size: 32px !important; font-weight: 900 !important;
+  letter-spacing: 6px !important;
+  background: linear-gradient(135deg, #00d4ff 0%, #f5c518 45%, #00ff9d 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background-clip: text; margin: 0 0 8px 0; position: relative;
 }
-.hero-sub {
-  font-family: var(--font-body); font-size: 14px;
-  color: var(--text-muted); font-weight: 400; letter-spacing: 0.2px;
-  line-height: 1.5;
+.hero-subtitle {
+  font-family: var(--font-body) !important; color: var(--text2) !important;
+  font-size: 11px !important; letter-spacing: 5px !important;
+  text-transform: uppercase !important; font-weight: 600 !important;
+  position: relative; margin-top: 6px;
 }
-.hero-right {
-  display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0;
-}
-.hero-stat {
-  text-align: right;
-}
-.hero-stat-val {
-  font-family: var(--font-display); font-size: 22px; font-weight: 800;
-  color: var(--text-primary); line-height: 1;
-}
-.hero-stat-label {
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px;
-  color: var(--text-muted); text-transform: uppercase; margin-top: 2px;
-}
-.status-chip {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: var(--emerald-subtle); border: 1px solid var(--emerald-border);
-  border-radius: 100px; padding: 5px 14px;
-  font-family: var(--font-mono); font-size: 9px;
-  color: var(--emerald); letter-spacing: 2px; text-transform: uppercase;
-}
-.pulse {
-  width: 6px; height: 6px; background: var(--emerald);
-  border-radius: 50%; animation: pulse-anim 2s ease-in-out infinite;
-}
-@keyframes pulse-anim {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
-  50% { opacity: 0.8; transform: scale(1.1); box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+.hero-badge {
+  display: inline-block;
+  background: rgba(0,198,255,0.10);
+  border: 1px solid rgba(0,198,255,0.30);
+  border-radius: 20px; padding: 4px 16px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--cyan); letter-spacing: 2px; margin-top: 12px;
+  font-weight: 700; position: relative;
 }
 
-/* KPI Cards */
-.kpi-row {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 28px;
-}
+/* KPI Cards — matching HTML preview kpi classes */
+.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
 .kpi-card {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg); padding: 20px 18px;
+  background: linear-gradient(135deg, rgba(9,20,40,0.95), rgba(6,13,30,0.95));
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 18px 14px;
   position: relative; overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: default;
+  transition: transform .3s, box-shadow .3s, border-color .3s;
+  cursor: pointer;
 }
 .kpi-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0,198,255,0.15);
+  border-color: rgba(0,198,255,0.4);
 }
-.kpi-card::after {
-  content: '';
-  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  border-radius: 16px 16px 0 0;
 }
-.kpi-card.blue { border-top: 2px solid var(--accent-primary); }
-.kpi-card.blue:hover { border-color: var(--accent-primary); box-shadow: 0 8px 30px rgba(59,130,246,0.15); }
-.kpi-card.gold { border-top: 2px solid var(--gold); }
-.kpi-card.gold:hover { box-shadow: 0 8px 30px rgba(245,158,11,0.12); }
-.kpi-card.green { border-top: 2px solid var(--emerald); }
-.kpi-card.green:hover { box-shadow: 0 8px 30px rgba(16,185,129,0.12); }
-.kpi-card.violet { border-top: 2px solid var(--violet); }
-.kpi-card.violet:hover { box-shadow: 0 8px 30px rgba(139,92,246,0.12); }
-.kpi-card.amber { border-top: 2px solid var(--amber); }
-.kpi-card.amber:hover { box-shadow: 0 8px 30px rgba(249,115,22,0.12); }
-
-.kpi-icon {
-  font-size: 18px; margin-bottom: 12px; display: block;
-  opacity: 0.8;
-}
+.kpi-card.cyan::before { background: linear-gradient(90deg, transparent, #00c6ff, transparent); }
+.kpi-card.gold::before { background: linear-gradient(90deg, transparent, #f5c518, transparent); }
+.kpi-card.green::before { background: linear-gradient(90deg, transparent, #00ff9d, transparent); }
+.kpi-card.purple::before { background: linear-gradient(90deg, transparent, #c084fc, transparent); }
+.kpi-card.orange::before { background: linear-gradient(90deg, transparent, #ff9432, transparent); }
 .kpi-label {
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px;
-  color: var(--text-muted); text-transform: uppercase; font-weight: 500;
-  margin-bottom: 6px;
+  font-size: 10px; letter-spacing: 2px; color: var(--text2);
+  text-transform: uppercase; font-weight: 700; margin-bottom: 8px;
+  font-family: var(--font-body);
 }
-.kpi-value {
-  font-family: var(--font-display); font-size: 22px; font-weight: 800;
-  line-height: 1; margin-bottom: 8px; letter-spacing: -0.5px;
+.kpi-val {
+  font-family: var(--font-display); font-size: 18px; font-weight: 900; line-height: 1;
 }
-.kpi-card.blue .kpi-value { color: var(--accent-primary); }
-.kpi-card.gold .kpi-value { color: var(--gold); }
-.kpi-card.green .kpi-value { color: var(--emerald); }
-.kpi-card.violet .kpi-value { color: var(--violet); }
-.kpi-card.amber .kpi-value { color: var(--amber); }
+.kpi-card.cyan .kpi-val { color: var(--cyan); text-shadow: 0 0 20px rgba(0,198,255,0.4); }
+.kpi-card.gold .kpi-val { color: var(--gold); text-shadow: 0 0 20px rgba(245,197,24,0.4); }
+.kpi-card.green .kpi-val { color: var(--green); text-shadow: 0 0 20px rgba(0,255,157,0.4); }
+.kpi-card.purple .kpi-val { color: var(--purple); text-shadow: 0 0 20px rgba(192,132,252,0.4); }
+.kpi-card.orange .kpi-val { color: var(--orange); text-shadow: 0 0 20px rgba(255,148,50,0.4); }
 .kpi-delta {
-  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
-  display: inline-flex; align-items: center; gap: 3px;
-  padding: 2px 8px; border-radius: 100px;
+  font-size: 10px; font-weight: 700; margin-top: 8px;
+  display: inline-block; padding: 2px 8px; border-radius: 12px;
+  font-family: var(--font-body);
 }
-.kpi-delta.up {
-  background: var(--emerald-subtle); color: var(--emerald);
-  border: 1px solid var(--emerald-border);
+.kpi-delta.pos { background: rgba(0,255,157,0.12); color: var(--green); border: 1px solid rgba(0,255,157,0.3); }
+.kpi-delta.neg { background: rgba(255,51,85,0.12); color: var(--red); border: 1px solid rgba(255,51,85,0.3); }
+.kpi-delta.neu { background: rgba(0,198,255,0.10); color: var(--cyan); border: 1px solid rgba(0,198,255,0.25); }
+
+/* Section header */
+.section-header {
+  font-family: var(--font-display) !important;
+  font-size: 12px !important; font-weight: 700 !important;
+  letter-spacing: 3px !important; color: var(--cyan) !important;
+  border-bottom: 1px solid rgba(0,198,255,0.12);
+  padding-bottom: 8px; margin: 20px 0 14px;
+  text-transform: uppercase;
+  text-shadow: 0 0 16px rgba(0,198,255,0.35);
+  display: flex; align-items: center; gap: 10px;
 }
-.kpi-delta.down {
-  background: var(--rose-subtle); color: var(--rose);
-  border: 1px solid rgba(244,63,94,0.2);
-}
-.kpi-delta.neutral {
-  background: var(--accent-subtle); color: var(--accent-primary);
-  border: 1px solid var(--accent-border);
+.section-header::before {
+  content: '◈'; color: var(--cyan);
+  text-shadow: 0 0 10px rgba(0,198,255,0.6);
 }
 
-/* Section Header */
-.section-hdr {
-  display: flex; align-items: center; gap: 12px;
-  margin: 28px 0 16px;
-}
-.section-hdr-line {
-  flex: 1; height: 1px;
-  background: linear-gradient(90deg, var(--border-default), transparent);
-}
-.section-hdr-text {
-  font-family: var(--font-mono) !important;
-  font-size: 10px !important; font-weight: 500 !important;
-  letter-spacing: 2.5px !important; color: var(--text-muted) !important;
-  text-transform: uppercase !important; white-space: nowrap;
-}
-
-/* AI Insight Card */
+/* AI Insight card */
 .insight-card {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-default);
-  border-left: 3px solid var(--accent-primary);
-  border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 24px;
-  position: relative;
+  background: linear-gradient(135deg, rgba(192,132,252,0.08), rgba(0,198,255,0.05));
+  border: 1px solid rgba(192,132,252,0.25);
+  border-radius: 16px; padding: 16px 20px; margin-bottom: 20px;
+  position: relative; overflow: hidden;
 }
-.insight-label {
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px;
-  color: var(--accent-primary); text-transform: uppercase;
-  margin-bottom: 8px; font-weight: 500; display: block;
+.insight-card::before {
+  content: '◈  AI INSIGHT';
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--purple); letter-spacing: 3px;
+  display: block; margin-bottom: 8px; font-weight: 700;
 }
-.insight-text {
-  font-size: 13px; color: var(--text-secondary); line-height: 1.65;
-  font-weight: 400;
-}
-.insight-text strong { color: var(--text-primary) !important; font-weight: 600; }
-
-/* Chart Container */
-.chart-wrap {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg); padding: 20px;
-  margin-bottom: 16px;
-}
-.chart-title {
-  font-family: var(--font-display); font-size: 13px; font-weight: 700;
-  color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.2px;
-}
-.chart-sub {
-  font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
-  letter-spacing: 1px; margin-bottom: 16px;
+.insight-card p { font-size: 13px; color: #ddeeff; line-height: 1.7; font-weight: 500; }
+.insight-card strong { color: #fff; font-weight: 800; }
+.insight-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--purple), transparent);
 }
 
-/* Data Table Pro */
-.pro-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); }
-.pro-table thead tr { background: var(--bg-surface) !important; }
-.pro-table th {
-  font-family: var(--font-mono) !important; font-size: 9px !important;
-  letter-spacing: 1.5px !important; color: var(--text-muted) !important;
-  text-transform: uppercase !important; padding: 12px 16px !important;
-  border-bottom: 1px solid var(--border-default) !important;
-  font-weight: 500 !important; text-align: left !important;
+/* Status live dot */
+.status-live {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--green); letter-spacing: 2px;
 }
-.pro-table td {
-  padding: 11px 16px !important; font-size: 13px !important;
-  color: var(--text-secondary) !important;
-  border-bottom: 1px solid var(--border-subtle) !important;
-  font-family: var(--font-body) !important;
+.pulse-dot {
+  width: 8px; height: 8px; background: var(--green);
+  border-radius: 50%; display: inline-block;
+  animation: pulsate 1.5s infinite;
 }
-.pro-table tr:hover td { background: rgba(59,130,246,0.025) !important; }
-.pro-table tr:last-child td { border-bottom: none !important; }
+@keyframes pulsate {
+  0%, 100% { opacity:1; transform:scale(1); box-shadow: 0 0 0 0 rgba(0,255,157,0.4); }
+  50% { opacity:.8; transform:scale(1.15); box-shadow: 0 0 0 6px rgba(0,255,157,0); }
+}
+
+/* Forecast tag */
+.forecast-tag {
+  background: linear-gradient(135deg, rgba(245,197,24,0.14), rgba(245,197,24,0.04));
+  border: 1px solid rgba(245,197,24,0.28);
+  border-radius: 8px; padding: 3px 12px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--gold); letter-spacing: 2px;
+  display: inline-block; margin-right: 8px;
+}
+
+/* Bar chart (HTML preview style) */
+.bar-chart { margin: 8px 0 16px; }
+.bar-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.bar-label {
+  font-family: var(--font-mono); font-size: 10px; color: var(--text2);
+  width: 28px; text-align: right; flex-shrink: 0;
+}
+.bar-track {
+  flex: 1; background: rgba(0,180,255,0.06);
+  border-radius: 4px; height: 22px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; border-radius: 4px;
+  display: flex; align-items: center; padding-left: 8px;
+  transition: width 0.6s ease;
+}
+.bar-fill span {
+  font-family: var(--font-mono); font-size: 9px;
+  font-weight: 700; color: rgba(255,255,255,0.9);
+}
+
+/* Data table (HTML preview style) */
+.data-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); }
+.data-table thead tr { background: rgba(0,198,255,0.07) !important; }
+.data-table th {
+  font-size: 10px; letter-spacing: 2px; color: var(--cyan);
+  text-transform: uppercase; padding: 10px 12px;
+  border-bottom: 1px solid var(--border2); font-weight: 700;
+}
+.data-table td {
+  padding: 9px 12px; font-size: 13px; color: var(--text1);
+  border-bottom: 1px solid rgba(0,198,255,0.04);
+}
+.data-table tr:hover td { background: rgba(0,198,255,0.03) !important; }
 .badge {
-  display: inline-flex; align-items: center; padding: 3px 10px;
-  border-radius: 100px; font-family: var(--font-mono);
-  font-size: 10px; font-weight: 500;
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
 }
-.badge.good { background: var(--emerald-subtle); color: var(--emerald); border: 1px solid var(--emerald-border); }
-.badge.warn { background: var(--gold-subtle); color: var(--gold); border: 1px solid var(--gold-border); }
-.badge.bad  { background: var(--rose-subtle); color: var(--rose); border: 1px solid rgba(244,63,94,0.22); }
+.badge.good { background: rgba(0,255,157,0.12); color: var(--green); border: 1px solid rgba(0,255,157,0.3); }
+.badge.warn { background: rgba(245,197,24,0.12); color: var(--gold); border: 1px solid rgba(245,197,24,0.3); }
+.badge.bad  { background: rgba(255,51,85,0.12); color: var(--red); border: 1px solid rgba(255,51,85,0.3); }
 
-/* Forecast Box */
-.forecast-panel {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-default);
-  border-top: 2px solid var(--gold);
-  border-radius: var(--radius-lg); padding: 24px;
-  margin-bottom: 16px;
+/* Forecast box (HTML preview style) */
+.forecast-box {
+  background: linear-gradient(135deg, rgba(245,197,24,0.06), rgba(245,197,24,0.02));
+  border: 1px solid rgba(245,197,24,0.25);
+  border-radius: 16px; padding: 20px; margin-bottom: 16px;
 }
-.forecast-label {
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px;
-  color: var(--gold); text-transform: uppercase; margin-bottom: 16px;
-  display: block; font-weight: 500;
+.forecast-box .fhead {
+  font-family: var(--font-display); font-size: 11px;
+  letter-spacing: 3px; color: var(--gold); margin-bottom: 14px;
 }
-.forecast-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.fm-card {
-  background: var(--bg-surface); border-radius: var(--radius-md);
-  padding: 16px; border: 1px solid var(--border-subtle);
+.forecast-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.forecast-metric {
+  background: rgba(0,0,0,0.3); border-radius: 10px; padding: 14px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
-.fm-label {
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px;
-  color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 500;
-}
-.fm-value {
-  font-family: var(--font-display); font-size: 24px; font-weight: 800;
-  letter-spacing: -0.5px; margin-bottom: 4px; line-height: 1;
-}
-.fm-range {
-  font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
-}
-.fm-rev .fm-value { color: var(--accent-primary); }
-.fm-ff .fm-value { color: var(--gold); }
-.fm-modifiers {
-  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-subtle);
-  font-family: var(--font-body); font-size: 12px; color: var(--text-muted);
-  line-height: 1.6;
-}
-
-/* Event Calendar */
-.event-calendar {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg); padding: 20px;
-  margin-top: 16px;
-}
-.ec-title {
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px;
-  color: var(--gold); text-transform: uppercase; margin-bottom: 14px; font-weight: 500;
-}
-.ec-row {
-  display: flex; gap: 12px; align-items: baseline;
-  padding: 7px 0; border-bottom: 1px solid var(--border-subtle);
-  font-size: 12px;
-}
-.ec-row:last-child { border-bottom: none; }
-.ec-key {
-  font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);
-  font-weight: 500; min-width: 160px; flex-shrink: 0;
-}
-.ec-val { color: var(--text-secondary); font-size: 11px; font-family: var(--font-mono); }
-
-/* Footer */
-.footer-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 0 8px; margin-top: 32px;
-  border-top: 1px solid var(--border-subtle);
-}
-.footer-brand {
-  font-family: var(--font-display); font-size: 13px; font-weight: 700;
-  color: var(--text-muted);
-}
-.footer-brand span { color: var(--accent-primary); }
-.footer-meta {
-  font-family: var(--font-mono); font-size: 10px; color: var(--text-faint);
-  letter-spacing: 1px;
-}
+.forecast-metric .fm-label { font-size: 10px; letter-spacing: 1px; color: var(--text2); margin-bottom: 6px; font-weight: 700; }
+.forecast-metric .fm-val { font-family: var(--font-display); font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+.forecast-metric .fm-range { font-family: var(--font-mono); font-size: 9px; color: var(--text3); }
+.forecast-metric.rev .fm-val { color: var(--cyan); }
+.forecast-metric.ff  .fm-val { color: var(--gold); }
 </style>
 """
 
 DATAFRAME_FIX = """
 <style>
 [data-testid="stDataFrame"] canvas { filter: invert(1) hue-rotate(180deg); }
-[data-testid="stDataFrame"] > div > div { background: var(--bg-raised, #111827) !important; border-radius: 12px !important; }
+[data-testid="stDataFrame"] > div > div { background: #091428 !important; border-radius: 14px !important; }
 [data-testid="stDataFrame"] [role="columnheader"] {
-  background: rgba(17,24,39,0.9) !important; color: #64748b !important;
-  font-family: 'DM Mono', monospace !important; font-size: 10px !important;
-  letter-spacing: 1px !important; text-transform: uppercase !important;
+  background: rgba(0,198,255,0.07) !important; color: #00c6ff !important;
+  font-family: 'JetBrains Mono', monospace !important; font-size: 11px !important;
 }
 [data-testid="stDataFrame"] [role="gridcell"] {
-  background: #111827 !important; color: #94a3b8 !important;
-  border-color: rgba(148,163,184,0.06) !important;
+  background: #091428 !important; color: #e8f4fd !important;
+  border-color: rgba(0,180,255,0.06) !important;
 }
 </style>
 """
@@ -815,7 +672,7 @@ def compute_pakistan_multiplier(month_num, year):
     if month_num == 8:  mult *= 1.08; notes.append("🇵🇰 Independence Day +8%")
     if month_num == 12: mult *= 1.10; notes.append("🎆 Year-End Holidays +10%")
     if month_num == 1:  mult *= 1.05; notes.append("🎊 New Year +5%")
-    return mult, " · ".join(notes) if notes else "Standard Season"
+    return mult, " | ".join(notes) if notes else "📈 Standard Season"
 
 
 def generate_advanced_forecast(df, m_num, y_num, metric_col, project=None):
@@ -860,72 +717,42 @@ def generate_advanced_forecast(df, m_num, y_num, metric_col, project=None):
 
 
 # ═══════════════════════════════════════════════════════════════
-#  PLOTLY CONFIG — Ultra Premium
+#  PLOTLY CONFIG
 # ═══════════════════════════════════════════════════════════════
-
-# Premium color palette
-C = {
-    'blue':   '#3b82f6',
-    'gold':   '#f59e0b',
-    'emerald':'#10b981',
-    'rose':   '#f43f5e',
-    'violet': '#8b5cf6',
-    'amber':  '#f97316',
-    'sky':    '#38bdf8',
-    'lime':   '#84cc16',
-}
-COLORS = list(C.values())
-
-PROJECT_COLORS = {
-    'Joyland Fortress': C['blue'],
-    'JAP-OD':           C['gold'],
-    'SS-PKG':           C['emerald'],
-    'SS-FSM':           C['rose'],
-    'SS-JAP':           C['violet'],
-    'B-PKG':            C['amber'],
-    'B-EMP':            C['sky'],
-}
-
 PLOTLY_LAYOUT = dict(
     template="plotly_dark",
     paper_bgcolor='rgba(0,0,0,0)',
-    plot_bgcolor='rgba(17,24,39,0.5)',
-    font=dict(family='Space Grotesk, sans-serif', color='#94a3b8', size=12),
-    title_font=dict(family='Syne, sans-serif', size=14, color='#f1f5f9'),
+    plot_bgcolor='rgba(9,20,40,0.6)',
+    font=dict(family='Rajdhani, sans-serif', color='#e8f4fd', size=13),
+    title_font=dict(family='Orbitron, monospace', size=15, color='#00c6ff'),
     legend=dict(
-        bgcolor='rgba(17,24,39,0.9)',
-        bordercolor='rgba(148,163,184,0.12)',
-        borderwidth=1,
-        font=dict(size=12, color='#94a3b8', family='Space Grotesk'),
-        itemsizing='constant',
+        bgcolor='rgba(6,13,30,0.9)', bordercolor='rgba(0,180,255,0.2)',
+        borderwidth=1, font=dict(size=13, color='#e8f4fd')
     ),
     xaxis=dict(
-        gridcolor='rgba(148,163,184,0.05)',
-        linecolor='rgba(148,163,184,0.10)',
-        zerolinecolor='rgba(148,163,184,0.08)',
-        tickfont=dict(family='DM Mono', size=10, color='#64748b'),
-        title_font=dict(family='Space Grotesk', size=12, color='#64748b'),
-        showspikes=True,
-        spikecolor='rgba(59,130,246,0.3)',
-        spikethickness=1,
-        spikedash='dot',
+        gridcolor='rgba(0,180,255,0.08)', linecolor='rgba(0,180,255,0.15)',
+        zerolinecolor='rgba(0,180,255,0.12)',
+        tickfont=dict(family='JetBrains Mono', size=11, color='#8ab4d4'),
+        title_font=dict(family='Rajdhani', size=13, color='#5a88aa')
     ),
     yaxis=dict(
-        gridcolor='rgba(148,163,184,0.05)',
-        linecolor='rgba(148,163,184,0.10)',
-        zerolinecolor='rgba(148,163,184,0.08)',
-        tickfont=dict(family='DM Mono', size=10, color='#64748b'),
-        title_font=dict(family='Space Grotesk', size=12, color='#64748b'),
+        gridcolor='rgba(0,180,255,0.08)', linecolor='rgba(0,180,255,0.15)',
+        zerolinecolor='rgba(0,180,255,0.12)',
+        tickfont=dict(family='JetBrains Mono', size=11, color='#8ab4d4'),
+        title_font=dict(family='Rajdhani', size=13, color='#5a88aa')
     ),
-    margin=dict(l=56, r=32, t=60, b=56),
+    margin=dict(l=60, r=40, t=70, b=60),
     hoverlabel=dict(
-        bgcolor='rgba(17,24,39,0.97)',
-        bordercolor='rgba(59,130,246,0.35)',
-        font=dict(family='DM Mono', size=11, color='#f1f5f9'),
-        namelength=-1,
-    ),
-    hovermode='x unified',
+        bgcolor='rgba(9,20,40,0.95)', bordercolor='rgba(0,198,255,0.3)',
+        font=dict(family='JetBrains Mono', size=12, color='#e8f4fd')
+    )
 )
+
+COLORS = ['#00c6ff','#f5c518','#00ff9d','#ff4466','#b660f5','#ff8c42','#4ecdc4']
+PROJECT_COLORS = {
+    'Joyland Fortress':'#00c6ff','JAP-OD':'#f5c518','SS-PKG':'#00ff9d',
+    'SS-FSM':'#ff4466','SS-JAP':'#b660f5','B-PKG':'#ff8c42','B-EMP':'#4ecdc4',
+}
 
 def fmt_rev(v):
     if v >= 1e9: return f"Rs. {v/1e9:.2f}B"
@@ -934,44 +761,36 @@ def fmt_rev(v):
 
 
 # ═══════════════════════════════════════════════════════════════
-#  CHARTS — Ultra Premium
+#  CHARTS
 # ═══════════════════════════════════════════════════════════════
-
 def chart_gauge(actual, target, title="Revenue Achievement"):
     pct = min((actual/target*100) if target > 0 else 0, 150)
-    if pct >= 100: color, bg = C['emerald'], 'rgba(16,185,129,0.08)'
-    elif pct >= 75: color, bg = C['gold'], 'rgba(245,158,11,0.08)'
-    else: color, bg = C['rose'], 'rgba(244,63,94,0.08)'
-
+    color = '#00ff9d' if pct >= 100 else '#f5c518' if pct >= 75 else '#ff4466'
     fig = go.Figure(go.Indicator(
         mode="gauge+number+delta", value=pct,
-        delta={'reference':100,'suffix':'%','font':{'size':14,'family':'DM Mono'}},
-        number={'suffix':'%','font':{'size':40,'family':'Syne','color':color}},
-        title={'text':title,'font':{'size':13,'family':'Space Grotesk','color':'#64748b'}},
+        delta={'reference':100,'suffix':'%'},
+        number={'suffix':'%','font':{'size':36,'family':'Orbitron','color':color}},
+        title={'text':title,'font':{'size':14,'family':'Orbitron','color':'#7a9cc0'}},
         gauge={
-            'axis':{
-                'range':[0,150],'tickcolor':'#475569','tickwidth':1,
-                'tickvals':[0,50,75,100,125,150],
-                'ticktext':['0%','50%','75%','100%','125%','150%'],
-                'tickfont':{'family':'DM Mono','size':10,'color':'#475569'},
-            },
-            'bar':{'color':color,'thickness':0.22},
-            'bgcolor':bg,'borderwidth':0,
-            'threshold':{'line':{'color':'rgba(148,163,184,0.4)','width':2},'thickness':0.75,'value':100},
+            'axis':{'range':[0,150],'tickcolor':'#7a9cc0','tickwidth':1,
+                    'tickvals':[0,25,50,75,100,125,150],
+                    'ticktext':['0%','25%','50%','75%','100%','125%','150%']},
+            'bar':{'color':color,'thickness':0.28},
+            'bgcolor':'rgba(13,31,60,0.8)','borderwidth':0,
+            'threshold':{'line':{'color':'#00c6ff','width':3},'thickness':0.75,'value':100},
             'steps':[
-                {'range':[0,75],'color':'rgba(244,63,94,0.04)'},
-                {'range':[75,100],'color':'rgba(245,158,11,0.04)'},
-                {'range':[100,150],'color':'rgba(16,185,129,0.06)'}
+                {'range':[0,75],'color':'rgba(255,68,102,0.1)'},
+                {'range':[75,100],'color':'rgba(245,197,24,0.1)'},
+                {'range':[100,150],'color':'rgba(0,255,157,0.1)'}
             ]
         }
     ))
     fig.add_annotation(
-        text=f"<b>Actual:</b> {fmt_rev(actual)}<br><b>Target:</b> {fmt_rev(target)}",
-        x=0.5, y=0.10, xref='paper', yref='paper', showarrow=False,
-        font=dict(family='DM Mono', size=11, color='#64748b'), align='center'
+        text=f"Actual: {fmt_rev(actual)}<br>Target: {fmt_rev(target)}",
+        x=0.5, y=0.15, xref='paper', yref='paper', showarrow=False,
+        font=dict(family='JetBrains Mono', size=11, color='#7a9cc0'), align='center'
     )
-    fig.update_layout(**PLOTLY_LAYOUT, height=360,
-                      paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+    fig.update_layout(**PLOTLY_LAYOUT, height=340)
     return fig
 
 
@@ -979,29 +798,21 @@ def chart_trend_advanced(df, col, color, title, show_annotations=True):
     df = df.sort_values('Date_Obj')
     df_valid = df[df[col] > 0].dropna(subset=[col])
     fig = go.Figure()
-
-    # Gradient area fill
     r, g, b = int(color[1:3],16), int(color[3:5],16), int(color[5:7],16)
     fig.add_trace(go.Scatter(
         x=df_valid['Date_Obj'], y=df_valid[col],
-        fill='tozeroy',
-        fillcolor=f'rgba({r},{g},{b},0.06)',
-        line=dict(color=color, width=2.5, shape='spline', smoothing=0.8),
-        name=col, mode='lines+markers',
-        marker=dict(size=5, color=color, line=dict(color='white', width=1.5), symbol='circle'),
-        hovertemplate='<b>%{x|%B %Y}</b><br>' + col + ': <b>%{y:,.0f}</b><extra></extra>'
+        fill='tozeroy', fillcolor=f'rgba({r},{g},{b},0.08)',
+        line=dict(color=color, width=2.5), name=col,
+        mode='lines+markers', marker=dict(size=6,color=color,line=dict(color='white',width=1)),
+        hovertemplate='<b>%{x|%B %Y}</b><br>'+col+': <b>%{y:,.0f}</b><extra></extra>'
     ))
-
-    # 3-month moving average
     if len(df_valid) >= 6:
         ma = df_valid[col].rolling(3, min_periods=1).mean()
         fig.add_trace(go.Scatter(
             x=df_valid['Date_Obj'], y=ma,
-            line=dict(color='rgba(245,158,11,0.6)', width=1.5, dash='dot'),
-            name='3M Moving Avg',
+            line=dict(color='#f5c518',width=1.5,dash='dot'), name='3M Avg',
             hovertemplate='3M Avg: <b>%{y:,.0f}</b><extra></extra>'
         ))
-
     if show_annotations and len(df_valid) > 0:
         max_idx = df_valid[col].idxmax()
         min_idx = df_valid[col].idxmin()
@@ -1009,48 +820,37 @@ def chart_trend_advanced(df, col, color, title, show_annotations=True):
         min_row = df_valid.loc[min_idx]
         fig.add_annotation(
             x=max_row['Date_Obj'], y=max_row[col],
-            text=f"Peak<br>{fmt_rev(max_row[col])}<br>{max_row['Date_Obj'].strftime('%b %Y')}",
-            showarrow=True, arrowhead=2, arrowcolor=C['emerald'], arrowwidth=1.5,
-            bgcolor='rgba(16,185,129,0.10)', bordercolor=C['emerald'],
-            font=dict(family='DM Mono', size=10, color=C['emerald']), ax=0, ay=-48,
-            borderwidth=1, borderpad=6, opacity=0.9
+            text=f"🏆 Peak<br>{fmt_rev(max_row[col])}<br>{max_row['Date_Obj'].strftime('%b %Y')}",
+            showarrow=True, arrowhead=2, arrowcolor='#00ff9d',
+            bgcolor='rgba(0,255,157,0.15)', bordercolor='#00ff9d',
+            font=dict(family='JetBrains Mono',size=10,color='#00ff9d'), ax=0, ay=-50
         )
         fig.add_annotation(
             x=min_row['Date_Obj'], y=min_row[col],
-            text=f"Low<br>{fmt_rev(min_row[col])}<br>{min_row['Date_Obj'].strftime('%b %Y')}",
-            showarrow=True, arrowhead=2, arrowcolor=C['rose'], arrowwidth=1.5,
-            bgcolor='rgba(244,63,94,0.10)', bordercolor=C['rose'],
-            font=dict(family='DM Mono', size=10, color=C['rose']), ax=0, ay=48,
-            borderwidth=1, borderpad=6, opacity=0.9
+            text=f"📉 Low<br>{fmt_rev(min_row[col])}<br>{min_row['Date_Obj'].strftime('%b %Y')}",
+            showarrow=True, arrowhead=2, arrowcolor='#ff4466',
+            bgcolor='rgba(255,68,102,0.15)', bordercolor='#ff4466',
+            font=dict(family='JetBrains Mono',size=10,color='#ff4466'), ax=0, ay=50
         )
-
-    fig.update_layout(**PLOTLY_LAYOUT, title=title, height=440,
-                      xaxis_title="", yaxis_title=col)
+    fig.update_layout(**PLOTLY_LAYOUT, title=title, height=420,
+                      xaxis_title="Date", yaxis_title=col)
     return fig
 
 
 def chart_bar_labeled(df, x_col, y_cols, title, x_label="", y_label=""):
     fig = go.Figure()
-    color_list = [C['blue'], C['gold'], C['emerald'], C['violet']]
     for i, c in enumerate(y_cols):
         if c not in df.columns: continue
-        color = color_list[i % len(color_list)]
-        r, g, b = int(color[1:3],16), int(color[3:5],16), int(color[5:7],16)
+        color = COLORS[i % len(COLORS)]
         fig.add_trace(go.Bar(
-            x=df[x_col], y=df[c], name=c,
-            marker=dict(
-                color=f'rgba({r},{g},{b},0.80)',
-                line=dict(color=color, width=1.5),
-                cornerradius=4,
-            ),
+            x=df[x_col], y=df[c], name=c, marker_color=color, marker_line_width=0,
             text=[fmt_rev(v) if v > 0 else '' for v in df[c]],
-            textposition='outside',
-            textfont=dict(family='DM Mono', size=10, color='#64748b'),
+            textposition='outside', textfont=dict(family='JetBrains Mono',size=10,color='#a8d4f5'),
             hovertemplate=f'<b>%{{x}}</b><br>{c}: <b>%{{y:,.0f}}</b><extra></extra>'
         ))
-    fig.update_layout(**PLOTLY_LAYOUT, barmode='group', title=title, height=440,
+    fig.update_layout(**PLOTLY_LAYOUT, barmode='group', title=title, height=420,
                       xaxis_title=x_label, yaxis_title=y_label,
-                      bargap=0.3, bargroupgap=0.08)
+                      uniformtext_minsize=8, uniformtext_mode='hide')
     return fig
 
 
@@ -1060,52 +860,36 @@ def chart_yearly_bar(df):
     fig = go.Figure()
     fig.add_trace(go.Bar(
         x=yearly['Year'].astype(str), y=yearly['Actual Revenue'],
-        name='Actual Revenue',
-        marker=dict(
-            color=[f'rgba(59,130,246,{0.5 + 0.5*(v/yearly["Actual Revenue"].max()):.2f})' for v in yearly['Actual Revenue']],
-            line=dict(color=C['blue'], width=1.5),
-            cornerradius=4,
-        ),
+        name='Actual Revenue', marker_color='#00c6ff', marker_line_width=0,
         text=[fmt_rev(v) for v in yearly['Actual Revenue']],
-        textposition='outside',
-        textfont=dict(family='DM Mono', size=10, color='#64748b'),
-        hovertemplate='<b>%{x}</b><br>Actual: <b>%{y:,.0f}</b><extra></extra>'
+        textposition='outside', textfont=dict(family='JetBrains Mono',size=10,color='#00c6ff'),
+        hovertemplate='<b>Year %{x}</b><br>Revenue: <b>%{y:,.0f}</b><extra></extra>'
     ))
     fig.add_trace(go.Bar(
         x=yearly['Year'].astype(str), y=yearly['Target revenue'],
-        name='Target Revenue',
-        marker=dict(
-            color='rgba(245,158,11,0.15)',
-            line=dict(color=C['gold'], width=1.5),
-            cornerradius=4,
-        ),
-        hovertemplate='<b>%{x}</b><br>Target: <b>%{y:,.0f}</b><extra></extra>'
+        name='Target Revenue', marker_color='rgba(245,197,24,0.4)',
+        marker_line=dict(color='#f5c518',width=1),
+        hovertemplate='<b>Year %{x}</b><br>Target: <b>%{y:,.0f}</b><extra></extra>'
     ))
     yearly['ach'] = np.where(yearly['Target revenue'] > 0,
                               yearly['Actual Revenue']/yearly['Target revenue']*100, 0)
     fig.add_trace(go.Scatter(
         x=yearly['Year'].astype(str), y=yearly['ach'],
         name='Achievement %', yaxis='y2',
-        line=dict(color=C['emerald'], width=2, shape='spline', smoothing=0.8),
-        mode='lines+markers+text',
-        marker=dict(size=7, color=C['emerald'], line=dict(color='white', width=1.5)),
+        line=dict(color='#00ff9d',width=2.5,dash='dot'), mode='lines+markers+text',
+        marker=dict(size=8,color='#00ff9d'),
         text=[f"{v:.0f}%" for v in yearly['ach']], textposition='top center',
-        textfont=dict(family='DM Mono', size=10, color=C['emerald']),
+        textfont=dict(family='JetBrains Mono',size=10,color='#00ff9d'),
         hovertemplate='Achievement: <b>%{y:.1f}%</b><extra></extra>'
     ))
     fig.update_layout(
         **PLOTLY_LAYOUT, barmode='group',
-        title="Annual Revenue: Actual vs Target",
-        height=460, xaxis_title="", yaxis_title="Revenue (PKR)",
-        bargap=0.35, bargroupgap=0.1,
-        yaxis2=dict(
-            overlaying='y', side='right',
-            title='Achievement %',
-            gridcolor='transparent',
-            tickformat='.0f', ticksuffix='%',
-            tickfont=dict(family='DM Mono', size=10, color=C['emerald']),
-            title_font=dict(family='Space Grotesk', size=12, color=C['emerald'])
-        )
+        title="Annual Revenue: Actual vs Target + Achievement %",
+        height=480, xaxis_title="Year", yaxis_title="Revenue (PKR)",
+        yaxis2=dict(overlaying='y', side='right', title='Achievement %',
+                    gridcolor='rgba(26,58,107,0.2)', tickformat='.0f', ticksuffix='%',
+                    tickfont=dict(family='JetBrains Mono',size=11,color='#00ff9d'),
+                    title_font=dict(family='Rajdhani',size=13,color='#00ff9d'))
     )
     return fig
 
@@ -1117,24 +901,15 @@ def chart_monthly_heatmap(df):
     fig = go.Figure(go.Heatmap(
         z=pivot.values, x=pivot.columns.tolist(), y=pivot.index.tolist(),
         text=text_vals, texttemplate='%{text}',
-        textfont=dict(family='DM Mono', size=9, color='rgba(241,245,249,0.85)'),
-        colorscale=[
-            [0.0, '#0d1321'],
-            [0.2, '#1e3a5f'],
-            [0.5, '#1d4ed8'],
-            [0.75,'#3b82f6'],
-            [1.0, '#93c5fd'],
-        ],
-        hovertemplate='<b>%{y} — %{x}</b><br>Revenue: <b>Rs. %{z:,.0f}</b><extra></extra>',
+        textfont=dict(family='JetBrains Mono',size=9,color='white'),
+        colorscale=[[0,'#050b18'],[0.3,'#0a3060'],[0.6,'#0060b0'],[1,'#00c6ff']],
+        hovertemplate='<b>%{y} – %{x}</b><br>Revenue: <b>Rs. %{z:,.0f}</b><extra></extra>',
         showscale=True,
-        colorbar=dict(
-            title=dict(text='Revenue', font=dict(family='Space Grotesk', color='#64748b', size=11)),
-            tickfont=dict(family='DM Mono', size=9, color='#64748b'),
-            thickness=12, len=0.8,
-        )
+        colorbar=dict(title=dict(text='Revenue',font=dict(family='Rajdhani',color='#7a9cc0')),
+                      tickfont=dict(family='JetBrains Mono',size=10,color='#7a9cc0'))
     ))
-    fig.update_layout(**PLOTLY_LAYOUT, title="Revenue Heatmap — Year × Month",
-                      height=420, xaxis_title="", yaxis_title="")
+    fig.update_layout(**PLOTLY_LAYOUT, title="Revenue Heatmap: Year × Month",
+                      height=420, xaxis_title="Month", yaxis_title="Year")
     return fig
 
 
@@ -1143,50 +918,38 @@ def chart_project_advanced(df):
     d = d[d['Actual Revenue'] > 0]
     d['Rev_Per'] = d['Actual Revenue'] / d['Actual Footfall'].replace(0, np.nan)
     d = d.sort_values('Actual Revenue', ascending=False)
-    colors = [PROJECT_COLORS.get(p, C['blue']) for p in d['Project']]
+    colors = [PROJECT_COLORS.get(p,'#00c6ff') for p in d['Project']]
     fig = go.Figure()
-
-    # Revenue bars
-    for i, (_, row) in enumerate(d.iterrows()):
-        color = colors[i]
-        r, g, b = int(color[1:3],16), int(color[3:5],16), int(color[5:7],16)
-        fig.add_trace(go.Bar(
-            name=row['Project'], x=[row['Project']], y=[row['Actual Revenue']],
-            marker=dict(
-                color=f'rgba({r},{g},{b},0.75)',
-                line=dict(color=color, width=1.5),
-                cornerradius=4,
-            ),
-            text=[fmt_rev(row['Actual Revenue'])],
-            textposition='outside',
-            textfont=dict(family='DM Mono', size=10, color='#94a3b8'),
-            showlegend=False,
-            hovertemplate=f'<b>{row["Project"]}</b><br>Revenue: <b>%{{y:,.0f}}</b><br>Footfall: <b>{row["Actual Footfall"]:,.0f}</b><br>Rev/Visitor: <b>Rs. {row["Rev_Per"]:,.0f}</b><extra></extra>'
-        ))
-
-    # Rev/Visitor line
+    fig.add_trace(go.Bar(
+        name='Revenue', x=d['Project'], y=d['Actual Revenue'],
+        marker_color=colors, marker_line_width=0,
+        text=[fmt_rev(v) for v in d['Actual Revenue']],
+        textposition='outside', textfont=dict(family='JetBrains Mono',size=10,color='#e8f4fd'),
+        hovertemplate='<b>%{x}</b><br>Revenue: <b>%{y:,.0f}</b><extra></extra>'
+    ))
+    fig.add_trace(go.Bar(
+        name='Footfall', x=d['Project'], y=d['Actual Footfall'],
+        marker_color=[c.replace('ff','66') if '#' in c else c for c in colors], yaxis='y2',
+        text=[f"{v/1e3:.0f}K" for v in d['Actual Footfall']],
+        textposition='outside', textfont=dict(family='JetBrains Mono',size=10,color='#f5c518'),
+        hovertemplate='<b>%{x}</b><br>Footfall: <b>%{y:,.0f}</b><extra></extra>'
+    ))
     fig.add_trace(go.Scatter(
-        x=d['Project'], y=d['Rev_Per'], name='Rev / Visitor', yaxis='y2',
-        mode='lines+markers+text',
-        line=dict(color=C['violet'], width=2, shape='spline', smoothing=0.7),
-        marker=dict(size=9, color=C['violet'], line=dict(color='white', width=1.5), symbol='diamond'),
-        text=[f"Rs.{v:,.0f}" for v in d['Rev_Per'].fillna(0)],
-        textposition='top center',
-        textfont=dict(family='DM Mono', size=9, color=C['violet']),
+        x=d['Project'], y=d['Rev_Per'], name='Rev/Visitor', yaxis='y3',
+        mode='lines+markers+text', line=dict(color='#b660f5',width=2),
+        marker=dict(size=10,color='#b660f5',symbol='diamond'),
+        text=[f"Rs.{v:,.0f}" for v in d['Rev_Per'].fillna(0)], textposition='top center',
+        textfont=dict(family='JetBrains Mono',size=9,color='#b660f5'),
         hovertemplate='Rev/Visitor: <b>Rs. %{y:,.0f}</b><extra></extra>'
     ))
-
     fig.update_layout(
         **PLOTLY_LAYOUT, barmode='group',
-        title="Project Performance: Revenue & Revenue per Visitor",
-        height=460, xaxis_title="", yaxis_title="Revenue (PKR)",
-        bargap=0.25,
-        yaxis2=dict(
-            overlaying='y', side='right', showgrid=False,
-            tickfont=dict(family='DM Mono', size=10, color=C['violet']),
-            title='Rev / Visitor (Rs.)',
-            title_font=dict(family='Space Grotesk', size=12, color=C['violet'])
-        )
+        title="Project Intelligence: Revenue · Footfall · Revenue per Visitor",
+        height=480, xaxis_title="Project", yaxis_title="Revenue (PKR)",
+        yaxis2=dict(overlaying='y',side='right',showgrid=False,
+                    tickfont=dict(family='JetBrains Mono',size=11,color='#f5c518')),
+        yaxis3=dict(overlaying='y',side='right',showgrid=False,anchor='free',position=0.98,
+                    tickfont=dict(family='JetBrains Mono',size=11,color='#b660f5'))
     )
     return fig
 
@@ -1203,47 +966,34 @@ def chart_yoy_advanced(df):
         monthly = d.groupby('Months',observed=True)['Actual Revenue'].sum().reset_index()
         if monthly['Actual Revenue'].sum() == 0: continue
         color = COLORS[i % len(COLORS)]
-        r, g, b = int(color[1:3],16), int(color[3:5],16), int(color[5:7],16)
-        is_latest = (yr == years[-1])
         fig.add_trace(go.Scatter(
             x=monthly['Months'].astype(str), y=monthly['Actual Revenue'],
-            name=str(int(yr)),
-            line=dict(color=color, width=2.5 if is_latest else 1.5,
-                      shape='spline', smoothing=0.7),
-            mode='lines+markers',
-            marker=dict(size=6 if is_latest else 4, color=color,
-                        line=dict(color='white', width=1 if is_latest else 0.5)),
-            opacity=1.0 if is_latest else 0.65,
-            hovertemplate=f'<b>{int(yr)} — %{{x}}</b><br>Revenue: <b>Rs. %{{y:,.0f}}</b><extra></extra>'
+            name=str(int(yr)), line=dict(color=color,width=2.5), mode='lines+markers',
+            marker=dict(size=7,color=color,line=dict(color='white',width=1)),
+            hovertemplate=f'<b>{int(yr)} – %{{x}}</b><br>Revenue: <b>Rs. %{{y:,.0f}}</b><extra></extra>'
         ))
-    fig.update_layout(**PLOTLY_LAYOUT, title="Year-over-Year Monthly Revenue",
-                      height=460, xaxis_title="Month (Fiscal: Jul → Jun)",
-                      yaxis_title="Revenue (PKR)")
+    fig.update_layout(**PLOTLY_LAYOUT, title="Year-over-Year Monthly Revenue Comparison",
+                      height=460, xaxis_title="Month (Fiscal: Jul→Jun)", yaxis_title="Revenue (PKR)")
     return fig
 
 
 def chart_forecast_trajectory_advanced(df):
     hist = df[df['Actual Revenue']>0].dropna(subset=['Actual Revenue']).sort_values('Date_Obj')
     fig = go.Figure()
-
     fig.add_trace(go.Scatter(
         x=hist['Date_Obj'], y=hist['Actual Revenue'],
-        name='Historical Revenue',
-        fill='tozeroy', fillcolor='rgba(59,130,246,0.05)',
-        line=dict(color=C['blue'], width=2.5, shape='spline', smoothing=0.6),
-        mode='lines',
+        name='Actual Revenue', fill='tozeroy', fillcolor='rgba(0,198,255,0.06)',
+        line=dict(color='#00c6ff',width=2), mode='lines+markers',
+        marker=dict(size=4,color='#00c6ff'),
         hovertemplate='<b>%{x|%B %Y}</b><br>Actual: <b>Rs. %{y:,.0f}</b><extra></extra>'
     ))
-
     tgt = df[df['Target revenue']>0].groupby('Date_Obj')['Target revenue'].sum().reset_index()
     if not tgt.empty:
         fig.add_trace(go.Scatter(
             x=tgt['Date_Obj'], y=tgt['Target revenue'],
-            name='Target',
-            line=dict(color='rgba(245,158,11,0.45)', width=1.5, dash='dot'),
+            name='Target', line=dict(color='rgba(245,197,24,0.5)',width=1,dash='dot'),
             hovertemplate='<b>%{x|%B %Y}</b><br>Target: <b>Rs. %{y:,.0f}</b><extra></extra>'
         ))
-
     if len(hist) >= 8:
         future_months = 36
         last_date = hist['Date_Obj'].max()
@@ -1252,41 +1002,27 @@ def chart_forecast_trajectory_advanced(df):
         for fd in future_dates:
             fv, _, _ = generate_advanced_forecast(df, fd.month, fd.year, 'Actual Revenue')
             forecast_vals.append(fv)
-
         fig.add_trace(go.Scatter(
-            x=future_dates, y=forecast_vals,
-            name='AI Forecast',
-            line=dict(color=C['gold'], width=2, dash='dot', shape='spline', smoothing=0.7),
-            mode='lines+markers',
-            marker=dict(size=5, symbol='diamond', color=C['gold'],
-                        line=dict(color='rgba(0,0,0,0.3)', width=1)),
+            x=future_dates, y=forecast_vals, name='AI Forecast (2025–2028)',
+            line=dict(color='#f5c518',width=2,dash='dot'), mode='lines+markers',
+            marker=dict(size=5,symbol='diamond',color='#f5c518'),
             hovertemplate='<b>%{x|%B %Y}</b><br>Forecast: <b>Rs. %{y:,.0f}</b><extra></extra>'
         ))
-
         ci_u = [v*1.15 for v in forecast_vals]
         ci_l = [max(0,v*0.85) for v in forecast_vals]
         fig.add_trace(go.Scatter(
             x=future_dates+future_dates[::-1], y=ci_u+ci_l[::-1],
-            fill='toself', fillcolor='rgba(245,158,11,0.04)',
-            line=dict(color='rgba(0,0,0,0)'),
-            name='Confidence Band ±15%',
-            hoverinfo='skip'
+            fill='toself', fillcolor='rgba(245,197,24,0.06)',
+            line=dict(color='rgba(245,197,24,0)'), name='Confidence Band (±15%)'
         ))
-
-    # COVID shading
     fig.add_vrect(
-        x0="2020-03-01", x1="2021-07-01",
-        fillcolor="rgba(244,63,94,0.04)",
-        annotation_text="COVID-19 Impact",
-        annotation_position="top left",
-        annotation_font=dict(color='rgba(244,63,94,0.7)', size=11, family='DM Mono'),
-        line_width=0,
-        annotation_borderpad=4,
+        x0="2020-03-01", x1="2021-07-01", fillcolor="rgba(255,68,102,0.06)",
+        annotation_text="COVID-19", annotation_position="top left",
+        annotation_font=dict(color='#ff4466',size=11,family='JetBrains Mono'), line_width=0
     )
-
     fig.update_layout(**PLOTLY_LAYOUT,
-                      title="Revenue Trajectory 2017–2028 · Historical + AI Forecast",
-                      height=500, xaxis_title="", yaxis_title="Revenue (PKR)")
+                      title="Revenue Trajectory 2017–2028 (AI Forecast + Pakistan Events)",
+                      height=500, xaxis_title="Date", yaxis_title="Revenue (PKR)")
     return fig
 
 
@@ -1298,14 +1034,14 @@ def chart_waterfall_advanced(df, metric='Actual Revenue'):
         x=d['Months'].astype(str).tolist(), y=d[metric].tolist(),
         measure=['relative']*len(d),
         text=[fmt_rev(v) for v in d[metric]], textposition='outside',
-        textfont=dict(family='DM Mono', size=10, color='#64748b'),
-        connector=dict(line=dict(color='rgba(148,163,184,0.15)', width=1, dash='dot')),
-        increasing=dict(marker=dict(color='rgba(16,185,129,0.65)', line=dict(color=C['emerald'], width=1.5))),
-        decreasing=dict(marker=dict(color='rgba(244,63,94,0.65)', line=dict(color=C['rose'], width=1.5))),
-        hovertemplate='<b>%{x}</b><br>' + metric + ': <b>Rs. %{y:,.0f}</b><extra></extra>'
+        textfont=dict(family='JetBrains Mono',size=10),
+        connector=dict(line=dict(color='#1a3a6b',width=1)),
+        increasing=dict(marker_color='#00ff9d',marker_line=dict(color='#00ff9d',width=0)),
+        decreasing=dict(marker_color='#ff4466',marker_line=dict(color='#ff4466',width=0)),
+        hovertemplate='<b>%{x}</b><br>'+metric+': <b>Rs. %{y:,.0f}</b><extra></extra>'
     ))
-    fig.update_layout(**PLOTLY_LAYOUT, title=f"{metric} — Monthly Waterfall Analysis",
-                      height=440, xaxis_title="", yaxis_title=metric)
+    fig.update_layout(**PLOTLY_LAYOUT, title=f"{metric} – Monthly Waterfall",
+                      height=420, xaxis_title="Month", yaxis_title=metric)
     return fig
 
 
@@ -1315,18 +1051,13 @@ def chart_regression_advanced(df):
     fig = go.Figure()
     for proj in d['Project'].unique():
         pd_proj = d[d['Project']==proj]
-        color = PROJECT_COLORS.get(proj, C['blue'])
-        r, g, b = int(color[1:3],16), int(color[3:5],16), int(color[5:7],16)
+        color = PROJECT_COLORS.get(proj,'#00c6ff')
         fig.add_trace(go.Scatter(
             x=pd_proj['Actual Footfall'], y=pd_proj['Actual Revenue'],
             mode='markers', name=proj,
-            marker=dict(
-                color=f'rgba({r},{g},{b},0.65)', size=9, symbol='circle',
-                line=dict(color=color, width=1)
-            ),
+            marker=dict(color=color,size=8,opacity=0.7,line=dict(color='white',width=0.5)),
             hovertemplate=f'<b>{proj}</b><br>Footfall: <b>%{{x:,.0f}}</b><br>Revenue: <b>Rs. %{{y:,.0f}}</b><extra></extra>'
         ))
-
     X = d['Actual Footfall'].values.reshape(-1,1)
     y = d['Actual Revenue'].values
     m = LinearRegression().fit(X, y)
@@ -1335,21 +1066,19 @@ def chart_regression_advanced(df):
     r2 = m.score(X, y)
     fig.add_trace(go.Scatter(
         x=xl, y=yl, mode='lines',
-        line=dict(color='rgba(245,158,11,0.6)', width=1.5, dash='dash'),
+        line=dict(color='#f5c518',width=2,dash='dash'),
         name=f'Regression (R²={r2:.3f})',
         hovertemplate='Trend: Rs. %{y:,.0f}<extra></extra>'
     ))
     fig.add_annotation(
-        text=f"R² = {r2:.3f}   ·   Slope = Rs. {m.coef_[0]:,.0f} / visitor",
+        text=f"R² = {r2:.3f}<br>Rev = {m.coef_[0]:,.0f} × Footfall + {m.intercept_:,.0f}",
         x=0.02, y=0.98, xref='paper', yref='paper', showarrow=False,
-        bgcolor='rgba(17,24,39,0.9)', bordercolor='rgba(148,163,184,0.15)',
-        font=dict(family='DM Mono', size=11, color='#64748b'), align='left',
-        borderwidth=1, borderpad=8, opacity=0.95
+        bgcolor='rgba(13,31,60,0.9)', bordercolor='#1a3a6b',
+        font=dict(family='JetBrains Mono',size=11,color='#a8d4f5'), align='left'
     )
     fig.update_layout(**PLOTLY_LAYOUT,
-                      title="Revenue vs Footfall — Regression Analysis",
-                      height=460, xaxis_title="Footfall (Visitors)",
-                      yaxis_title="Revenue (PKR)", hovermode='closest')
+                      title="Revenue vs Footfall — Regression Analysis by Project",
+                      height=440, xaxis_title="Footfall (Visitors)", yaxis_title="Revenue (PKR)")
     return fig
 
 
@@ -1358,33 +1087,18 @@ def chart_pie_advanced(df, val_col, name_col, title):
     d = d[d[val_col] > 0].sort_values(val_col, ascending=False)
     colors = [PROJECT_COLORS.get(n, COLORS[i%len(COLORS)]) for i, n in enumerate(d[name_col])]
     fig = go.Figure(go.Pie(
-        values=d[val_col], labels=d[name_col], hole=0.55,
-        marker=dict(
-            colors=colors,
-            line=dict(color='rgba(8,12,20,0.8)', width=2)
-        ),
-        textinfo='label+percent',
-        texttemplate='%{label}<br><b>%{percent}</b>',
-        textfont=dict(family='Space Grotesk', size=11, color='white'),
-        hovertemplate='<b>%{label}</b><br>Revenue: Rs. %{value:,.0f}<br>Share: %{percent}<extra></extra>',
-        insidetextorientation='radial',
+        values=d[val_col], labels=d[name_col], hole=0.45, marker_colors=colors,
+        textinfo='label+percent+value',
+        texttemplate='%{label}<br>%{percent}<br>Rs. %{value:,.0f}',
+        textfont=dict(family='Rajdhani',size=11),
+        hovertemplate='<b>%{label}</b><br>Revenue: Rs. %{value:,.0f}<br>Share: %{percent}<extra></extra>'
     ))
-    # Center label
-    total = d[val_col].sum()
-    fig.add_annotation(
-        text=f"<b>{fmt_rev(total)}</b><br>Total",
-        x=0.5, y=0.5, xref='paper', yref='paper',
-        showarrow=False,
-        font=dict(family='Syne', size=14, color='#f1f5f9'),
-        align='center'
-    )
-    fig.update_layout(**PLOTLY_LAYOUT, title=title, height=460,
-                      hovermode='closest', showlegend=True)
+    fig.update_layout(**PLOTLY_LAYOUT, title=title, height=460)
     return fig
 
 
 # ═══════════════════════════════════════════════════════════════
-#  AI QUERY ENGINE
+#  AI QUERY ENGINE  —  All responses in English
 # ═══════════════════════════════════════════════════════════════
 MONTH_MAP = {
     'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
@@ -1480,20 +1194,22 @@ def smart_ai_response(query, df):
             if y_val in EID_ADHA_MONTHS and m_idx in EID_ADHA_MONTHS[y_val]:
                 eid_note += "\n> 🐑 **Eid ul Adha** expected this month — significant revenue boost"
             msg = (
-                f"### 🔮 AI Forecast — {month_name} {y_val}{proj_str}\n\n"
+                f"### 🔮 Advanced AI Forecast — {month_name} {y_val}{proj_str}\n\n"
                 f"| Metric | Projection | Lower Bound | Upper Bound |\n"
                 f"|--------|------------|-------------|-------------|\n"
-                f"| Revenue | **{fmt_rev(p_rev)}** | {fmt_rev(lr)} | {fmt_rev(ur)} |\n"
-                f"| Footfall | **{p_ff:,.0f}** | {lf:,.0f} | {uf:,.0f} |\n\n"
-                f"**Event Modifiers:** {note_rev}\n"
+                f"| 💰 Revenue | **{fmt_rev(p_rev)}** | {fmt_rev(lr)} | {fmt_rev(ur)} |\n"
+                f"| 👥 Footfall | **{p_ff:,.0f}** | {lf:,.0f} | {uf:,.0f} |\n\n"
+                f"**Pakistan Event Modifiers:** {note_rev}\n"
                 f"{eid_note}\n\n"
-                f"> *Model: Same-Month Trend (60%) + Polynomial Extrapolation (40%)*"
+                f"> *Model: Same-Month Trend (60%) + Polynomial Extrapolation (40%)*  \n"
+                f"> *Confidence Band based on historical monthly variance*"
             )
             return msg, None, None
         else:
             return (
                 "🔮 **Forecast requires a Month + Year (2025–2030)**\n\n"
-                "*Examples:* `Forecast March 2027` · `Predict July 2026 Joyland Fortress`"
+                "*Examples:* `Forecast March 2027` | `Predict July 2026 Joyland Fortress`\n\n"
+                "**Available forecast years:** 2025, 2026, 2027, 2028, 2029, 2030"
             ), None, None
 
     if ' vs ' in q or ' versus ' in q or ' compare ' in q:
@@ -1522,61 +1238,96 @@ def smart_ai_response(query, df):
             rpp2 = r2/f2 if f2 > 0 else 0
             rpp_chg = (rpp2-rpp1)/rpp1*100 if rpp1 > 0 else 0
             winner = l2 if r_chg > 0 else l1
+            loser = l1 if r_chg > 0 else l2
             margin = abs(r_chg)
             msg = (
-                f"### Comparison: **{l1}** vs **{l2}**\n\n"
-                f"| Metric | {l1} | {l2} | Δ Change |\n"
-                f"|--------|------|------|----------|\n"
-                f"| Revenue | {fmt_rev(r1)} | {fmt_rev(r2)} | `{r_chg:+.1f}%` |\n"
-                f"| Footfall | {f1:,.0f} | {f2:,.0f} | `{f_chg:+.1f}%` |\n"
-                f"| Rev/Visitor | Rs. {rpp1:,.0f} | Rs. {rpp2:,.0f} | `{rpp_chg:+.1f}%` |\n\n"
-                f"{'✅' if r_chg > 0 else '⚠️'} **{winner}** showed `{margin:.1f}%` {'higher' if r_chg > 0 else 'lower'} revenue.\n"
+                f"### 📊 Comparison: **{l1}** vs **{l2}**\n\n"
+                f"| Metric | {l1} | {l2} | Change |\n"
+                f"|--------|------|------|--------|\n"
+                f"| 💰 Revenue | {fmt_rev(r1)} | {fmt_rev(r2)} | `{r_chg:+.1f}%` |\n"
+                f"| 👥 Footfall | {f1:,.0f} | {f2:,.0f} | `{f_chg:+.1f}%` |\n"
+                f"| 💡 Rev/Visitor | Rs. {rpp1:,.0f} | Rs. {rpp2:,.0f} | `{rpp_chg:+.1f}%` |\n\n"
             )
+            if r_chg > 0:
+                msg += f"✅ **{winner}** generated `{margin:.1f}%` more revenue than **{loser}**.\n"
+            else:
+                msg += f"⚠️ **{winner}** revenue was `{margin:.1f}%` lower than **{loser}**.\n"
+            if abs(f_chg) > 5:
+                msg += f"\n👥 Footfall was also `{f_chg:+.1f}%` {'higher' if f_chg > 0 else 'lower'}."
             comp_data = {"labels":[l1,l2],"revenue":[r1,r2],"footfall":[f1,f2]}
             return msg, None, comp_data
         else:
-            return "⚠️ No data found for one or both periods.", None, None
+            return "⚠️ No data found for one or both periods. Please check the month/year.", None, None
 
     if 'covid' in q or ('2020' in q and any(k in q for k in ['lockdown','impact','why','closed'])):
         msg = (
-            "### COVID-19 Impact Analysis — 2020\n\n"
+            "### 🦠 COVID-19 Impact Analysis — 2020\n\n"
             "| Period | Revenue | vs 2019 | Status |\n"
             "|--------|---------|----------|--------|\n"
-            "| Jan–Feb 2020 | Rs. 276M | Normal | Open |\n"
-            "| March 2020 | Rs. 92.8M | −40% | Partial Closure |\n"
-            "| Apr–Jul 2020 | **Rs. 0** | **−100%** | Complete Closure |\n"
-            "| Aug–Dec 2020 | Rs. 97M | −65% | Partial Reopening |\n\n"
+            "| Jan–Feb 2020 | Rs. 276M | Normal | ✅ Open |\n"
+            "| March 2020 | Rs. 92.8M | −40% | ⚠️ Partial Closure |\n"
+            "| Apr–Jun 2020 | **Rs. 0** | **−100%** | ❌ Complete Closure |\n"
+            "| Jul 2020 | Rs. 0 | −100% | ❌ Still Closed |\n"
+            "| Aug–Dec 2020 | Rs. 97M | −65% | ⚠️ Partial Reopening |\n\n"
+            "**Key Facts:**\n"
+            "- April, May, June, July 2020: **Zero revenue** — all parks completely closed\n"
             "- Full year 2020 achievement: **49.2%** of target\n"
             "- 2019 → 2020: Rs. 779.9M → Rs. 467.2M (**−40% YoY**)\n"
-            "- Full recovery achieved in **2022** (Rs. 1.65B, new record)\n"
+            "- 2021 recovery: Rs. 657M (+40.5% YoY)\n"
+            "- **Full recovery:** 2022 → Rs. 1.65B (new record at the time)\n"
         )
         return msg, df[df['Year'].isin([2019,2020,2021])], None
 
+    if any(k in q for k in ['psl','cricket','ipl','match']):
+        msg = (
+            "### 🏏 PSL / Cricket Season Impact\n\n"
+            "Pakistan Super League (PSL) runs February–April every year.\n\n"
+            "**Observed Impact on Joyland:**\n"
+            "- February: footfall slightly lower than January (PSL matches divert entertainment)\n"
+            "- March: PSL final month — moderate footfall impact\n"
+            "- April: PSL usually ends, Eid season begins → strong recovery\n\n"
+            "**Net Effect:** PSL months show ~5–8% footfall dip, but Eid boost overrides it.\n\n"
+            "*Our forecasting model applies a `0.95x` multiplier during PSL months.*"
+        )
+        return msg, None, None
+
     if any(k in q for k in ['eid','ramadan','ramazan','eid ul fitr','eid ul adha','islamic']):
         msg = (
-            "### Islamic Events & Revenue Impact\n\n"
-            "**Eid ul Fitr** — largest revenue spike:\n"
-            "| Year | Month | Boost |\n|------|-------|-------|\n"
-            "| 2023 | April | +48% |\n| 2024 | April | +52% |\n| 2025 | March | +45% est. |\n\n"
-            "**Eid ul Adha** — second major boost (~38% above avg):\n"
-            "2024 → June · 2025 → June · 2026 → May\n\n"
-            "**Ramadan Effect:**\n"
-            "- Early Ramadan: −15–20% footfall\n"
+            "### 🌙 Islamic Events & Joyland Revenue\n\n"
+            "**Eid ul Fitr** (Chand Raat + 3 days) — biggest revenue boost:\n"
+            "| Year | Month | Revenue Boost |\n"
+            "|------|-------|---------------|\n"
+            "| 2023 | April | +48% above monthly avg |\n"
+            "| 2024 | April | +52% above monthly avg |\n"
+            "| 2025 | March | Expected +45% |\n"
+            "| 2026 | March | Expected +45% |\n\n"
+            "**Eid ul Adha** — second major boost (~38% above average):\n"
+            "| Year | Month |\n|------|-------|\n"
+            "| 2024 | June |\n| 2025 | June |\n| 2026 | May |\n\n"
+            "**Ramadan Impact:**\n"
+            "- Early Ramadan: footfall drops 15–20%\n"
             "- Last 10 days: near-zero footfall\n"
-            "- Chand Raat → Eid days: massive spike\n"
+            "- Chand Raat → first 3 Eid days = massive spike\n\n"
+            "*Our AI uses +45% (Eid ul Fitr) and +38% (Eid ul Adha) multipliers.*"
         )
         return msg, None, None
 
     if any(k in q for k in ['monsoon','rain','weather','summer']):
         msg = (
-            "### Weather & Seasonal Impact\n\n"
-            "| Season | Months | Factor |\n|--------|--------|--------|\n"
-            "| Summer Peak | Jun, Jul, Aug | +25–35% |\n"
-            "| Winter Festive | Dec, Jan | +20–28% |\n"
-            "| Monsoon Drag | Jul, Aug | −8% overlay |\n"
-            "| Exam Season | May, Oct | −12% |\n\n"
-            "**July** = historically highest revenue month (summer + school holidays).\n"
-            "**May** = typically slowest (board exam season).\n"
+            "### 🌦️ Weather & Seasonal Impact on Joyland\n\n"
+            "**Summer (Jun–Aug):** Peak season — school holidays + long evenings\n"
+            "- July = highest revenue month historically\n"
+            "- Monsoon (Jul–Aug) causes some wet days but footfall remains strong\n\n"
+            "**Winter (Nov–Feb):** Second peak\n"
+            "- December = festive + school winter break\n\n"
+            "**Spring (Mar–May):** Mixed\n"
+            "- May: board exams = slowest month typically\n\n"
+            "| Season | Factor | Months |\n"
+            "|--------|--------|--------|\n"
+            "| 🌞 Summer Peak | +35% | Jun, Jul, Aug |\n"
+            "| ❄️ Winter Festive | +28% | Dec, Jan |\n"
+            "| 🌧️ Monsoon Drag | -8% | Jul, Aug |\n"
+            "| 📚 Exam Season | -12% | May, Oct |\n"
         )
         return msg, None, None
 
@@ -1599,12 +1350,16 @@ def smart_ai_response(query, df):
             partial = " *(partial)*" if y == 2026 else ""
             rows.append(f"| {y}{partial} | {fmt_rev(rev)} | {ff/1e3:.0f}K | {ach:.1f}% | {g_str} |")
         msg = (
-            "### Revenue Trend 2017–2026\n\n"
-            "| Year | Revenue | Footfall | Achievement | YoY |\n"
-            "|------|---------|----------|-------------|-----|\n"
+            "### 📈 Revenue & Footfall Trend Analysis (2017–2026)\n\n"
+            "| Year | Revenue | Footfall | Achievement | YoY Growth |\n"
+            "|------|---------|----------|-------------|------------|\n"
             + "\n".join(rows) + "\n\n"
-            "**Highlights:** 🦠 2020 COVID impact · 🚀 2022 Rs. 1.6B milestone · "
-            "🏆 2024 Rs. 2.5B record · ⭐ CAGR 2017–2025: ~33%/year\n"
+            "**Key Milestones:**\n"
+            "- 🦠 2020: COVID-19 → 49.2% achievement\n"
+            "- 🚀 2022: Rs. 1.6B+ first time ever\n"
+            "- 🏆 2023: Rs. 2.1B → highest achievement %\n"
+            "- 📊 2024: Rs. 2.5B → highest absolute revenue\n"
+            "- ⭐ 2025: Rs. 2.96B → CAGR 2017–2025: **~33%/year**\n"
         )
         return msg, df, None
 
@@ -1615,10 +1370,22 @@ def smart_ai_response(query, df):
             best = monthly.iloc[0]
             worst = monthly[monthly['Actual Revenue']>0].iloc[-1]
             msg = (
-                f"### Best & Worst Months (All-Time)\n\n"
-                f"**Best:** {best['Months']} — {fmt_rev(best['Actual Revenue'])}\n"
-                f"**Worst:** {worst['Months']} — {fmt_rev(worst['Actual Revenue'])}\n\n"
-                "**Top 3:** " + " · ".join([f"{r['Months']} ({fmt_rev(r['Actual Revenue'])})" for _, r in monthly.head(3).iterrows()])
+                f"### 📅 Best & Worst Months (All-Time)\n\n"
+                f"🏆 **Best Month:** {best['Months']} → {fmt_rev(best['Actual Revenue'])} total revenue\n"
+                f"📉 **Worst Month:** {worst['Months']} → {fmt_rev(worst['Actual Revenue'])} total revenue\n\n"
+                "**Top 3 Months:**\n"
+            )
+            for _, r in monthly.head(3).iterrows():
+                msg += f"- {r['Months']}: {fmt_rev(r['Actual Revenue'])}\n"
+            return msg, None, None
+        elif any(k in q for k in ['year']):
+            yearly = df.groupby('Year')['Actual Revenue'].sum().reset_index()
+            yearly = yearly[yearly['Year']>2015]
+            best_y = yearly.loc[yearly['Actual Revenue'].idxmax()]
+            msg = (
+                f"### 📅 Best Year\n\n"
+                f"🏆 **Best Year:** {int(best_y['Year'])} → {fmt_rev(best_y['Actual Revenue'])}\n\n"
+                f"*(2026 is partial data — excluded from best year comparison)*"
             )
             return msg, None, None
 
@@ -1626,18 +1393,20 @@ def smart_ai_response(query, df):
     if any(k in q for k in proj_kw):
         d = df.groupby('Project').agg({'Actual Revenue':'sum','Actual Footfall':'sum','Target revenue':'sum'}).reset_index()
         d = d[d['Actual Revenue']>0].sort_values('Actual Revenue', ascending=False)
-        d['Ach'] = np.where(d['Target revenue']>0, d['Actual Revenue']/d['Target revenue']*100, 0).round(1)
-        d['RPP'] = (d['Actual Revenue']/d['Actual Footfall'].replace(0,np.nan)).round(0)
+        d['Ach'] = np.where(d['Target revenue']>0, d['Actual Revenue']/d['Target revenue']*100, 0)
+        d['RPP'] = d['Actual Revenue']/d['Actual Footfall'].replace(0,np.nan)
         rows = []
         for _, r in d.iterrows():
             rows.append(f"| {r['Project']} | {fmt_rev(r['Actual Revenue'])} | {r['Actual Footfall']/1e3:.0f}K | {r['Ach']:.1f}% | Rs. {r['RPP']:,.0f} |")
         msg = (
-            "### All Projects — Summary (2017–2026)\n\n"
-            "| Project | Revenue | Footfall | Achievement | Rev/Visitor |\n"
-            "|---------|---------|----------|-------------|-------------|\n"
+            "### 🏢 All Projects — Performance Summary (2017–2026)\n\n"
+            "| Project | Total Revenue | Total Footfall | Achievement | Rev/Visitor |\n"
+            "|---------|---------------|----------------|-------------|-------------|\n"
             + "\n".join(rows) + "\n\n"
-            "🥇 **Joyland Fortress** — flagship, highest revenue · "
-            "💡 **B-EMP** — highest revenue per visitor\n"
+            "**Highlights:**\n"
+            "- 🥇 **Joyland Fortress** — flagship, largest revenue\n"
+            "- 🥈 **JAP-OD** — strong #2, outdoor attraction\n"
+            "- 💡 **B-EMP** — highest revenue per visitor\n"
         )
         return msg, df, None
 
@@ -1653,15 +1422,20 @@ def smart_ai_response(query, df):
         for _, r in monthly.iterrows():
             rows.append(f"| {r['Months']} | {fmt_rev(r['Actual Revenue'])} | {r['Actual Footfall']/1e3:.0f}K | Rs. {r['RPP']:,.0f} |")
         msg = (
-            "### Monthly Revenue Breakdown — All-Time\n\n"
-            "| Month | Revenue | Footfall | Rev/Visitor |\n"
-            "|-------|---------|----------|-------------|\n"
+            "### 📅 Monthly Revenue Breakdown — All-Time Totals\n\n"
+            "| Month | Total Revenue | Total Footfall | Rev/Visitor |\n"
+            "|-------|---------------|----------------|-------------|\n"
             + "\n".join(rows) + "\n\n"
-            "**July** = peak · **December** = #2 · **May** = slowest (exams)\n"
+            "**Seasonal Insights:**\n"
+            "- 🏆 **July** — peak summer, highest revenue\n"
+            "- 🎆 **December** — winter festive, strong #2\n"
+            "- 😴 **May** — slowest month (board exam season)\n"
+            "- 🌙 **Eid months** — 40–50% above-average boost\n"
         )
         return msg, None, None
 
-    ach_kw = ['achievement','achieve','target','vs target','reached','met','goal','performance']
+    ach_kw = ['achievement','achieve','target','vs target','reached','met',
+              'goal','performance','progress']
     if any(k in q for k in ach_kw):
         filtered, months, years, project = filter_df(q, df)
         if not filtered.empty:
@@ -1671,19 +1445,24 @@ def smart_ai_response(query, df):
             tgt_ff = filtered['Target Footfall'].sum()
             rev_ach = act_rev/tgt_rev*100 if tgt_rev > 0 else 0
             ff_ach = act_ff/tgt_ff*100 if tgt_ff > 0 else 0
-            s_rev = "✅ TARGET MET" if rev_ach>=100 else "⚠️ NEAR" if rev_ach>=75 else "❌ MISSED"
-            s_ff = "✅ TARGET MET" if ff_ach>=100 else "⚠️ NEAR" if ff_ach>=75 else "❌ MISSED"
+            s_rev = "✅ TARGET MET" if rev_ach>=100 else "⚠️ NEAR TARGET" if rev_ach>=75 else "❌ MISSED TARGET"
+            s_ff = "✅ TARGET MET" if ff_ach>=100 else "⚠️ NEAR TARGET" if ff_ach>=75 else "❌ MISSED TARGET"
             proj_str = f" — {project}" if project else ""
             period_str = ", ".join(months + [str(y) for y in years]) if (months or years) else "All Data"
-            diff = act_rev - tgt_rev
-            surplus = f"\n\n{'Surplus' if diff >= 0 else 'Shortfall'}: **{fmt_rev(abs(diff))}** {'above' if diff >= 0 else 'below'} target." if tgt_rev > 0 else ""
+            surplus_or_shortfall = ""
+            if tgt_rev > 0:
+                diff = act_rev - tgt_rev
+                if diff >= 0:
+                    surplus_or_shortfall = f"\n\n🎉 **Surplus:** {fmt_rev(diff)} above target!"
+                else:
+                    surplus_or_shortfall = f"\n\n📉 **Shortfall:** {fmt_rev(abs(diff))} below target."
             msg = (
-                f"### Target Achievement — {period_str}{proj_str}\n\n"
+                f"### 🎯 Target Achievement Report — {period_str}{proj_str}\n\n"
                 f"| Metric | Actual | Target | Achievement | Status |\n"
                 f"|--------|--------|--------|-------------|--------|\n"
-                f"| Revenue | {fmt_rev(act_rev)} | {fmt_rev(tgt_rev)} | **{rev_ach:.1f}%** | {s_rev} |\n"
-                f"| Footfall | {act_ff:,.0f} | {tgt_ff:,.0f} | **{ff_ach:.1f}%** | {s_ff} |\n"
-                f"{surplus}"
+                f"| 💰 Revenue | {fmt_rev(act_rev)} | {fmt_rev(tgt_rev)} | **{rev_ach:.1f}%** | {s_rev} |\n"
+                f"| 👥 Footfall | {act_ff:,.0f} | {tgt_ff:,.0f} | **{ff_ach:.1f}%** | {s_ff} |\n"
+                f"{surplus_or_shortfall}"
             )
             return msg, filtered, None
 
@@ -1702,18 +1481,20 @@ def smart_ai_response(query, df):
             proj_str = f" ({project})" if project else ""
             yr_str = f" {years[0]}" if years else ""
             msg = (
-                f"### {q_name}{yr_str}{proj_str} — {', '.join(q_months)}\n\n"
-                f"| Metric | Value |\n|--------|-------|\n"
-                f"| Revenue | **{fmt_rev(act_rev)}** |\n"
-                f"| Footfall | **{act_ff:,.0f}** |\n"
-                f"| Target | {fmt_rev(tgt_rev)} |\n"
-                f"| Achievement | **{ach:.1f}%** |\n"
+                f"### 📊 {q_name}{yr_str} Analysis{proj_str} — {', '.join(q_months)}\n\n"
+                f"| Metric | Value |\n"
+                f"|--------|-------|\n"
+                f"| 💰 Revenue | **{fmt_rev(act_rev)}** |\n"
+                f"| 👥 Footfall | **{act_ff:,.0f}** |\n"
+                f"| 🎯 Target Revenue | {fmt_rev(tgt_rev)} |\n"
+                f"| 📈 Achievement | **{ach:.1f}%** |\n"
             )
             if act_ff > 0:
-                msg += f"| Rev/Visitor | **Rs. {act_rev/act_ff:,.0f}** |"
+                msg += f"| 💡 Rev/Visitor | **Rs. {act_rev/act_ff:,.0f}** |"
             return msg, filtered, None
 
-    rpp_kw = ['revenue per','per visitor','spend per','rev per','rpp','spending','average spend']
+    rpp_kw = ['revenue per','per visitor','spend per','rev per','rpp','spending',
+              'average spend','per customer','average revenue','per ticket']
     if any(k in q for k in rpp_kw):
         filtered, months, years, project = filter_df(q, df)
         data_src = filtered if not filtered.empty else df
@@ -1724,13 +1505,14 @@ def smart_ai_response(query, df):
         proj_str = f" ({project})" if project else " (All Projects)"
         all_rpp = df['Actual Revenue'].sum()/df['Actual Footfall'].sum()
         msg = (
-            f"### Revenue Per Visitor — {period}{proj_str}\n\n"
-            f"| Metric | Value |\n|--------|-------|\n"
-            f"| Revenue | {fmt_rev(rev)} |\n"
-            f"| Footfall | {ff:,.0f} |\n"
-            f"| Rev/Visitor | **Rs. {rpp:,.0f}** |\n"
-            f"| All-Time Avg | Rs. {all_rpp:,.0f} |\n"
-            f"| vs Avg | `{(rpp-all_rpp)/all_rpp*100:+.1f}%` |"
+            f"### 💡 Revenue Per Visitor — {period}{proj_str}\n\n"
+            f"| Metric | Value |\n"
+            f"|--------|-------|\n"
+            f"| 💰 Total Revenue | {fmt_rev(rev)} |\n"
+            f"| 👥 Total Footfall | {ff:,.0f} |\n"
+            f"| 💡 Revenue per Visitor | **Rs. {rpp:,.0f}** |\n"
+            f"| 📊 All-Time Average | Rs. {all_rpp:,.0f}/visitor |\n"
+            f"| 📈 vs All-Time | `{(rpp-all_rpp)/all_rpp*100:+.1f}%` |"
         )
         return msg, filtered if not filtered.empty else None, None
 
@@ -1742,10 +1524,14 @@ def smart_ai_response(query, df):
 
     if filtered.empty:
         return (
-            "⚠️ **No data matched.** Try:\n\n"
-            "- `Revenue July 2023`\n- `Footfall 2024 Fortress`\n"
-            "- `August 2023 vs August 2024`\n- `Forecast March 2027`\n"
-            "- `Q1 2024 achievement`\n- `Revenue trend`\n\n"
+            "⚠️ **No data matched your query.**\n\n"
+            "**Try these examples:**\n"
+            "- `Revenue July 2023`\n"
+            "- `Footfall 2024 Joyland Fortress`\n"
+            "- `August 2023 vs August 2024`\n"
+            "- `Forecast March 2027`\n"
+            "- `Q1 2024 achievement`\n"
+            "- `Revenue trend all years`\n\n"
             "**Projects:** Fortress · JAP-OD · SS-PKG · SS-FSM · SS-JAP · B-PKG · B-EMP"
         ), None, None
 
@@ -1766,62 +1552,95 @@ def smart_ai_response(query, df):
 
     rows = []
     if want_rev or want_both:
-        rows.append(f"| Revenue | **{fmt_rev(act_rev)}** |")
+        rows.append(f"| 💰 Actual Revenue | **{fmt_rev(act_rev)}** |")
         if tgt_rev > 0:
-            rows.append(f"| Target Revenue | {fmt_rev(tgt_rev)} |")
-            rows.append(f"| Achievement | **{rev_ach:.1f}%** |")
+            rows.append(f"| 🎯 Target Revenue | {fmt_rev(tgt_rev)} |")
+            rows.append(f"| 📈 Achievement | **{rev_ach:.1f}%** |")
     if want_ff or want_both:
-        rows.append(f"| Footfall | **{act_ff:,.0f}** |")
+        rows.append(f"| 👥 Actual Footfall | **{act_ff:,.0f}** |")
         if tgt_ff > 0:
-            rows.append(f"| Target Footfall | {tgt_ff:,.0f} |")
-            if ff_ach: rows.append(f"| FF Achievement | **{ff_ach:.1f}%** |")
+            rows.append(f"| 🎯 Target Footfall | {tgt_ff:,.0f} |")
+            if ff_ach: rows.append(f"| 📈 FF Achievement | **{ff_ach:.1f}%** |")
     if want_both and act_ff > 0:
-        rows.append(f"| Rev/Visitor | **Rs. {rpp:,.0f}** |")
+        rows.append(f"| 💡 Rev/Visitor | **Rs. {rpp:,.0f}** |")
     if n_months > 1 and (want_rev or want_both):
-        rows.append(f"| Avg Monthly Rev | {fmt_rev(act_rev/n_months)} |")
+        rows.append(f"| 📊 Avg Monthly Rev | {fmt_rev(act_rev/n_months)} |")
 
-    msg = f"### Analysis — {period_desc}\n\n| Metric | Value |\n|--------|-------|\n"
+    msg = f"### 📊 Analysis — {period_desc}\n\n| Metric | Value |\n|--------|-------|\n"
     msg += "\n".join(rows)
 
     if rev_ach:
         if rev_ach >= 100:
-            msg += f"\n\n✅ Target exceeded — **{rev_ach:.1f}%** achieved. Surplus: {fmt_rev(act_rev-tgt_rev)}"
+            msg += f"\n\n✅ **Target Exceeded** — {rev_ach:.1f}% achievement! Surplus: {fmt_rev(act_rev-tgt_rev)}"
         elif rev_ach >= 85:
-            msg += f"\n\n⚠️ Near target — **{rev_ach:.1f}%** achieved, {fmt_rev(tgt_rev-act_rev)} short"
+            msg += f"\n\n⚠️ **Near Target** — {rev_ach:.1f}% achieved, {fmt_rev(tgt_rev-act_rev)} short"
         else:
-            msg += f"\n\n❌ Below target — **{rev_ach:.1f}%** achieved"
+            msg += f"\n\n❌ **Below Target** — {rev_ach:.1f}% achieved"
 
     return msg, filtered, None
 
 
 # ═══════════════════════════════════════════════════════════════
-#  INTRO / HELP MESSAGES
+#  INTRO / HELP MESSAGES  —  All English
 # ═══════════════════════════════════════════════════════════════
 def _intro_message():
     return (
-        "### Welcome to Joyland MIS v7.0\n\n"
-        "I'm the **Joyland MIS AI Assistant** — trained on 2017–2026 data across 8 projects, "
-        "built by **MIS Assistant Manager Umair Nizam**.\n\n"
-        "| Query Type | Example |\n|---|---|\n"
-        "| Revenue | `Revenue July 2023` |\n"
-        "| Footfall | `Footfall 2024 Joyland Fortress` |\n"
-        "| Comparison | `August 2023 vs August 2024` |\n"
-        "| AI Forecast | `Forecast March 2027` |\n"
-        "| Achievement | `Target achievement 2025` |\n"
-        "| Trends | `Revenue trend all years` |\n"
-        "| Events | `Eid impact` · `COVID 2020` · `Monsoon effect` |\n\n"
-        "**Ask me anything.**"
+        "### 👋 Welcome to **Joyland MIS v6.0 Ultra**!\n\n"
+        "---\n"
+        "🤖 **I am the Joyland MIS AI Assistant** — a complete Business Intelligence Bot trained on **2017–2026 Joyland data** across **8 projects**.\n\n"
+        "Developed by **MIS Assistant Manager Umair Nizam** for smart, data-driven decisions.\n\n"
+        "---\n"
+        "### 🧠 What I Can Do:\n\n"
+        "| Query Type | Example |\n"
+        "|---|---|\n"
+        "| 💰 Revenue | `Revenue July 2023` |\n"
+        "| 👥 Footfall | `Footfall 2024 Joyland Fortress` |\n"
+        "| 🆚 Comparison | `August 2023 vs August 2024` |\n"
+        "| 🔮 AI Forecast | `Forecast March 2027` |\n"
+        "| 🎯 Achievement | `Target achievement 2025` |\n"
+        "| 📈 Trends | `Revenue trend all years` |\n"
+        "| 📅 Quarterly | `Q1 2024 revenue` |\n"
+        "| 🏢 Projects | `All projects comparison` |\n"
+        "| 💡 Per Visitor | `Revenue per visitor 2024` |\n"
+        "| 🦠 Events | `COVID impact 2020` |\n"
+        "| 🌙 Islamic | `Eid impact on revenue` |\n"
+        "| 🌦️ Weather | `Monsoon effect on footfall` |\n"
+        "| 🏏 Sports | `PSL impact` |\n\n"
+        "**Projects:** Joyland Fortress · JAP-OD · SS-PKG · SS-FSM · SS-JAP · B-PKG · B-EMP\n\n"
+        "**Ask me anything! 🚀**"
     )
+
 
 def _help_message():
     return (
-        "### Query Guide\n\n"
-        "**Revenue:** `Revenue July 2023` · `Total revenue 2024` · `Revenue Q1 2023`\n\n"
-        "**Footfall:** `Footfall August 2024` · `Total visitors 2023`\n\n"
-        "**Compare:** `July 2023 vs July 2024` · `2023 vs 2024` · `Fortress 2024 vs JAP-OD 2024`\n\n"
-        "**Forecast (2025–2030):** `Forecast March 2027` · `Predict December 2028 Fortress`\n\n"
-        "**Pakistan Events:** `Eid impact` · `Monsoon effect` · `PSL cricket impact` · `COVID 2020`\n\n"
-        "**Analysis:** `Revenue trend` · `Best month` · `Monthly breakdown` · `Achievement 2024` · `Rev per visitor 2025`"
+        "### 📖 Complete Query Guide\n\n"
+        "**Revenue Queries:**\n"
+        "- `Revenue July 2023`\n"
+        "- `Total revenue 2024`\n"
+        "- `Revenue Joyland Fortress 2025`\n"
+        "- `Revenue Q1 2023`\n\n"
+        "**Footfall Queries:**\n"
+        "- `Footfall August 2024`\n"
+        "- `Total visitors 2023`\n\n"
+        "**Comparisons:**\n"
+        "- `July 2023 vs July 2024`\n"
+        "- `2023 vs 2024`\n"
+        "- `Joyland Fortress 2024 vs JAP-OD 2024`\n\n"
+        "**Forecasting (2025–2030):**\n"
+        "- `Forecast March 2027`\n"
+        "- `Predict revenue December 2028 Joyland Fortress`\n\n"
+        "**Pakistan-Specific:**\n"
+        "- `Eid impact on revenue`\n"
+        "- `Monsoon effect on footfall`\n"
+        "- `PSL cricket season impact`\n"
+        "- `COVID impact 2020`\n\n"
+        "**Analysis:**\n"
+        "- `Revenue trend` / `Annual growth`\n"
+        "- `Best month` / `Worst month`\n"
+        "- `Monthly breakdown`\n"
+        "- `Achievement 2024`\n"
+        "- `Revenue per visitor 2025`\n"
+        "- `All projects comparison`\n"
     )
 
 
@@ -1830,119 +1649,73 @@ def _help_message():
 # ═══════════════════════════════════════════════════════════════
 def render_sidebar(df, auth_obj=None):
     with st.sidebar:
-        # Brand
         st.markdown("""
-        <div style='padding: 20px 4px 12px;'>
-          <div style='font-family: var(--font-mono, DM Mono), monospace; font-size: 9px;
-               letter-spacing: 3px; color: #475569; text-transform: uppercase; margin-bottom: 6px;'>
-            Management Information System
-          </div>
-          <div style='font-family: var(--font-display, Syne), sans-serif; font-size: 20px;
-               font-weight: 800; color: #f1f5f9; letter-spacing: -0.5px; line-height: 1;'>
-            Joyland
-            <span style='color: #3b82f6;'>MIS</span>
-          </div>
-          <div style='font-family: DM Mono, monospace; font-size: 9px; color: #475569;
-               letter-spacing: 1.5px; margin-top: 4px;'>v7.0 APEX · 2017–2030</div>
+        <div style='text-align:center;padding:16px 0 8px;'>
+          <div style='font-family:Orbitron,monospace;font-size:10px;letter-spacing:4px;color:#7a9cc0;'>JOYLAND MIS</div>
+          <div style='font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#00c6ff;margin:4px 0;'>CONTROL</div>
+          <div style='font-family:Orbitron,monospace;font-size:9px;letter-spacing:3px;color:#3a5a80;'>INTELLIGENCE CENTER v6.0 ULTRA</div>
         </div>
-        <div style='height: 1px; background: linear-gradient(90deg, rgba(59,130,246,0.3), transparent); margin: 4px 0 16px;'></div>
+        <div style='border-bottom:1px solid rgba(0,180,255,0.2);margin:8px 0 16px;'></div>
         """, unsafe_allow_html=True)
 
-        # Status
         analyst_name = st.session_state.get('name', 'Analyst')
         st.markdown(f"""
-        <div style='background: rgba(17,24,39,0.8); border: 1px solid rgba(148,163,184,0.08);
-             border-radius: 12px; padding: 14px; margin-bottom: 14px;'>
-          <div style='font-family: DM Mono, monospace; font-size: 9px; letter-spacing: 1.5px;
-               color: #475569; text-transform: uppercase; margin-bottom: 4px;'>Active User</div>
-          <div style='font-family: Syne, sans-serif; font-size: 14px; font-weight: 700;
-               color: #f1f5f9;'>{analyst_name}</div>
-          <div style='display: flex; align-items: center; gap: 6px; margin-top: 10px;
-               font-family: DM Mono, monospace; font-size: 9px; color: #10b981; letter-spacing: 2px;'>
-            <span style='width: 6px; height: 6px; background: #10b981; border-radius: 50%;
-                  display: inline-block; animation: pulse-anim 2s infinite;'></span>
-            AI ENGINE ACTIVE
+        <div style='background:rgba(0,198,255,0.05);border:1px solid rgba(0,198,255,0.15);border-radius:12px;padding:14px 16px;margin-bottom:16px;'>
+          <div style='font-family:Rajdhani;font-size:9px;letter-spacing:2px;color:#7a9cc0;text-transform:uppercase;margin-bottom:4px;'>ACTIVE ANALYST</div>
+          <div style='font-family:Orbitron;font-size:13px;color:#00c6ff;font-weight:700;'>{analyst_name}</div>
+          <div style='margin-top:8px;display:flex;align-items:center;gap:6px;font-family:JetBrains Mono,monospace;font-size:10px;color:#00ff9d;letter-spacing:2px;'>
+            <span style='width:8px;height:8px;background:#00ff9d;border-radius:50%;display:inline-block;animation:pulsate 1.5s infinite;'></span>
+            AI ENGINE ONLINE
           </div>
         </div>
         """, unsafe_allow_html=True)
 
-        if st.button("Clear Chat History", use_container_width=True):
+        if st.button("🗑️ CLEAR CHAT", use_container_width=True):
             st.session_state.messages = []
             st.session_state.last_filtered_df = None
             st.session_state.comparison_data = None
             st.rerun()
 
         if auth_obj:
-            auth_obj.logout('Sign Out', 'sidebar')
+            auth_obj.logout('⏻  LOGOUT', 'sidebar')
 
-        st.markdown("<div style='height:1px;background:rgba(148,163,184,0.06);margin:12px 0;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='border-bottom:1px solid rgba(0,180,255,0.1);margin:16px 0;'></div>", unsafe_allow_html=True)
 
-        # Data scope
         if not df.empty:
             projects = df['Project'].nunique() if 'Project' in df.columns else 0
             records = len(df)
             min_yr = int(df['Year'].min()) if 'Year' in df.columns else 2017
             max_yr = int(df['Year'].max()) if 'Year' in df.columns else 2026
             st.markdown(f"""
-            <div style='background: rgba(17,24,39,0.6); border: 1px solid rgba(148,163,184,0.07);
-                 border-radius: 12px; padding: 14px; margin-bottom: 14px;'>
-              <div style='font-family: DM Mono, monospace; font-size: 9px; letter-spacing: 1.5px;
-                   color: #475569; text-transform: uppercase; margin-bottom: 10px;'>Data Scope</div>
-              <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>
-                <div style='background: rgba(59,130,246,0.05); border-radius: 8px; padding: 10px; border: 1px solid rgba(59,130,246,0.1);'>
-                  <div style='font-family: DM Mono; font-size: 9px; color: #475569; margin-bottom: 3px;'>PERIOD</div>
-                  <div style='font-family: Syne; font-size: 13px; font-weight: 700; color: #f1f5f9;'>{min_yr}–{max_yr}</div>
-                </div>
-                <div style='background: rgba(245,158,11,0.04); border-radius: 8px; padding: 10px; border: 1px solid rgba(245,158,11,0.1);'>
-                  <div style='font-family: DM Mono; font-size: 9px; color: #475569; margin-bottom: 3px;'>RECORDS</div>
-                  <div style='font-family: Syne; font-size: 13px; font-weight: 700; color: #f1f5f9;'>{records:,}</div>
-                </div>
-                <div style='background: rgba(16,185,129,0.04); border-radius: 8px; padding: 10px; border: 1px solid rgba(16,185,129,0.1);'>
-                  <div style='font-family: DM Mono; font-size: 9px; color: #475569; margin-bottom: 3px;'>PROJECTS</div>
-                  <div style='font-family: Syne; font-size: 13px; font-weight: 700; color: #f1f5f9;'>{projects}</div>
-                </div>
-                <div style='background: rgba(139,92,246,0.04); border-radius: 8px; padding: 10px; border: 1px solid rgba(139,92,246,0.1);'>
-                  <div style='font-family: DM Mono; font-size: 9px; color: #475569; margin-bottom: 3px;'>MODEL</div>
-                  <div style='font-family: Syne; font-size: 10px; font-weight: 700; color: #f1f5f9;'>AI+Events</div>
-                </div>
-              </div>
+            <div style='background:rgba(12,27,53,0.8);border:1px solid rgba(0,180,255,0.15);border-radius:12px;padding:14px;margin-bottom:12px;'>
+              <div style='font-family:Rajdhani;font-size:9px;letter-spacing:2px;color:#8ab4d4;text-transform:uppercase;margin-bottom:8px;font-weight:700;'>DATA SCOPE</div>
+              <div style='font-family:JetBrains Mono;font-size:12px;color:#f0f8ff;margin:5px 0;'>📅 {min_yr} – {max_yr}</div>
+              <div style='font-family:JetBrains Mono;font-size:12px;color:#f0f8ff;margin:5px 0;'>📊 {records:,} Records</div>
+              <div style='font-family:JetBrains Mono;font-size:12px;color:#f0f8ff;margin:5px 0;'>🏢 {projects} Projects</div>
+              <div style='font-family:JetBrains Mono;font-size:12px;color:#f0f8ff;margin:5px 0;'>🤖 Seasonal + Trend + PK Events</div>
             </div>
             """, unsafe_allow_html=True)
 
-        # Quick queries
-        quick_queries = [
-            ("Revenue July 2024", "rev"),
-            ("Footfall 2025", "ff"),
-            ("Aug 2023 vs Aug 2024", "cmp"),
-            ("Forecast March 2027", "fcast"),
-            ("Revenue trend", "trend"),
-            ("Q1 2024 Fortress", "q"),
-            ("Achievement 2025", "ach"),
-            ("All projects comparison", "proj"),
-            ("COVID impact 2020", "event"),
-            ("Eid impact on revenue", "event"),
+        quick = [
+            "Revenue July 2024", "Footfall 2025",
+            "August 2023 vs August 2024", "Forecast March 2027",
+            "Revenue trend", "Q1 2024 Joyland Fortress",
+            "Achievement 2025", "All projects comparison",
+            "Revenue per visitor 2024", "COVID impact 2020",
+            "Eid impact on revenue", "Monsoon effect",
         ]
         st.markdown("""
-        <div style='background: rgba(17,24,39,0.5); border: 1px solid rgba(148,163,184,0.07);
-             border-radius: 12px; padding: 14px;'>
-          <div style='font-family: DM Mono, monospace; font-size: 9px; letter-spacing: 1.5px;
-               color: #475569; text-transform: uppercase; margin-bottom: 10px;'>Quick Queries</div>
+        <div style='background:rgba(12,27,53,0.8);border:1px solid rgba(0,180,255,0.15);border-radius:12px;padding:14px;'>
+          <div style='font-family:Rajdhani;font-size:9px;letter-spacing:2px;color:#8ab4d4;text-transform:uppercase;margin-bottom:8px;font-weight:700;'>QUICK QUERIES</div>
         """, unsafe_allow_html=True)
-        for qk, _ in quick_queries:
-            st.markdown(f"""
-            <div style='font-family: DM Mono, monospace; font-size: 10px; color: #64748b;
-                 padding: 5px 0; border-bottom: 1px solid rgba(148,163,184,0.04);
-                 cursor: default; transition: color 0.15s;'>
-              <span style='color: #3b82f6; margin-right: 6px;'>›</span>{qk}
-            </div>
-            """, unsafe_allow_html=True)
+        for qk in quick:
+            st.markdown(f"<div style='font-family:JetBrains Mono;font-size:10px;color:#c8dff0;margin:4px 0;'>› {qk}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("""
-        <div style='padding: 14px 0 4px; text-align: center;'>
-          <div style='font-family: DM Mono, monospace; font-size: 9px; color: #2d3f55; letter-spacing: 1px;'>
-            Architect: <span style='color: #3b82f6;'>Umair Nizam</span>
-          </div>
+        <div style='text-align:center;padding:12px;font-family:Rajdhani;font-size:10px;color:#3d6080;letter-spacing:1px;margin-top:16px;'>
+          ARCHITECT: <span style='color:#f5c518;font-weight:700;'>UMAIR NIZAM</span><br>
+          <span style='color:#1a3a6b;'>v6.0 ULTRA · 2017–2030</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1952,8 +1725,8 @@ def render_sidebar(df, auth_obj=None):
 # ═══════════════════════════════════════════════════════════════
 def main():
     st.set_page_config(
-        page_title="Joyland MIS · v7.0 Apex",
-        layout="wide", page_icon="📊",
+        page_title="Joyland MIS Assistant · v6.0 Ultra",
+        layout="wide", page_icon="🎢",
         initial_sidebar_state="expanded"
     )
     st.markdown(PAGE_THEME, unsafe_allow_html=True)
@@ -1969,7 +1742,7 @@ def main():
     credentials = {"usernames":{"admin":{"name":"Admin","password":"MIS2024@secure"}}}
     try:
         from streamlit_authenticator import Authenticate
-        auth = Authenticate(credentials, "joyland_mis", "auth_key_v7", cookie_expiry_days=30)
+        auth = Authenticate(credentials, "joyland_mis", "auth_key_v6", cookie_expiry_days=30)
         auth.login(location='main')
         is_auth = st.session_state.get("authentication_status")
     except ImportError:
@@ -1980,13 +1753,13 @@ def main():
     if not is_auth:
         st.markdown("""
         <div style='max-width:420px;margin:80px auto;text-align:center;'>
-          <div style='font-family:Syne,sans-serif;font-size:32px;font-weight:800;color:#f1f5f9;
-               letter-spacing:-1px;margin-bottom:8px;'>
-            Joyland <span style='color:#3b82f6;'>MIS</span>
+          <div style='font-family:Orbitron,monospace;font-size:30px;font-weight:900;
+               background:linear-gradient(135deg,#00c6ff,#f5c518);
+               -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;'>
+            JOYLAND MIS ASSISTANT
           </div>
-          <div style='font-family:DM Mono,monospace;font-size:11px;letter-spacing:2px;color:#475569;
-               margin-bottom:32px;text-transform:uppercase;'>
-            Intelligence Platform · v7.0 Apex
+          <div style='font-family:Rajdhani;font-size:12px;letter-spacing:3px;color:#7a9cc0;margin-bottom:32px;'>
+            INTELLIGENCE PLATFORM · v6.0 ULTRA
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1994,92 +1767,63 @@ def main():
 
     render_sidebar(df, auth)
 
-    # ── HERO BANNER ──
-    if not df.empty:
-        total_rev = df['Actual Revenue'].sum()
-        total_ff = df['Actual Footfall'].sum()
-        max_yr = df['Year'].max()
-    else:
-        total_rev = total_ff = 0
-        max_yr = 2026
-
-    st.markdown(f"""
+    # ── HERO BANNER (matched to HTML preview) ──
+    st.markdown("""
     <div class='hero-banner'>
-      <div class='hero-banner-inner'>
-        <div class='hero-left'>
-          <div class='hero-eyebrow'>Management Information System · v7.0 Apex</div>
-          <div class='hero-title'>Joyland <span>Analytics</span></div>
-          <div class='hero-sub'>Advanced Business Intelligence Platform · Pakistan Events AI Engine · 2017–2030 Forecast</div>
-        </div>
-        <div class='hero-right'>
-          <div>
-            <div style='display:flex;align-items:center;gap:16px;'>
-              <div class='hero-stat'>
-                <div class='hero-stat-val'>{fmt_rev(total_rev)}</div>
-                <div class='hero-stat-label'>Lifetime Revenue</div>
-              </div>
-              <div class='hero-stat'>
-                <div class='hero-stat-val'>{total_ff/1e6:.1f}M</div>
-                <div class='hero-stat-label'>Total Visitors</div>
-              </div>
-            </div>
-          </div>
-          <div class='status-chip'><span class='pulse'></span>AI Engine Active</div>
-        </div>
-      </div>
+      <div class='hero-title'>JOYLAND  MIS  ASSISTANT</div>
+      <div class='hero-subtitle'>Advanced Business Intelligence &amp; Predictive Analytics Platform</div>
+      <div class='hero-badge'>⬡ AI-POWERED · DATA 2017–2026 · FORECAST 2030 · v6.0 ULTRA</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── KPI CARDS ──
+    # ── KPI CARDS (matched to HTML preview kpi-grid style) ──
     if not df.empty:
         try:
+            total_rev = df['Actual Revenue'].sum()
+            total_ff = df['Actual Footfall'].sum()
             total_tgt = df['Target revenue'].sum()
             ach = total_rev/total_tgt*100 if total_tgt > 0 else 0
             rpp = total_rev/total_ff if total_ff > 0 else 0
+            max_yr = df['Year'].max()
             last_yr = df[df['Year']==max_yr]['Actual Revenue'].sum()
             prev_yr = df[df['Year']==max_yr-1]['Actual Revenue'].sum()
             yoy_g = (last_yr-prev_yr)/prev_yr*100 if prev_yr > 0 else 0
-            delta_cls = "up" if yoy_g >= 0 else "down"
-            delta_sym = "↑" if yoy_g >= 0 else "↓"
+            delta_sign = "pos" if yoy_g >= 0 else "neg"
+            delta_arrow = "↑" if yoy_g >= 0 else "↓"
 
             st.markdown(f"""
-            <div class='kpi-row'>
-              <div class='kpi-card blue'>
-                <span class='kpi-icon'>💰</span>
+            <div class='kpi-grid'>
+              <div class='kpi-card cyan'>
                 <div class='kpi-label'>Lifetime Revenue</div>
-                <div class='kpi-value'>{fmt_rev(total_rev)}</div>
-                <div class='kpi-delta neutral'>2017 – {max_yr}</div>
+                <div class='kpi-val'>{fmt_rev(total_rev)}</div>
+                <div class='kpi-delta pos'>↑ 2017–2026</div>
               </div>
               <div class='kpi-card gold'>
-                <span class='kpi-icon'>👥</span>
                 <div class='kpi-label'>Total Visitors</div>
-                <div class='kpi-value'>{total_ff/1e6:.2f}M</div>
-                <div class='kpi-delta neutral'>Cumulative</div>
+                <div class='kpi-val'>{total_ff/1e6:.2f}M</div>
+                <div class='kpi-delta pos'>↑ Cumulative</div>
               </div>
               <div class='kpi-card green'>
-                <span class='kpi-icon'>🎯</span>
                 <div class='kpi-label'>Avg Achievement</div>
-                <div class='kpi-value'>{ach:.1f}%</div>
-                <div class='kpi-delta up'>vs All Targets</div>
+                <div class='kpi-val'>{ach:.1f}%</div>
+                <div class='kpi-delta neu'>vs All Targets</div>
               </div>
-              <div class='kpi-card violet'>
-                <span class='kpi-icon'>💡</span>
+              <div class='kpi-card purple'>
                 <div class='kpi-label'>Rev / Visitor</div>
-                <div class='kpi-value'>Rs.{rpp:,.0f}</div>
-                <div class='kpi-delta neutral'>Lifetime Avg</div>
+                <div class='kpi-val'>Rs. {rpp:,.0f}</div>
+                <div class='kpi-delta neu'>Lifetime Avg</div>
               </div>
-              <div class='kpi-card amber'>
-                <span class='kpi-icon'>📈</span>
+              <div class='kpi-card orange'>
                 <div class='kpi-label'>YoY Growth</div>
-                <div class='kpi-value'>{yoy_g:+.1f}%</div>
-                <div class='kpi-delta {delta_cls}'>{delta_sym} {int(max_yr-1)}→{int(max_yr)}</div>
+                <div class='kpi-val'>{yoy_g:+.1f}%</div>
+                <div class='kpi-delta {delta_sign}'>{delta_arrow} {max_yr-1}→{max_yr}</div>
               </div>
             </div>
             """, unsafe_allow_html=True)
         except:
             pass
 
-    # ── AI INSIGHT ──
+    # ── AI INSIGHT CARD (matched to HTML preview) ──
     if not df.empty:
         try:
             best_proj = df.groupby('Project')['Actual Revenue'].sum().idxmax()
@@ -2089,32 +1833,24 @@ def main():
             all_rpp = df['Actual Revenue'].sum()/df['Actual Footfall'].sum()
             st.markdown(f"""
             <div class='insight-card'>
-              <span class='insight-label'>◈ AI System Intelligence</span>
-              <div class='insight-text'>
-                Peak revenue month: <strong>{peak_month}</strong> &nbsp;·&nbsp;
-                Top project: <strong>{best_proj}</strong> &nbsp;·&nbsp;
-                Best year: <strong>{best_year}</strong> ({fmt_rev(best_year_row[best_year])}) &nbsp;·&nbsp;
-                Lifetime Rev/Visitor: <strong>Rs. {all_rpp:,.0f}</strong> &nbsp;·&nbsp;
-                CAGR 2017–2025: <strong>~33%/year</strong>
-              </div>
+              <p>🏆 <strong>Peak Month:</strong> {peak_month} &nbsp;·&nbsp;
+              🏢 <strong>Top Project:</strong> {best_proj} &nbsp;·&nbsp;
+              🚀 <strong>Best Year:</strong> {best_year} ({fmt_rev(best_year_row[best_year])}) &nbsp;·&nbsp;
+              💡 <strong>Rev/Visitor:</strong> Rs. {all_rpp:,.0f} all-time avg &nbsp;·&nbsp;
+              📅 <strong>CAGR 2017–2025:</strong> ~33%/year</p>
             </div>
             """, unsafe_allow_html=True)
         except:
             pass
 
     # ── SECTION: AI CHAT ──
-    st.markdown("""
-    <div class='section-hdr'>
-      <span class='section-hdr-text'>AI Analytics Assistant</span>
-      <div class='section-hdr-line'></div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>AI ANALYTICS ASSISTANT</div>", unsafe_allow_html=True)
 
     for msg in st.session_state.messages:
         with st.chat_message("user" if msg["is_user"] else "assistant"):
             st.markdown(msg["content"])
 
-    prompt = st.chat_input("Ask anything — Revenue · Footfall · Comparison · Forecast · Eid · Monsoon · Trends…")
+    prompt = st.chat_input("Ask anything: Revenue · Footfall · Comparison · Forecast · Eid · Monsoon · Trends · Projects…")
 
     if prompt:
         st.session_state.messages.append({"content": prompt, "is_user": True})
@@ -2134,101 +1870,84 @@ def main():
     if st.session_state.last_filtered_df is not None and not st.session_state.last_filtered_df.empty:
         df_plot = st.session_state.last_filtered_df
 
-        st.markdown("""
-        <div class='section-hdr'>
-          <span class='section-hdr-text'>Visual Intelligence Panel</span>
-          <div class='section-hdr-line'></div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<div class='section-header'>VISUAL INTELLIGENCE PANEL</div>", unsafe_allow_html=True)
 
         tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "Overview", "Deep Analysis", "Projects",
-            "Forecast", "Data Export"
+            "📉 Insights", "🔬 Deep Analysis", "🏢 Projects",
+            "🔮 Forecast", "📋 Data"
         ])
 
         with tab1:
-            # Comparison chart
+            # Comparison bar chart if comparison data available
             if st.session_state.comparison_data:
                 cd = st.session_state.comparison_data
                 fig_comp = go.Figure()
+                bar_colors = ['#00c6ff','#f5c518']
                 for i, (lbl, rev, ff) in enumerate(zip(cd['labels'], cd['revenue'], cd['footfall'])):
-                    color = [C['blue'], C['gold']][i]
-                    r, g, b = int(color[1:3],16), int(color[3:5],16), int(color[5:7],16)
                     fig_comp.add_trace(go.Bar(
-                        name=f'{lbl}', x=[lbl], y=[rev],
-                        marker=dict(
-                            color=f'rgba({r},{g},{b},0.75)',
-                            line=dict(color=color, width=1.5),
-                            cornerradius=4,
-                        ),
+                        name=f'{lbl} – Revenue', x=[lbl], y=[rev],
+                        marker_color=bar_colors[i],
                         text=[fmt_rev(rev)], textposition='outside',
-                        textfont=dict(family='DM Mono', size=11, color='#64748b'),
+                        textfont=dict(family='JetBrains Mono',size=11),
                         hovertemplate=f'<b>{lbl}</b><br>Revenue: <b>Rs. %{{y:,.0f}}</b><extra></extra>'
                     ))
                 fig_comp.update_layout(**PLOTLY_LAYOUT, barmode='group',
-                    title="Period Comparison — Revenue", height=420,
-                    xaxis_title="", yaxis_title="Revenue (PKR)", bargap=0.5)
+                    title="Period Comparison — Revenue", height=400,
+                    xaxis_title="Period", yaxis_title="Revenue (PKR)")
                 st.plotly_chart(fig_comp, use_container_width=True)
                 st.divider()
 
-            chart_opt = st.selectbox("Select Visualization", [
-                "Revenue Achievement Gauge",
-                "Footfall Achievement Gauge",
-                "Revenue: Actual vs Target",
-                "Revenue Trend (Area + Peaks)",
-                "Footfall Trend (Area + Peaks)",
-                "Monthly Waterfall",
-                "Revenue Share by Month",
-                "Revenue Share by Project",
-                "Footfall vs Revenue Regression",
-                "Year-over-Year Comparison",
+            chart_opt = st.selectbox("🎯 Select Chart", [
+                "1. Revenue Achievement Gauge",
+                "2. Footfall Achievement Gauge",
+                "3. Revenue: Actual vs Target (Bar)",
+                "4. Revenue Trend (Area + Peak)",
+                "5. Footfall Trend (Area + Peak)",
+                "6. Monthly Waterfall",
+                "7. Revenue Share by Month (Donut)",
+                "8. Revenue Share by Project (Donut)",
+                "9. Revenue vs Footfall Regression",
+                "10. Year-over-Year Comparison",
             ])
 
             res = df_plot[[c for c in ['Actual Revenue','Actual Footfall','Target revenue','Target Footfall'] if c in df_plot.columns]].sum()
 
-            if chart_opt == "Revenue Achievement Gauge":
+            if chart_opt.startswith("1"):
                 st.plotly_chart(chart_gauge(res.get('Actual Revenue',0), res.get('Target revenue',0), "Revenue Achievement"), use_container_width=True)
-            elif chart_opt == "Footfall Achievement Gauge":
+            elif chart_opt.startswith("2"):
                 st.plotly_chart(chart_gauge(res.get('Actual Footfall',0), res.get('Target Footfall',0), "Footfall Achievement"), use_container_width=True)
-            elif chart_opt == "Revenue: Actual vs Target":
+            elif chart_opt.startswith("3"):
                 cols = [c for c in ['Actual Revenue','Target revenue'] if c in df_plot.columns]
                 agg = df_plot.groupby('Months',observed=True)[cols].sum().reset_index()
-                st.plotly_chart(chart_bar_labeled(agg,'Months',cols,"Revenue: Actual vs Target","","Revenue (PKR)"), use_container_width=True)
-            elif chart_opt == "Revenue Trend (Area + Peaks)":
+                st.plotly_chart(chart_bar_labeled(agg,'Months',cols,"Revenue: Actual vs Target","Month","Revenue (PKR)"), use_container_width=True)
+            elif chart_opt.startswith("4"):
                 if 'Actual Revenue' in df_plot.columns:
-                    st.plotly_chart(chart_trend_advanced(df_plot.sort_values('Date_Obj'),'Actual Revenue',C['blue'],'Revenue Trend'), use_container_width=True)
-            elif chart_opt == "Footfall Trend (Area + Peaks)":
+                    st.plotly_chart(chart_trend_advanced(df_plot.sort_values('Date_Obj'),'Actual Revenue','#00c6ff','Revenue Trend'), use_container_width=True)
+            elif chart_opt.startswith("5"):
                 if 'Actual Footfall' in df_plot.columns:
-                    st.plotly_chart(chart_trend_advanced(df_plot.sort_values('Date_Obj'),'Actual Footfall',C['gold'],'Footfall Trend'), use_container_width=True)
-            elif chart_opt == "Monthly Waterfall":
+                    st.plotly_chart(chart_trend_advanced(df_plot.sort_values('Date_Obj'),'Actual Footfall','#f5c518','Footfall Trend'), use_container_width=True)
+            elif chart_opt.startswith("6"):
                 fig_wf = chart_waterfall_advanced(df_plot)
                 if fig_wf: st.plotly_chart(fig_wf, use_container_width=True)
-            elif chart_opt == "Revenue Share by Month":
+            elif chart_opt.startswith("7"):
                 if 'Actual Revenue' in df_plot.columns:
-                    st.plotly_chart(chart_pie_advanced(df_plot,'Actual Revenue','Months',"Revenue Distribution by Month"), use_container_width=True)
-            elif chart_opt == "Revenue Share by Project":
+                    st.plotly_chart(chart_pie_advanced(df_plot,'Actual Revenue','Months',"Revenue Share by Month"), use_container_width=True)
+            elif chart_opt.startswith("8"):
                 if 'Project' in df_plot.columns:
-                    st.plotly_chart(chart_pie_advanced(df_plot,'Actual Revenue','Project',"Revenue Distribution by Project"), use_container_width=True)
-            elif chart_opt == "Footfall vs Revenue Regression":
+                    st.plotly_chart(chart_pie_advanced(df_plot,'Actual Revenue','Project',"Revenue Share by Project"), use_container_width=True)
+            elif chart_opt.startswith("9"):
                 fig_r = chart_regression_advanced(df_plot)
                 if fig_r: st.plotly_chart(fig_r, use_container_width=True)
-            elif chart_opt == "Year-over-Year Comparison":
+            elif chart_opt.startswith("10"):
                 st.plotly_chart(chart_yoy_advanced(df_plot), use_container_width=True)
 
-            # Summary row
             disp = [c for c in ['Actual Revenue','Target revenue','Actual Footfall','Target Footfall'] if c in df_plot.columns]
             if disp:
+                st.markdown("**Summary Totals**")
                 summary = df_plot[disp].sum().to_frame("Total").T
-                st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
                 st.dataframe(
                     summary.style.format("{:,.0f}")
-                    .set_properties(**{
-                        'background-color':'#111827',
-                        'color':'#94a3b8',
-                        'border':'1px solid rgba(148,163,184,0.08)',
-                        'font-family':'DM Mono, monospace',
-                        'font-size':'12px'
-                    }),
+                    .set_properties(**{'background-color':'#091428','color':'#f0f8ff','border':'1px solid rgba(0,180,255,0.15)'}),
                     use_container_width=True
                 )
 
@@ -2244,53 +1963,42 @@ def main():
             if 'Project' in df_plot.columns:
                 st.plotly_chart(chart_project_advanced(df_plot), use_container_width=True)
 
+                # HTML-preview-style project table
                 proj_sum = df_plot.groupby('Project').agg({
                     'Actual Revenue':'sum','Actual Footfall':'sum','Target revenue':'sum'
                 })
-                proj_sum['Achievement'] = (proj_sum['Actual Revenue']/proj_sum['Target revenue']*100).where(proj_sum['Target revenue']>0,0).round(1)
+                proj_sum['Achievement %'] = (proj_sum['Actual Revenue']/proj_sum['Target revenue']*100).where(proj_sum['Target revenue']>0,0).round(1)
                 proj_sum['Rev/Visitor'] = (proj_sum['Actual Revenue']/proj_sum['Actual Footfall'].replace(0,np.nan)).round(0)
                 proj_sum = proj_sum.sort_values('Actual Revenue', ascending=False)
 
                 rows_html = ""
                 for proj, row in proj_sum.iterrows():
-                    ach = row['Achievement']
+                    ach = row['Achievement %']
                     badge_cls = "good" if ach >= 90 else "warn" if ach >= 75 else "bad"
                     rows_html += f"""
                     <tr>
-                      <td><strong style='color:#f1f5f9;font-family:Space Grotesk,sans-serif;'>{proj}</strong></td>
-                      <td style='font-family:DM Mono,monospace;color:#3b82f6;'>{fmt_rev(row['Actual Revenue'])}</td>
-                      <td style='font-family:DM Mono,monospace;'>{row['Actual Footfall']/1e3:.0f}K</td>
+                      <td><strong>{proj}</strong></td>
+                      <td>{fmt_rev(row['Actual Revenue'])}</td>
+                      <td>{row['Actual Footfall']/1e3:.0f}K</td>
                       <td><span class='badge {badge_cls}'>{ach:.1f}%</span></td>
-                      <td style='font-family:DM Mono,monospace;'>Rs. {row["Rev/Visitor"]:,.0f}</td>
+                      <td>Rs. {row['Rev/Visitor']:,.0f}</td>
                     </tr>"""
 
                 st.markdown(f"""
-                <div style='background:rgba(17,24,39,0.6);border:1px solid rgba(148,163,184,0.08);border-radius:14px;overflow:hidden;margin-top:16px;'>
-                <table class='pro-table'>
+                <table class='data-table'>
                   <thead>
                     <tr><th>Project</th><th>Revenue</th><th>Footfall</th><th>Achievement</th><th>Rev/Visitor</th></tr>
                   </thead>
                   <tbody>{rows_html}</tbody>
                 </table>
-                </div>
                 """, unsafe_allow_html=True)
 
         with tab4:
-            st.markdown("""
-            <div class='section-hdr'>
-              <span class='section-hdr-text'>Predictive Analytics Engine</span>
-              <div class='section-hdr-line'></div>
-            </div>
-            """, unsafe_allow_html=True)
-
+            st.markdown("<div class='section-header'>ADVANCED PREDICTIVE ANALYTICS ENGINE</div>", unsafe_allow_html=True)
             if not df.empty:
                 st.plotly_chart(chart_forecast_trajectory_advanced(df), use_container_width=True)
 
-                st.markdown("""
-                <div style='font-family:Space Grotesk,sans-serif;font-size:14px;font-weight:600;
-                     color:#f1f5f9;margin:20px 0 12px;'>Manual Forecast Generator</div>
-                """, unsafe_allow_html=True)
-
+                st.markdown("#### 🔮 Manual Forecast Generator")
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     m_sel = st.selectbox("Month", ['January','February','March','April','May','June',
@@ -2300,35 +2008,39 @@ def main():
                 with col3:
                     p_sel = st.selectbox("Project", ['All Projects'] + sorted(df['Project'].unique().tolist()))
 
-                if st.button("Generate Forecast", use_container_width=True):
+                if st.button("🔮 GENERATE ADVANCED FORECAST", use_container_width=True):
                     m_idx = MONTH_MAP[m_sel.lower()]
                     df_src = df if p_sel == 'All Projects' else df[df['Project']==p_sel]
                     p_rev,(lr,ur),note_rev = generate_advanced_forecast(df_src, m_idx, y_sel, 'Actual Revenue')
-                    p_ff,(lf,uf),note_ff = generate_advanced_forecast(df_src, m_idx, y_sel, 'Actual Footfall')
+                    p_ff,(lf,uf),note_ff   = generate_advanced_forecast(df_src, m_idx, y_sel, 'Actual Footfall')
+                    pk_mult, pk_notes = compute_pakistan_multiplier(m_idx, y_sel)
+
+                    same_m_hist = df_src[df_src['Month_Num']==m_idx].groupby('Year').agg({'Actual Revenue':'sum'}).reset_index().tail(5)
 
                     eid_alert = ""
                     if y_sel in EID_FITR_MONTHS and m_idx in EID_FITR_MONTHS[y_sel]:
-                        eid_alert = "🌙 **Eid ul Fitr** expected — significant footfall spike projected."
+                        eid_alert = "🌙 **Eid ul Fitr** expected this month → Significant footfall spike!"
                     if y_sel in EID_ADHA_MONTHS and m_idx in EID_ADHA_MONTHS[y_sel]:
-                        eid_alert += "\n🐑 **Eid ul Adha** expected — revenue boost projected."
+                        eid_alert += "\n🐑 **Eid ul Adha** expected this month → Revenue boost!"
 
+                    # Forecast box matching HTML preview style
                     st.markdown(f"""
-                    <div class='forecast-panel'>
-                      <span class='forecast-label'>◈ AI Forecast · {m_sel.upper()} {y_sel} · {p_sel}</span>
-                      <div class='forecast-metrics'>
-                        <div class='fm-card fm-rev'>
-                          <div class='fm-label'>Revenue Projection</div>
-                          <div class='fm-value'>{fmt_rev(p_rev)}</div>
-                          <div class='fm-range'>Range: {fmt_rev(lr)} — {fmt_rev(ur)}</div>
+                    <div class='forecast-box'>
+                      <div class='fhead'>◈ AI FORECAST ENGINE · PAKISTAN EVENTS MODEL — {m_sel.upper()} {y_sel} ({p_sel})</div>
+                      <div class='forecast-grid'>
+                        <div class='forecast-metric rev'>
+                          <div class='fm-label'>💰 REVENUE</div>
+                          <div class='fm-val'>{fmt_rev(p_rev)}</div>
+                          <div class='fm-range'>Range: {fmt_rev(lr)} – {fmt_rev(ur)}</div>
                         </div>
-                        <div class='fm-card fm-ff'>
-                          <div class='fm-label'>Footfall Projection</div>
-                          <div class='fm-value'>{p_ff:,.0f}</div>
-                          <div class='fm-range'>Range: {lf:,.0f} — {uf:,.0f}</div>
+                        <div class='forecast-metric ff'>
+                          <div class='fm-label'>👥 FOOTFALL</div>
+                          <div class='fm-val'>{p_ff:,.0f}</div>
+                          <div class='fm-range'>Range: {lf:,.0f} – {uf:,.0f}</div>
                         </div>
                       </div>
-                      <div class='fm-modifiers'>
-                        <strong style='color:#94a3b8;'>Applied Modifiers:</strong> {note_rev}
+                      <div style='margin-top:12px;font-family:Rajdhani,sans-serif;font-size:13px;color:#a8d4f5;'>
+                        <strong>Event Modifiers:</strong> {note_rev}
                       </div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -2336,69 +2048,47 @@ def main():
                     if eid_alert:
                         st.info(eid_alert)
 
-                    same_m_hist = df_src[df_src['Month_Num']==m_idx].groupby('Year').agg({'Actual Revenue':'sum'}).reset_index().tail(5)
                     if not same_m_hist.empty:
-                        st.markdown(f"<div style='font-family:DM Mono;font-size:11px;color:#475569;margin:14px 0 8px;text-transform:uppercase;letter-spacing:1.5px;'>Historical {m_sel} Revenue</div>", unsafe_allow_html=True)
+                        st.markdown(f"**Historical {m_sel} Revenue (last 5 years):**")
                         same_m_hist['Actual Revenue'] = same_m_hist['Actual Revenue'].apply(fmt_rev)
-                        st.dataframe(same_m_hist.rename(columns={'Actual Revenue':'Revenue'}), use_container_width=True)
+                        st.dataframe(same_m_hist.rename(columns={'Year':'Year','Actual Revenue':'Revenue'}),
+                                     use_container_width=True)
 
-                # Event Calendar
+                # Pakistan Event Calendar box matching HTML preview
                 st.markdown("""
-                <div class='event-calendar'>
-                  <div class='ec-title'>◈ Pakistan Event Calendar — Forecast Basis</div>
-                  <div class='ec-row'>
-                    <span class='ec-key'>🌙 Eid ul Fitr</span>
-                    <span class='ec-val'>2025→Mar · 2026→Mar · 2027→Mar · 2028→Feb · 2029→Feb · 2030→Jan</span>
+                <div style='background:rgba(245,197,24,0.05);border:1px solid rgba(245,197,24,0.2);border-radius:12px;padding:16px;margin-top:16px;'>
+                  <div style='font-family:Orbitron,monospace;font-size:11px;letter-spacing:3px;color:#f5c518;margin-bottom:10px;'>
+                    🌙 PAKISTAN EVENT CALENDAR (FORECAST BASIS)
                   </div>
-                  <div class='ec-row'>
-                    <span class='ec-key'>🐑 Eid ul Adha</span>
-                    <span class='ec-val'>2025→Jun · 2026→May · 2027→May · 2028→May · 2029→Apr · 2030→Apr</span>
-                  </div>
-                  <div class='ec-row'>
-                    <span class='ec-key'>📚 Exam Season (low)</span>
-                    <span class='ec-val'>May (Boards) · October (Midterms) — applied −12%</span>
-                  </div>
-                  <div class='ec-row'>
-                    <span class='ec-key'>🌧️ Monsoon Adjustment</span>
-                    <span class='ec-val'>July · August — applied −8%</span>
-                  </div>
-                  <div class='ec-row'>
-                    <span class='ec-key'>🇵🇰 Independence Day</span>
-                    <span class='ec-val'>August 14 — applied +8%</span>
-                  </div>
-                  <div class='ec-row'>
-                    <span class='ec-key'>🎆 Winter Festive</span>
-                    <span class='ec-val'>December +10% · January +5%</span>
+                  <div style='font-family:JetBrains Mono,monospace;font-size:11px;color:#7a9cc0;line-height:2;'>
+                    <strong>Eid ul Fitr:</strong> 2025→Mar | 2026→Mar | 2027→Mar | 2028→Feb | 2029→Feb | 2030→Jan<br>
+                    <strong>Eid ul Adha:</strong> 2025→Jun | 2026→May | 2027→May | 2028→May | 2029→Apr | 2030→Apr<br>
+                    <strong>Exam Season (low):</strong> May (Boards) · October (Midterms)<br>
+                    <strong>Monsoon Adjustment:</strong> July · August (−8%)<br>
+                    <strong>Independence Day Boost:</strong> August 14 (+8%)<br>
+                    <strong>Winter Festive:</strong> December (+28%) · January (+13%)
                   </div>
                 </div>
                 """, unsafe_allow_html=True)
 
         with tab5:
-            st.markdown(f"""
-            <div style='font-family:DM Mono,monospace;font-size:10px;color:#475569;
-                 letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;'>
-              {len(df_plot):,} records in current dataset
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(f"<div style='font-family:Rajdhani;color:#7a9cc0;margin-bottom:12px;'>{len(df_plot):,} records</div>",
+                        unsafe_allow_html=True)
             display_cols = [c for c in df_plot.columns if c not in ['Month_Num','Date_Obj','Fiscal_Year_Label']]
             num_cols = [c for c in display_cols if pd.api.types.is_numeric_dtype(df_plot[c])]
             st.dataframe(
                 df_plot[display_cols].style.format({c:'{:,.0f}' for c in num_cols})
-                .set_properties(**{
-                    'background-color':'#111827','color':'#94a3b8',
-                    'border':'1px solid rgba(148,163,184,0.06)',
-                    'font-family':'DM Mono, monospace','font-size':'12px'
-                }),
-                use_container_width=True, height=520
+                .set_properties(**{'background-color':'#091428','color':'#f0f8ff','border':'1px solid rgba(0,180,255,0.15)'}),
+                use_container_width=True, height=500
             )
             csv = df_plot.to_csv(index=False).encode('utf-8')
             st.download_button(
-                "Export as CSV", data=csv,
+                "⬇️ EXPORT CSV", data=csv,
                 file_name=f"joyland_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime='text/csv', use_container_width=True
             )
 
-    # ── FOOTER ──
+    # ── FOOTER STATUS BAR (matched to HTML preview) ──
     if not df.empty:
         records = len(df)
         projects = df['Project'].nunique() if 'Project' in df.columns else 0
@@ -2406,16 +2096,14 @@ def main():
         records, projects = 0, 0
 
     st.markdown(f"""
-    <div class='footer-bar'>
-      <div class='footer-brand'>Joyland <span>MIS</span> · v7.0 Apex</div>
-      <div class='footer-meta'>
-        Architect: Umair Nizam · {records:,} records · {projects} projects · AI + Pakistan Events Model
+    <div style='text-align:center;padding:20px 0 10px;margin-top:24px;border-top:1px solid rgba(0,180,255,0.1);'>
+      <div style='display:flex;justify-content:center;align-items:center;gap:8px;
+           font-family:JetBrains Mono,monospace;font-size:10px;color:#00ff9d;letter-spacing:2px;'>
+        <span style='width:8px;height:8px;background:#00ff9d;border-radius:50%;display:inline-block;animation:pulsate 1.5s infinite;'></span>
+        AI ENGINE ONLINE · ARCHITECT: UMAIR NIZAM · v6.0 ULTRA
       </div>
-      <div style='display:flex;align-items:center;gap:6px;font-family:DM Mono,monospace;
-           font-size:9px;color:#10b981;letter-spacing:2px;text-transform:uppercase;'>
-        <span style='width:5px;height:5px;background:#10b981;border-radius:50%;
-              display:inline-block;animation:pulse-anim 2s infinite;'></span>
-        Online
+      <div style='font-family:JetBrains Mono,monospace;font-size:9px;color:#3d6080;margin-top:6px;letter-spacing:2px;'>
+        2017 – 2030 · {records:,} RECORDS · {projects} PROJECTS · SEASONAL + TREND + PK EVENTS
       </div>
     </div>
     """, unsafe_allow_html=True)
